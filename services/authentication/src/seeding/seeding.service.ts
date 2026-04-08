@@ -73,6 +73,7 @@ export class SeedingService implements OnApplicationBootstrap {
             email: admin.email,
             role_id: role.uuid,
             password: hashpass,
+            name: admin.name as string,
           });
 
           await this.adminRepo.save(user);

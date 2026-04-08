@@ -31,7 +31,7 @@ export const AuthVerify = async(req,res,next)=>{
         })
         .catch((err)=>{
             console.log(err.message,"role route not founded")
-            res.status(404).json({ status: "failed", message: "role axios issuse", data: null });
+            res.status(404).json({ status: "failed", message: "role axios issuse, role not found", data: null });
         })
 
 

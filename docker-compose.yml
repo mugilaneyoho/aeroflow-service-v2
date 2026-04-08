@@ -170,7 +170,7 @@ services:
       PORT: 3010
       DB_HOST: patron
       DB_PORT: 3306
-      DB_NAME: notifiyandlog
+      DB_NAME: notifyandlog
       DB_USER: root
       DB_PASS: root
       KAFKA_BROKER: kafka:9092

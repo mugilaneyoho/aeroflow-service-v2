@@ -17,10 +17,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      // url: 'postgresql://patron_727o_user:vNL871u0UdD5lEwe01ZqngnTCDgO7NtE@dpg-d6bvqg7tn9qs73c7qcqg-a.singapore-postgres.render.com/patron_727o',
-      // ssl: {
-      //   rejectUnauthorized: false,
-      // },
       host: process.env.DB_HOST,
       port: 3306,
       username: process.env.DB_USER,

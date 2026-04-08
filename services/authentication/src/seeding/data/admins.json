@@ -2,26 +2,31 @@
     {
         "email":"master@aeroflow.com",
         "password":"master",
-        "role":"MASTER"
+        "role":"MASTER",
+        "name":"master"
     },
     {
         "email":"admin@aeroflow.com",
         "password":"admin",
-        "role":"SUBADMIN"
+        "role":"SUBADMIN",
+        "name":"sub-admin"
     },
     {
         "email":"reception@aeroflow.com",
         "password":"reception",
-        "role":"RECEPTION"
+        "role":"RECEPTION",
+        "name":"reception"
     },
     {
         "email":"teleadmin@aeroflow.com",
         "password":"teleadmin",
-        "role":"TELEADMIN"
+        "role":"TELEADMIN",
+        "name":"telecalling admin"
     },
     {
         "email":"hod@aeroflow.com",
         "password":"hod",
-        "role":"HOD"
+        "role":"HOD",
+        "name":"training admin"
     }
 ]
