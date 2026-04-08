@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package common;
+
+service CommonService {
+    rpc GetDashBoard (Empty) returns (res);
+    rpc FetchDashBoard (Empty) returns (res);
+}
+
+message Empty {}
+
+message batchdata {
+    string id = 1;
+    string uuid = 2;
+    string batchName = 3;
+    string batchMode = 4;
+    string batchCode = 5;
+    int32 seatsFilled = 6;
+    int32 duration = 7;
+    string durationType = 8;
+}
+
+message res {
+    int32 TotalCourse = 1;
+    int32 ActiveBatch = 2;
+    int32 TotalStudent = 3;
+    repeated batchdata BatchList = 4;
+}

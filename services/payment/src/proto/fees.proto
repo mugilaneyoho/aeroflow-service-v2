@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package fees;
+
+service FeeManagement {
+  rpc InitStudentFees (InitStudentFeesRequest) returns (InitStudentFeesResponse);
+  rpc GetStudentFees (GetStudentFeesRequest) returns (StudentFeesResponse);
+}
+
+message InitStudentFeesRequest {
+  string studentId = 1;
+  double totalFees = 2;
+}
+
+message InitStudentFeesResponse {
+  bool success = 1;
+}
+
+message GetStudentFeesRequest {
+  string studentId = 1;
+}
+
+message PaymentRecord {
+  string transactionId = 1;
+  string date = 2;
+  double amount = 3;
+  string paymentpurpose = 4;
+}
+
+message StudentFeesResponse {
+  string data = 1;
+}

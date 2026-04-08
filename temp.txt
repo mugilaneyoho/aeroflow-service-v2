@@ -1,0 +1,384 @@
+version: "1.0.0"
+
+services:
+
+  # ---------------- API GATEWAY ---------------- #
+  api-gateway:
+    build: ./node-api-gateway
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  # ---------------- AUTHENTICATION SERVICE ---------------- #
+  authentication-service:
+    build: ./services/authentication
+    ports:
+      - "3002:3002"
+      - "3001:3001"
+    environment:
+      PORT: 3002
+      PORT_GRPC: 3001
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+    depends_on:
+      - patron
+      - kafka
+    networks:
+      - app-network
+
+  # ---------------- INSTITUTE SERVICE ---------------- #
+  institute-service:
+    build: ./services/institute
+    ports:
+      - "3004:3004"
+      - "3003:3003"
+    environment:
+      PORT: 3004
+      PORT_GRPC: 3003
+      AUTH_GRPC: 3001
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+    depends_on:
+      - patron
+    networks:
+      - app-network
+
+  # ---------------- TELECALLING SERVICE ---------------- #
+  telecalling-service:
+    build: ./services/telecalling
+    ports:
+      - "3006:3006"
+    environment:
+      PORT: 3006
+      AUTH_GRPC: authentication-service:3001
+      PAY_GRPC: 3011
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+      REDIS_HOST: redis
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - patron
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  # ---------------- TRAINING SERVICE ---------------- #
+  training-service:
+    build: ./services/training
+    ports:
+      - "3008:3008"
+    environment:
+      PORT: 3008
+      AUTH_GRPC: 3001
+      INSTITUTE_GRPC: 3003
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+      REDIS_HOST: redis
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - patron
+      - redis
+      - kafka
+    networks:
+      - app-network
+
+  # ---------------- PAYMENT SERVICE ---------------- #
+  payment-service:
+    build: ./services/payment
+    ports:
+      - "3011:3011"
+    environment:
+      GRPC_PORT: 3011
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+    depends_on:
+      - patron
+    networks:
+      - app-network
+
+  # ---------------- RECEPTION SERVICE ---------------- #
+  reception-service:
+    build: ./services/reception
+    ports:
+      - "3013:3013"
+    environment:
+      PORT: 3013
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+    depends_on:
+      - patron
+    networks:
+      - app-network
+
+  # ---------------- MAIL SERVICE ---------------- #
+  mail-service:
+    build: ./services/mailservice
+    ports:
+      - "3012:3012"
+    environment:
+      sender_mail: yourmail@gmail.com
+      sender_password: yourpassword
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - kafka
+    networks:
+      - app-network
+
+  # ---------------- NOTIFY AND LOGS SERVICE ---------------- #
+  notifyandlogs:
+    build: ./services/notifiyandlogs
+    ports:
+      - "3010:3010"
+    environment:
+      PORT: 3010
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - patron
+      - kafka
+    networks:
+      - app-network
+    
+  # ---------------- OPENVIDU API SERVICE ---------------- #
+  openvidu-service:
+    build: ./services/openvidu
+    ports:
+      - "3017:3017"
+    environment:
+      PORT: 3017
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: patron
+      DB_USER: patron
+      DB_PASS: 123456
+      KAFKA_BROKER: kafka:9092
+    depends_on:
+      - videoconfrence
+    networks:
+      - app-network
+
+  # ---------------- CONTENT SERVICE ---------------- #
+  content-service:
+    build: ./services/contentservice
+    ports:
+      - "3016:3016"
+    networks:
+      - app-network
+
+  # ---------------- DATABASES ---------------- #
+  patron:
+    image: mysql:8.0
+    restart: always
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: patron
+      MYSQL_USER: patron
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - patron_data:/var/lib/mysql
+    networks:
+      - app-network
+
+
+
+  # auth-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: auth
+  #     MYSQL_USER: auth
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - auth_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # institute-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_DATABASE: institute
+  #     MYSQL_USER: institute
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - institute_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # telecalling-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: telecalling
+  #     MYSQL_USER: telecalling
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - telecalling_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # training-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: training
+  #     MYSQL_USER: training
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - training_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # payment-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: payment
+  #     MYSQL_USER: payment
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - payment_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # notifyandlog-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: notifyandlog
+  #     MYSQL_USER: notify
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - notifyandlog_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # reception-db:
+  #   image: mysql:8.0
+  #   restart: always
+  #   environment:
+  #     MYSQL_DATABASE: reception
+  #     MYSQL_USER: reception
+  #     MYSQL_PASSWORD: 123456
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - reception_data:/var/lib/mysql
+  #     - ./mysql-init-scripts:/docker-entrypoint-initdb.d
+  #   networks:
+  #     - app-network
+
+  # ---------------- INFRA ---------------- #
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    # restart: unless-stopped
+    ports:    
+    - "9092:9092"   
+    environment:
+      # KRaft mode
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      # Listeners
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      # Logs
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - app-network
+      
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    # volumes:
+    #   - redis-data:/data
+    # command: redis-server --appendonly yes 
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+     - "8080:80"
+    environment:
+      PMA_HOST: patron
+      PMA_PORT: 3306
+    depends_on:
+      - patron
+    networks:
+      - app-network
+
+  videoconfrence:
+    image: openvidu/openvidu-server-kms:latest
+    ports:
+      - "4443:4443"
+    container_name: videoconfrence
+    environment:
+      - OPENVIDU_SECRET=MY_SECRET
+      - CERTIFICATE_TYPE=selfsigned
+      - OPENVIDU_PUBLICURL=http://localhost:4443
+      - SERVER_PORT=4443
+      - DOMAIN_OR_PUBLIC_IP=localhost
+    networks:
+      - app-network
+# ---------------- NETWORK ---------------- #
+networks:
+  app-network:
+
+# ---------------- VOLUMES ---------------- #
+volumes:
+  patron_data:
+  # auth_data:
+  # institute_data:
+  # telecalling_data:
+  # training_data:
+  # payment_data:
+  # notifyandlog_data:
+  # reception_data:

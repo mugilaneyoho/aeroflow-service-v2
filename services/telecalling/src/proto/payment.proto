@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package payment;
+
+service PaymentService {
+    rpc CreatePayment (CreatePaymentRequest) returns (CommonResponse);
+    rpc GetAllPayment (Empty) returns (GetAllPaymentResponse);
+}
+
+message CreatePaymentRequest {
+    int32 admissionFees = 1;
+    string paymentDate = 2;
+    string paymentMode = 3;
+    string transactionId = 4;
+    string studentId = 5;
+    string studentName = 6;
+    string remarks = 7;
+    string telecallerId = 8;
+    string phoneNumber = 9;
+}
+
+message Empty {}
+
+message PaymentData {
+    string uuid = 1;
+    int32 amount = 2;
+    string payment_date = 3;
+    string receipt_number = 4;
+    string transaction_id = 5;
+    string collected_by = 6;
+    string student_id = 7;
+    string student_name = 8;
+    string notes = 9;
+    string status = 10;
+    string paymentPerpose = 11;
+    string phoneNumber = 12;
+}
+
+message CommonResponse {
+    bool success = 1;
+    string message = 2;
+    PaymentData data = 3;
+}
+
+message metadata {
+    int32 total = 1;
+    int32 page = 2;
+    int32 limit = 3;
+    int32 totalPages = 4;
+}
+
+message GetAllPaymentResponse {
+    bool success = 1;
+    string message = 2;
+    repeated PaymentData data = 3;
+    metadata meta = 4;
+}

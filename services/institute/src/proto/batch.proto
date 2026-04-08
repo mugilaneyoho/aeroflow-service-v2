@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package batch;
+
+service BatchService {
+  rpc GetAllBatch (GetAll) returns (BatchsResponse);
+  rpc GetById (GetId) returns (BatchResponse);
+  rpc GetByStudentId (studentId) returns (studentsData);
+}
+
+message Empty {}
+
+message studentdata {
+  string uuid = 1;
+  string studentName = 2;
+  string studentId = 3;
+}
+
+message BatchItem {
+  string id = 1;               
+  string uuid = 2;              
+  string instituteId = 3;               
+  string batchName = 4;         
+  string batchMode = 5;         
+  string classStartTime = 6;  
+  string classEntTime = 7;
+  string totalStudent = 8;
+  repeated studentdata students = 9;
+}
+
+message Meta {
+  int32 total = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message BatchsResponse {
+  bool success = 1;
+  string message = 2;
+  repeated BatchItem data = 3; 
+  Meta meta = 4;                
+}
+
+message BatchResponse {
+  bool success = 1;
+  string message = 2;
+  BatchItem data = 3;          
+}
+
+message GetId {
+  string batchid = 1;
+}
+
+message studentId {
+  string studentId = 1;
+}
+
+message studentsData {
+  string data = 1;
+}
+
+message GetAll {
+  string courseid = 1;
+}

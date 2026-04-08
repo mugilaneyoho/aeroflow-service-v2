@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package course;
+
+service CourseService {
+  rpc GetAllCourse (Empty) returns (CoursesResponse);
+  rpc GetById (GetId) returns (CourseResponse);
+}
+
+message Empty {}
+
+message CourseItem {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message Meta {
+  int32 total = 1;
+  int32 page = 2;
+  int32 limit = 3;
+}
+
+message CoursesResponse {
+  bool success = 1;
+  string message = 2;
+  repeated CourseItem data = 3; 
+  Meta meta = 4;                
+}
+
+message CourseResponse {
+  bool success = 1;
+  string message = 2;
+  CourseItem data = 3;          
+}
+
+message GetId {
+  string courseid = 1;
+}

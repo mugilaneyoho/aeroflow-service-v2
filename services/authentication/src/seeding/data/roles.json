@@ -1,0 +1,26 @@
+[
+    {
+        "role": "MASTER"
+    },
+    {
+        "role": "SUBADMIN"
+    },
+    {
+        "role": "RECEPTION"
+    },
+    {
+        "role": "TELEADMIN"
+    },
+    {
+        "role": "TELECALLER"
+    },
+    {
+        "role": "HOD"
+    },
+    {
+        "role": "STAFF"
+    },
+    {
+        "role": "STUDENT"
+    }
+]

@@ -1,0 +1,8 @@
+PORT=3006
+AUTH_GRPC=authentication-service:3001
+PAY_GRPC=payment-service:3011
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=telecalling
+DB_USER=patron
+DB_PASS=123456

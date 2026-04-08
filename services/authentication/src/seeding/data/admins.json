@@ -1,0 +1,27 @@
+[
+    {
+        "email":"master@aeroflow.com",
+        "password":"master",
+        "role":"MASTER"
+    },
+    {
+        "email":"admin@aeroflow.com",
+        "password":"admin",
+        "role":"SUBADMIN"
+    },
+    {
+        "email":"reception@aeroflow.com",
+        "password":"reception",
+        "role":"RECEPTION"
+    },
+    {
+        "email":"teleadmin@aeroflow.com",
+        "password":"teleadmin",
+        "role":"TELEADMIN"
+    },
+    {
+        "email":"hod@aeroflow.com",
+        "password":"hod",
+        "role":"HOD"
+    }
+]

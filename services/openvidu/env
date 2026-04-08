@@ -1,0 +1,7 @@
+OPENVIDU_URL=http://videoconfrence:4443
+OPENVIDU_SECRET=MY_SECRET
+PORT=3017
+DB_HOST=localhost
+DB_USER=patron
+DB_NAME=patron
+DB_PASS=123456

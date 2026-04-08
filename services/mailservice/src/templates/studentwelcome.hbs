@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to Aeroflow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            background-color: #8a2be2; /* Violet */
+            color: #ffffff;
+            text-align: center;
+            padding: 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+        }
+        .content {
+            padding: 20px;
+            color: #333333;
+        }
+        .content p {
+            line-height: 1.6;
+        }
+        .info-box {
+            background-color: #f0e6ff; /* Light violet */
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            margin-top: 20px;
+            background-color: #8a2be2;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            padding: 15px;
+            font-size: 12px;
+            color: #999999;
+            background-color: #f7f7f7;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <h1>Welcome to Aeroflow!</h1>
+        </div>
+        <div class="content">
+            <p>Hi {{name}},</p>
+            <p>Thank you for signing up for <strong>Aeroflow</strong>. Your account has been successfully created!</p>
+            
+            <div class="info-box">
+                <p>Email: {{email}}</p>
+                <p>Password: {{password}}</p>
+                <p>Login here: <a href="{{siteUrl}}" target="_blank">{{siteUrl}}</a></p>
+            </div>
+
+            <p>We recommend changing your password after your first login to keep your account secure.</p>
+
+            <a href="{{siteUrl}}" class="btn">Go to Aeroflow</a>
+        </div>
+        <div class="footer">
+            &copy; 2026 Aeroflow. All rights reserved.
+        </div>
+    </div>
+</body>
+</html>

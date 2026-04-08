@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package staff;
+
+service StaffService {
+    rpc CreateStaff (createstaff) returns (response);
+}
+
+message createstaff {
+    string email = 1;
+    string password = 2;
+    string profileId = 3;
+}
+
+message response {
+    bool success = 1;
+    string message = 2;
+}

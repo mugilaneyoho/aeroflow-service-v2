@@ -1,0 +1,45 @@
+planed services:
+    authentication: (started)
+        -master admin (CRUD done) (login done)
+        -sub admin (added MA)
+        -department admin (added MA)
+        -staff (start)
+        -student
+        -telecaller
+        -reception
+    institute: (completed CRUD)
+        -profile
+        -branch
+        -course
+        -batch
+    training:
+        -staff
+        -student
+        -class
+        -attendance (option to create other service as feature)
+    telecalling: ()
+        -employee (completed CRUD)
+        -leads (completed upload and assigned)
+    reception: (adarsh)
+        -profile
+        -meetting
+    payment:
+        -CRUD
+    filesystem:
+        -CRUD
+
+add techs:
+    grpc
+    redis
+    bull
+
+
+unplaned services:
+    addminssion:
+    attendance:
+    notification:
+    placement:
+    finance:
+
+
+today work telecaller to create profile with login createdtion: (start)

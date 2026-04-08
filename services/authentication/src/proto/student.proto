@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package student;
+
+service StudentService {
+    rpc CreateStudent (create) returns (response);
+}
+
+message create {
+    string email = 1;
+    string password = 2;
+    string profileId = 3;
+}
+
+message response {
+    bool success = 1;
+    string message = 2;
+}

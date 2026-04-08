@@ -1,0 +1,85 @@
+import {
+  Entity,
+  Column,
+  Generated,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { CourseEntity } from './course.entity';
+import { BatchEntity } from './batch.entity';
+
+@Entity('student_profile')
+export class StudentProfileEntity {
+  @Column({ unique: true })
+  @Generated('increment')
+  id!: number;
+
+  @PrimaryGeneratedColumn('uuid')
+  uuid!: string;
+
+  @Column('uuid')
+  course_id!: string;
+  @ManyToOne(() => CourseEntity, (course) => course.students)
+  @JoinColumn({ name: 'course_id' })
+  course!: CourseEntity;
+
+  @Column('uuid')
+  batch_id!: string;
+  @ManyToOne(() => BatchEntity, (batch) => batch.students)
+  @JoinColumn({ name: 'batch_id' })
+  batch!: BatchEntity;
+
+  @Column('uuid')
+  admittedBy!: string;
+
+  @Column({ length: 191 })
+  student_name!: string;
+
+  @Column({ length: 50 })
+  student_id!: string;
+
+  @Column({ length: 191 })
+  email!: string;
+
+  @Column({ length: 20 })
+  phone_number!: string;
+
+  @Column({ length: 20, nullable: true })
+  alter_number!: string;
+
+  @Column({ length: 10 })
+  gender!: string;
+
+  @Column({ length: 255 })
+  address!: string;
+
+  @Column({ length: 100 })
+  city!: string;
+
+  @Column({ length: 100 })
+  state!: string;
+
+  @Column({ length: 20 })
+  pincode!: string;
+
+  @Column({ length: 100 })
+  qualification!: string;
+
+  @Column({ type: 'timestamp' })
+  admission_date!: Date;
+
+  @Column({ type: 'boolean', default: true })
+  is_active!: boolean;
+
+  @Column({ type: 'boolean', default: false })
+  is_delete!: boolean;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt!: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt!: Date;
+}

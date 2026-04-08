@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package role;
+
+service RoleService {
+    rpc GetRoleById (GetById) returns (respose);
+}
+
+message GetById {
+    string uuid = 1;
+}
+
+message respose {
+    string uuid = 1;
+    string role = 2;
+}

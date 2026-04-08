@@ -1,0 +1,38 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { Process, Processor } from '@nestjs/bull';
+import { InjectRepository } from '@nestjs/typeorm';
+import type { Job } from 'bull';
+import { LeadsEntity } from 'src/entities/leads.entity';
+import { Repository } from 'typeorm';
+
+@Processor('lead-assign')
+export class LeadProcessor {
+  constructor(
+    @InjectRepository(LeadsEntity)
+    private leadsRepo: Repository<LeadsEntity>,
+  ) {}
+
+  @Process('assign')
+  async handel(job: Job) {
+    try {
+      const { id, limit } = job.data;
+      await this.leadsRepo.query(
+        `UPDATE leads
+  SET assignedTo = ?,
+      assignedAt = NOW(),
+      status = 'ASSIGNED'
+  WHERE id IN (
+    SELECT id FROM (
+      SELECT id
+      FROM leads
+      WHERE assignedTo IS NULL
+      LIMIT ?
+    ) AS temp
+  )`,
+        [id, Number(limit)],
+      );
+    } catch (error) {
+      console.log(error, 'assign queue error');
+    }
+  }
+}

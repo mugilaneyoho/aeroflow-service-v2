@@ -1,0 +1,12 @@
+import { BullModule } from '@nestjs/bull';
+import { Module } from '@nestjs/common';
+
+@Module({
+  imports: [
+    BullModule.registerQueue({
+      name: 'lead-assign',
+    }),
+  ],
+  exports: [BullModule],
+})
+export class QueueModule {}
