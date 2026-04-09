@@ -1,13 +1,24 @@
-import { Controller, Get, Post, Put, Param, Body, Query, UseInterceptors, UploadedFile, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  // Put,
+  Param,
+  Body,
+  Query,
+  UseInterceptors,
+  UploadedFile,
+  Logger,
+} from '@nestjs/common';
 import { ResourcesService } from './resources.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CreateNoteDto } from './dto/create-resource.dto';
 
-@Controller('resources')
+@Controller('notes')
 export class ResourcesController {
   private readonly logger = new Logger(ResourcesController.name);
-  constructor(private readonly resourcesService: ResourcesService) { }
+  constructor(private readonly resourcesService: ResourcesService) {}
 
   @Post('note')
   async createNote(@Body() dto: CreateNoteDto) {

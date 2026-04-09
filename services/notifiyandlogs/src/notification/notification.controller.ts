@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotifyDto } from '../dto/CreateNotifyDto';
@@ -16,14 +17,15 @@ import { EventPattern, MessagePattern, Payload } from '@nestjs/microservices';
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  @MessagePattern('NotificationCreated')
+  @MessagePattern('notifyandlog.NotificationCreated')
   handleNotificationCreated(@Payload() message: any) {
     console.log('Notification created :', message);
   }
 
   @Get()
-  async findAll() {
-    return this.notificationService.findAll();
+  async findAll(@Req() req: { headers: { user: string } }) {
+    const user = JSON.parse(req.headers.user) as { role: string };
+    return this.notificationService.findAll(user);
   }
 
   @Get(':uuid')

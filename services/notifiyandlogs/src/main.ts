@@ -5,22 +5,19 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // app.connectMicroservice<MicroserviceOptions>({
-  //   transport: Transport.KAFKA,
-  //   options: {
-  //     client: {
-  //       clientId: 'notifyandlog',
-  //       brokers: ['localhost:29092'],
-  //     },
-  //     consumer: {
-  //       groupId: 'notifyandlog-consumer',
-  //     },
-  //     // producer: {
-  //     //   allowAutoTopicCreation: true,
-  //     // },
-  //   },
-  // });
-  // await app.startAllMicroservices();
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.KAFKA,
+    options: {
+      client: {
+        clientId: 'notifyandlog',
+        brokers: ['kafka:9092'],
+      },
+      consumer: {
+        groupId: 'notifyandlog-consumer',
+      },
+    },
+  });
+  await app.startAllMicroservices();
 
   await app.listen(3010);
 }

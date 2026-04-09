@@ -3,7 +3,7 @@ import * as microservices from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateNotifyDto } from 'src/dto/CreateNotifyDto';
 import { UpdateNotificationDto } from 'src/dto/UpdateNotifyDto';
-import { NotificationEntity } from 'src/entity/notify';
+import { NotificationEntity, NotificationRole } from 'src/entity/notify';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -31,9 +31,13 @@ export class NotificationService {
     }
   }
 
-  async findAll() {
+  async findAll(user: { role: string }) {
     try {
-      const res = await this.notifyRepo.find();
+      const res = await this.notifyRepo.find({
+        where: {
+          Role: user.role as NotificationRole,
+        },
+      });
       return {
         success: true,
         message: 'notification data fetched',

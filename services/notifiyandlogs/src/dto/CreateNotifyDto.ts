@@ -1,26 +1,28 @@
-import { IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID } from "class-validator";
-import { NotificationType, NotificationPriority, NotificationRole } from "../entity/notify"
+import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import {
+  NotificationType,
+  NotificationPriority,
+  NotificationRole,
+} from '../entity/notify';
 
+export class CreateNotifyDto {
+  @IsString()
+  @IsNotEmpty()
+  title!: string;
 
-export class CreateNotifyDto{
-    @IsString()
-    @IsNotEmpty()
-    title: string
+  @IsString()
+  @IsNotEmpty()
+  message!: string;
 
-    @IsString()
-    @IsNotEmpty()
-    message: string
+  @IsUUID()
+  userId!: string;
 
-    @IsUUID()
-    userId: string
+  @IsEnum(NotificationType)
+  type!: NotificationType;
 
-    @IsEnum(NotificationType)
-    type: NotificationType
+  @IsEnum(NotificationPriority)
+  priority!: NotificationPriority;
 
-    @IsEnum(NotificationPriority)
-    priority: NotificationPriority
-
-    @IsEnum(NotificationRole)
-    Role: NotificationRole
-
+  @IsEnum(NotificationRole)
+  Role!: NotificationRole;
 }
