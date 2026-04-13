@@ -77,7 +77,7 @@ routes.use("/notifylog", AuthVerify,createProxyMiddleware({
     timeout:10000,
 }))
 
-routes.use("/ticket", AuthVerify,createProxyMiddleware({
+routes.use("/support", AuthVerify,createProxyMiddleware({
     target:process.env.ticket,
     changeOrigin:true,
     agent,

@@ -223,7 +223,7 @@ services:
 
   # ---------------- TICKET SERVICE ---------------- #
   ticket-service:
-    build: ./services/contentservice
+    build: ./services/ticket-system
     ports:
       - "3018:3018"
     environment:

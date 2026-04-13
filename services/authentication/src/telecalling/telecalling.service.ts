@@ -61,7 +61,12 @@ export class TelecallingService {
       }
 
       const token = await this.JwtService.signAsync(
-        { ...user },
+        {
+          role_id: user.role_id,
+          email: user.email,
+          uuid: user.uuid,
+          profile_id: user.profile_id,
+        },
         { expiresIn: '7d' },
       );
 

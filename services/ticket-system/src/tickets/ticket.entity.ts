@@ -1,33 +1,41 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn,ManyToOne } from 'typeorm';
-import {roles} from './auth/roles.enum';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+} from 'typeorm';
+import { roles } from './auth/roles.enum';
 
 @Entity()
 export class Ticket {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id!: number;
 
-    @Column()
-    title: string;
+  @Column()
+  senderId!: string;
 
-    @Column('text')
-    description: string;
+  @Column()
+  senderRole!: roles;
 
-    @Column({ default: 'open' })
-    status: string;
+  @Column()
+  title!: string;
 
-    @Column({ default: 'medium' })
-    priority: string;
+  @Column('text')
+  description!: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @Column({ default: 'open' })
+  status!: string;
 
-    @Column({
-        type: 'enum',
-        enum: roles,
-        default: roles.MASTER,
-    })
-    assignedToRole: roles;
+  @Column({ default: 'medium' })
+  priority!: string;
 
-    @ManyToOne(() => User, (user) => user.tickets)
-    creator: User;
+  @CreateDateColumn()
+  createdAt!: Date;
+
+  @Column({
+    type: 'enum',
+    enum: roles,
+    default: roles.MASTER,
+  })
+  assignedToRole!: roles;
 }
