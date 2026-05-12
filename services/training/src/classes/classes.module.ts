@@ -35,21 +35,21 @@ import { ConfigModule } from '@nestjs/config';
         },
       },
     ]),
-    // ClientsModule.register([
-    //   {
-    //     name: 'notifyandlogs',
-    //     transport: Transport.KAFKA,
-    //     options: {
-    //       Client: {
-    //         clientId: 'notifyandlog',
-    //         brokers: ['localhost:29092'],
-    //       },
-    //       consumer: {
-    //         groupId: 'notifyandlog-consumer',
-    //       },
-    //     },
-    //   },
-    // ]),
+    ClientsModule.register([
+      {
+        name: 'notifyandlogs',
+        transport: Transport.KAFKA,
+        options: {
+          Client: {
+            clientId: 'notifyandlog',
+            brokers: ['kafka:9092'],
+          },
+          consumer: {
+            groupId: 'notifyandlog-consumer',
+          },
+        },
+      },
+    ]),
   ],
   controllers: [ClassesController],
   providers: [ClassesService, Logger],

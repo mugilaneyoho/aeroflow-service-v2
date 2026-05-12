@@ -59,6 +59,15 @@ routes.use("/reception", AuthVerify,createProxyMiddleware({
     timeout:10000,
 }))
 
+routes.use("/payment", AuthVerify,createProxyMiddleware({
+    target:process.env.payment,
+    changeOrigin:true,
+    agent,
+    secure:true,
+    proxyTimeout:10000,
+    timeout:10000,
+}))
+
 routes.use("/openvidu", AuthVerify,createProxyMiddleware({
     target:process.env.openvidu,
     changeOrigin:true,

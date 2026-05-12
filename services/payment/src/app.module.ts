@@ -5,6 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentEntiry } from './entities/payment.entity';
 import { StudentFeesEntity } from './entities/studentfees.entity';
 import { ConfigModule } from '@nestjs/config';
+import { PdfService } from './template/pdf.service';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -14,10 +17,6 @@ import { ConfigModule } from '@nestjs/config';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      // url: 'postgresql://patron_727o_user:vNL871u0UdD5lEwe01ZqngnTCDgO7NtE@dpg-d6bvqg7tn9qs73c7qcqg-a.singapore-postgres.render.com/patron_727o',
-      // ssl: {
-      //   rejectUnauthorized: false,
-      // },
       host: process.env.DB_HOST,
       port: 3306,
       username: process.env.DB_USER,
@@ -26,9 +25,20 @@ import { ConfigModule } from '@nestjs/config';
       entities: [StudentFeesEntity, PaymentEntiry],
       synchronize: true,
     }),
+    ClientsModule.register([
+      {
+        name: 'student',
+        transport: Transport.GRPC,
+        options: {
+          package: 'student',
+          protoPath: join(__dirname, './proto/student.proto'),
+          url: 'institute-service:3003',
+        },
+      },
+    ]),
     TypeOrmModule.forFeature([StudentFeesEntity, PaymentEntiry]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, PdfService],
 })
 export class AppModule {}

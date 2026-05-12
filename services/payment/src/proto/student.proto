@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package student;
+
+service StudentService {
+    rpc GetStudent (getparams) returns (getresponse);
+}
+
+message getparams {
+    string uuid = 1;
+}
+
+message getresponse {
+    string data = 1;
+}

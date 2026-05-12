@@ -115,6 +115,7 @@ services:
     build: ./services/payment
     ports:
       - "3011:3011"
+      - "3021:3021"
     environment:
       GRPC_PORT: 3011
       DB_HOST: patron

@@ -1,4 +1,12 @@
-import { Injectable } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import {
   PaymentEntiry,
@@ -8,15 +16,32 @@ import {
 import { Repository } from 'typeorm';
 import { CreatePaymentDto } from './dto/createpayment.dto';
 import { StudentFeesEntity } from './entities/studentfees.entity';
+import { lastValueFrom, Observable } from 'rxjs';
+import * as microservices from '@nestjs/microservices';
+import { PdfService } from './template/pdf.service';
+import fs from 'fs';
+
+interface studentGrpc {
+  GetStudent(data: { uuid: string }): Observable<any>;
+}
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
+  private studentService: studentGrpc;
+
   constructor(
     @InjectRepository(PaymentEntiry)
     private paymentRepo: Repository<PaymentEntiry>,
     @InjectRepository(StudentFeesEntity)
     private feesRepo: Repository<StudentFeesEntity>,
+    @Inject('student')
+    private clientStudent: microservices.ClientGrpc,
+    private readonly pdfService: PdfService,
   ) {}
+
+  onModuleInit() {
+    this.studentService = this.clientStudent.getService('StudentService');
+  }
 
   getHello(): string {
     return 'Hello World!';
@@ -242,5 +267,52 @@ export class AppService {
         records,
       }),
     };
+  }
+
+  async DownloadPaymentSlip(slipId: string) {
+    try {
+      const paymentDetails = await this.paymentRepo.findOne({
+        where: {
+          uuid: slipId,
+        },
+        relations: ['studentFees'],
+      });
+
+      if (!paymentDetails) {
+        return new NotFoundException();
+      }
+
+      const grpc_res: {
+        data: string;
+      } = (await lastValueFrom(
+        this.studentService.GetStudent({ uuid: paymentDetails.studentId }),
+      )) as { data: string };
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const studentDetails = JSON.parse(grpc_res.data as unknown as string);
+
+      console.log(studentDetails);
+
+      const html = fs.readFileSync('src/template/admission.html', 'utf-8');
+
+      html.replace('studentName', studentDetails.student_name);
+      html.replace('studentMail', studentDetails.email);
+      html.replace('studentMail', studentDetails.phone_number);
+      html.replace('courseName', studentDetails.course?.course_name);
+      html.replace('courseFees', studentDetails.course?.price);
+
+      html.replace('paidFees', String(paymentDetails.amount));
+      html.replace('gstAmount', '0');
+      html.replace('totalPaid', String(paymentDetails?.amount));
+
+      const pdfBuffer = await this.pdfService.generatePdf(
+        html as unknown as string,
+      );
+
+      return pdfBuffer;
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
+    }
   }
 }

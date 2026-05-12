@@ -24,7 +24,9 @@ export class NotificationController {
 
   @Get()
   async findAll(@Req() req: { headers: { user: string } }) {
-    const user = JSON.parse(req.headers.user) as { role: string };
+    const user: { role: string } = JSON.parse(req.headers.user) as {
+      role: string;
+    };
     return this.notificationService.findAll(user);
   }
 

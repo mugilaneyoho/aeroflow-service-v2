@@ -162,6 +162,7 @@ export class StudentService implements OnModuleInit {
     try {
       const student = await this.studentRepo.findOne({
         where: { uuid },
+        relations: ['course', 'batch'],
       });
 
       return {
@@ -237,4 +238,5 @@ export class StudentService implements OnModuleInit {
       });
     }
   }
+
 }

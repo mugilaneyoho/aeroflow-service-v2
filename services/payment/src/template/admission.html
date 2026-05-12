@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f4f6f9;
+      margin: 0;
+      padding: 15px;
+    }
+
+    .invoice-box {
+      max-width: 850px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 15px;
+      gap: 10px;
+    }
+
+    .company-block {
+      display: flex;
+      gap: 12px;
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    .company {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2c3e50;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: #777;
+    }
+
+    .gst,
+    .address {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.4;
+    }
+
+    .invoice-title {
+      text-align: right;
+    }
+
+    .invoice-title h2 {
+      margin: 0;
+    }
+
+    .meta {
+      font-size: 13px;
+    }
+
+    .info {
+      margin: 20px 0;
+      font-size: 14px;
+    }
+
+    .info div {
+      display: flex;
+    }
+
+    .info b {
+      width: 120px;
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 500px;
+    }
+
+    table th {
+      background: #2c3e50;
+      color: #fff;
+      padding: 10px;
+    }
+
+    table td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .summary {
+      margin-top: 15px;
+      font-size: 14px;
+    }
+
+    .summary div {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .total {
+      margin-top: 10px;
+      background: #2c3e50;
+      color: #fff;
+      padding: 10px;
+      font-weight: bold;
+      border-radius: 6px;
+      text-align: right;
+    }
+
+    .terms {
+      margin-top: 20px;
+      font-size: 12px;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+      }
+
+      .invoice-title {
+        text-align: left;
+      }
+
+      .company-block {
+        flex-direction: column;
+      }
+
+      .info div {
+        flex-direction: column;
+      }
+
+      .info b {
+        width: auto;
+      }
+
+      .total {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="invoice-box">
+    <div class="header">
+      <div class="company-block">
+        <img src="https://via.placeholder.com/60" class="logo">
+        <div>
+          <div class="company">PATRON</div>
+          <div class="tagline">Training & Development Institute</div>
+          <div class="gst">GSTIN: 1234567890</div>
+          <div class="address">
+            No.12, Anna Nagar,<br>
+            Chennai, Tamil Nadu - 600040<br>
+            Phone: +91 34567890677
+          </div>
+        </div>
+      </div>
+      <div class="invoice-title">
+        <h2>TAX INVOICE</h2>
+        <div class="meta">Invoice No: <b id="invoiceNo">#PT237645</b></div>
+        <div class="meta">Date: <b id="date">12/11/2024</b></div>
+      </div>
+    </div>
+    <div class="info">
+      <div><b>Name:</b> <span id="name">{{studentName}}</span></div>
+      <div><b>Mobile:</b> <span id="mobile">{{studentNumber}}</span></div>
+      <div><b>Email:</b> <span id="email">{{studentMail}}</span></div>
+    </div>
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Particular</th>
+            <th class="right">Amount (₹)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{courseName}}</td>
+            <td class="right">{{courseFees}} + GST</td>
+          </tr>
+          <tr>
+            <td>Training Fee Paid</td>
+            <td class="right" id="paid">{{paidFees}}</td>
+          </tr>
+          <tr>
+            <td>GST (18%)</td>
+            <td class="right" id="gstAmount">{{gstAmount}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="summary">
+      <div>
+        <span>Amount in Words:</span>
+        <b id="amountWords"></b>
+      </div>
+      <div>
+        <span>Payment Mode:</span>
+        <b id="paymentMode">UPI</b>
+      </div>
+    </div>
+    <div class="total" id="total">
+      Total Paid: {{totalPaid}}
+    </div>
+    <div class="terms">
+      <b>Terms and Conditions:</b>
+      <ol>
+        <li>Full payment is due within 30 days</li>
+        <li>Fees are non-refundable</li>
+        <li>Minimum 80% attendance required</li>
+        <li>Inform instructor before absence</li>
+        <li>Company may reschedule training</li>
+        <li>Participants will be notified</li>
+      </ol>
+    </div>
+    <div class="footer">
+      This is a computer-generated invoice. No signature required.
+    </div>
+  </div>
+  <script>
+    function numberToWords(num) {
+      const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+      const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+      function convert(n) {
+        if (n < 20) return ones[n];
+        if (n < 100) return tens[Math.floor(n / 10)] + " " + ones[n % 10];
+        if (n < 1000) return ones[Math.floor(n / 100)] + " Hundred " + convert(n % 100);
+        return "";
+      }
+      let result = "";
+      const crore = Math.floor(num / 10000000);
+      num %= 10000000;
+      const lakh = Math.floor(num / 100000);
+      num %= 100000;
+      const thousand = Math.floor(num / 1000);
+      num %= 1000;
+      if (crore) result += convert(crore) + " Crore ";
+      if (lakh) result += convert(lakh) + " Lakh ";
+      if (thousand) result += convert(thousand) + " Thousand ";
+      if (num) result += convert(num);
+      return result.trim();
+    }
+    const totalAmount = {{totalPaid}};
+    document.getElementById("amountWords").innerText = numberToWords(totalAmount) + " Rupees Only";
+  </script>
+</body>
+
+</html>

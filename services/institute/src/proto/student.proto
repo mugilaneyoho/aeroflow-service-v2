@@ -4,6 +4,7 @@ package student;
 
 service StudentService {
     rpc CreateStudent (create) returns (response);
+    rpc GetStudent (getparams) returns (getresponse);
 }
 
 message create {
@@ -15,4 +16,12 @@ message create {
 message response {
     bool success = 1;
     string message = 2;
+}
+
+message getparams {
+    string uuid = 1;
+}
+
+message getresponse {
+    string data = 1;
 }

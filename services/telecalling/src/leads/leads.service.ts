@@ -28,30 +28,30 @@ export class LeadsService implements OnModuleInit {
     @InjectQueue('lead-assign')
     private queue: Queue,
 
-    // @Inject('activelog-service')
-    // private readonly kafkaActiveLog: ClientKafka,
+    @Inject('activelog-service')
+    private readonly kafkaActiveLog: ClientKafka,
   ) {}
 
-  onModuleInit() {
-    // await this.kafkaActiveLog.connect();
+  async onModuleInit() {
+    await this.kafkaActiveLog.connect();
     console.log('Lead service Kafka connected');
     this.queue.client.on('error', (err) => {
       console.error('Redis connection error', err);
     });
   }
 
-  // async createActivity(payload: any) {
-  //   console.log(' Saving activity to DB', payload);
+  createActivity(payload: any) {
+    console.log(' Saving activity to DB', payload);
 
-  //   console.log(' EMITTING TO KAFKA');
-  //   this.kafkaActiveLog.emit('activelog.created', {
-  //     subject: 'Lead Activity',
-  //     description: 'Lead created or updated',
-  //     status: 'SUCCESS',
-  //     referenceId: payload.uuid || 'temp-id',
-  //     payload: payload,
-  //   });
-  // }
+    console.log(' EMITTING TO KAFKA');
+    this.kafkaActiveLog.emit('activelog.created', {
+      subject: 'Lead Activity',
+      description: 'Lead created or updated',
+      status: 'SUCCESS',
+      referenceId: payload.uuid || 'temp-id',
+      payload: payload,
+    });
+  }
 
   async uploadLeads(
     file: Express.Multer.File,

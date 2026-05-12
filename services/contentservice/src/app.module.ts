@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ResourcesModule } from './resources/resources.module';
 import { Note } from './resources/entities/resource.entity';
+import { FileuploadModule } from './fileupload/fileupload.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { Note } from './resources/entities/resource.entity';
       synchronize: true,
     }),
     ResourcesModule,
+    FileuploadModule,
   ],
 })
 export class AppModule {}

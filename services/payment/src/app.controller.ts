@@ -1,11 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res, Response } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import { CreateGRPCdto, CreatePaymentDto } from './dto/createpayment.dto';
+import { PdfService } from './template/pdf.service';
+import fs from 'fs';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) { }
+  constructor(
+    private readonly appService: AppService,
+    private readonly pdfService: PdfService,
+  ) {}
 
   @Get()
   getHello(): string {
@@ -53,4 +58,21 @@ export class AppController {
     return this.appService.getStudentFees(data);
   }
 
+  @Get('download/:uuid')
+  async downloadPdf(@Res() res: any) {
+    const pdfBuffer = await this.appService.DownloadPaymentSlip(
+      '2d570641-3042-4794-90cb-de6ee4d52e71',
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=invoice.pdf',
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      // 'Content-Length': pdfBuffer.length,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.end(pdfBuffer);
+  }
 }

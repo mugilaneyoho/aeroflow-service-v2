@@ -12,6 +12,7 @@ import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { Roles } from 'src/role/role.decorator';
 import { Role } from 'src/role/role.enum';
+import { GrpcMethod } from '@nestjs/microservices';
 
 @Controller('student')
 export class StudentController {
@@ -44,7 +45,15 @@ export class StudentController {
   }
 
   @Get(':uuid/fees')
-  getStudentFees(@Param('uuid') uuid: string){
-    return this.studentService.getStudentFees(uuid)
+  getStudentFees(@Param('uuid') uuid: string) {
+    return this.studentService.getStudentFees(uuid);
+  }
+
+  @GrpcMethod('StudentService', 'GetStudent')
+  async getStudent(data: { uuid: string }) {
+    const res = await this.studentService.findOne(data.uuid);
+    return {
+      data: JSON.stringify(res),
+    };
   }
 }
