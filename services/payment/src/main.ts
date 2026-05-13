@@ -32,11 +32,13 @@ async function bootstrap() {
         join(__dirname, './proto/payment.proto'),
         join(__dirname, './proto/fees.proto'),
       ],
-      url: `0.0.0.0:${process.env.GRPC_PORT}`,
+      url: `0.0.0.0:${process.env.GRPC_PORT ?? 3011}`,
     },
   });
+
+  await app.startAllMicroservices();
 
   // await app.listen();
   await app.listen(process.env.PORT ?? 3021);
 }
-bootstrap();
+void bootstrap();
