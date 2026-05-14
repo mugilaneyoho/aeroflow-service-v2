@@ -8,6 +8,9 @@ import { ConfigModule } from '@nestjs/config';
 import { PdfService } from './template/pdf.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { RazorpayModule } from './razorpay/razorpay.module';
+import { APP_GUARD } from '@nestjs/core';
+import { RolesGuard } from './role/role.guard';
 
 @Module({
   imports: [
@@ -37,8 +40,16 @@ import { join } from 'path';
       },
     ]),
     TypeOrmModule.forFeature([StudentFeesEntity, PaymentEntiry]),
+    RazorpayModule,
   ],
   controllers: [AppController],
-  providers: [AppService, PdfService],
+  providers: [
+    AppService,
+    PdfService,
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

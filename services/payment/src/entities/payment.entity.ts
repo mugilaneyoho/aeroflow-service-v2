@@ -77,6 +77,12 @@ export class PaymentEntiry {
   })
   paymentPerpose!: PaymentPerpose;
 
+  @Column({ default: '' })
+  razorOrderId!: string;
+
+  @Column({ default: '' })
+  razorPaymentId!: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 

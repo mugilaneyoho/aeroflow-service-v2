@@ -20,6 +20,7 @@ import { lastValueFrom, Observable } from 'rxjs';
 import * as microservices from '@nestjs/microservices';
 import { PdfService } from './template/pdf.service';
 import fs from 'fs';
+import { genereateRecipetID } from './utils/helper';
 
 interface studentGrpc {
   GetStudent(data: { uuid: string }): Observable<any>;
@@ -81,15 +82,7 @@ export class AppService implements OnModuleInit {
 
     const nowDate = new Date();
 
-    const receiptNumber =
-      'PAY' +
-      nowDate.getMilliseconds() +
-      nowDate.getSeconds() +
-      nowDate.getHours() +
-      'TSD' +
-      nowDate.getFullYear() +
-      nowDate.getMonth() +
-      nowDate.getDate();
+    const receiptNumber = genereateRecipetID();
 
     if (student_fee) {
       const pay = this.paymentRepo.create({

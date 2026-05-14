@@ -44,9 +44,16 @@ export class StudentController {
     return this.studentService.deleteOne(uuid);
   }
 
+  @Roles([Role.STUDENT])
   @Get(':uuid/fees')
-  getStudentFees(@Param('uuid') uuid: string) {
-    return this.studentService.getStudentFees(uuid);
+  getStudentFees(
+    @Req() req: { headers: { user: string } },
+    @Param('uuid') uuid: string,
+  ) {
+    const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+      profile_id: string;
+    };
+    return this.studentService.getStudentFees(user.profile_id ?? uuid);
   }
 
   @GrpcMethod('StudentService', 'GetStudent')

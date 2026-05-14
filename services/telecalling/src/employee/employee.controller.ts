@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
 import { CreateEmployeeDto } from './dto/create-employee.dto';
@@ -25,6 +26,14 @@ export class EmployeeController {
   @ApiOperation({ summary: 'get all telecallers' })
   findAll(@Query() query: { page: string; limit: string }) {
     return this.employeeService.findAll(query);
+  }
+
+  @Get('me')
+  findme(@Req() req: { headers: { user: string } }) {
+    const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+      profile_id: string;
+    };
+    return this.employeeService.findOne(user?.profile_id);
   }
 
   @Get('lists')
