@@ -33,6 +33,9 @@ async function bootstrap() {
         join(__dirname, './proto/fees.proto'),
       ],
       url: `0.0.0.0:${process.env.GRPC_PORT ?? 3011}`,
+      loader: {
+          keepCase: true,
+        },
     },
   });
 

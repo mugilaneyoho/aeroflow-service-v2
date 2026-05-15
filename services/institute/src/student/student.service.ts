@@ -15,6 +15,8 @@ import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { CourseEntity } from 'src/entities/course.entity';
 import { BatchEntity } from 'src/entities/batch.entity';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 interface studentgrpc {
   CreateStudent(data: {
@@ -30,12 +32,14 @@ interface paymentgrpc {
     totalFees: number;
   }): Observable<any>;
   getStudentFees(data: { studentId: string }): Observable<any>;
+  GetAllPayment(data: any): Observable<any>;
 }
 
 @Injectable()
 export class StudentService implements OnModuleInit {
   private AuthService: studentgrpc;
   private FeeService: paymentgrpc;
+  private PaymentService: paymentgrpc;
 
   constructor(
     @InjectRepository(StudentProfileEntity)
@@ -47,13 +51,16 @@ export class StudentService implements OnModuleInit {
 
     @Inject('student')
     private client: microservices.ClientGrpc,
-    @Inject('payment')
-    private paymentClient: microservices.ClientGrpc,
+    @Inject('payment_fee')
+    private paymentFeeClient: microservices.ClientGrpc,
+    @Inject('payment_record')
+    private paymentRecordClient: microservices.ClientGrpc,
   ) {}
 
   onModuleInit() {
     this.AuthService = this.client.getService('StudentService');
-    this.FeeService = this.paymentClient.getService('FeeManagement');
+    this.FeeService = this.paymentFeeClient.getService('FeeManagement');
+    this.PaymentService = this.paymentRecordClient.getService('PaymentService');
   }
 
   async create(data: CreateStudentDto) {
@@ -238,5 +245,117 @@ export class StudentService implements OnModuleInit {
       });
     }
   }
+
+  async getStudentReport() {
+    const students = await this.studentRepo.find({
+      where: { is_delete: false },
+      select: ['uuid', 'student_name', 'student_id', 'phone_number', 'email'],
+      order: { createdAt: 'DESC' },
+    });
+    return { success: true, data: students };
+  }
+  async generatePaymentExcel(studentId: string, res: Response): Promise<void> {
+    try {
+      const student = await this.studentRepo.findOne({ where: { uuid: studentId }, relations: ['course'], });
+      if (!student) throw new NotFoundException('Student not found');
+      const result: { data: string } = await lastValueFrom(
+        this.FeeService.getStudentFees({ studentId }),
+      );  
+      const feesData = result.data ? JSON.parse(result.data) : null;
+      if (!feesData) throw new Error('Fees data not found');
+
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Payment History');
+      sheet.columns = [
+        { key: 'col1', width: 20 },
+        { key: 'col2', width: 25 },
+        { key: 'col3', width: 15 },
+        { key: 'col4', width: 15 },
+        { key: 'col5', width: 20 },
+      ];
+      const addInfoRow = (label: string, value: any) => {
+        const row = sheet.addRow([label, value]);
+        row.getCell(2).alignment = { horizontal: 'left' };
+      };
+
+      addInfoRow('Student Name:', student.student_name);
+      addInfoRow('Student ID:', student.student_id);
+      addInfoRow('Course:', student.course?.course_name || 'N/A');
+      addInfoRow('Phone:', student.phone_number);
+      sheet.addRow([]);
+      sheet.addRow(['FEE SUMMARY']);
+      const summaryTable = [
+        ['Total Fees', Number(feesData.total_fees || 0)],
+        ['Paid Amount', Number(feesData.paid_amount || 0)],
+        ['Pending Amount', Number(feesData.pending_amount || 0)],
+      ];
+      summaryTable.forEach(item => {
+        const row = sheet.addRow([item[0], item[1]]);
+        row.getCell(2).numFmt = '#,##0.00';
+      });
+
+      sheet.addRow([]);
+      sheet.addRow(['SI.NO', 'Transaction ID', 'Date', 'Amount', 'Purpose']);
+      (feesData.records || []).forEach((rec: any, i: number) => {
+        const row = sheet.addRow([
+          i + 1,
+          rec.transaction_id,
+          rec.date ? new Date(rec.date).toLocaleDateString() : '-',
+          Number(rec.amount || 0),
+          rec.paymentpurpose,
+        ]);
+        row.getCell(4).numFmt = '#,##0.00';
+      });
+      const safeStudentName = student.student_name ? student.student_name.replace(/\s+/g, '_') : 'Student';
+      res.set({
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="Payment_Report_${safeStudentName}.xlsx"`,
+      });
+      await workbook.xlsx.write(res);
+      res.end();
+    } catch (error) {
+      console.error('Excel Generation Error:', error);
+      res.status(500).json({ success: false, message: 'Failed to generate report' });
+    }
+  }
+
+  async feesgetall() {
+    try {
+      const response: { success: boolean; message: string; data: any[]; meta: any; } = await lastValueFrom(this.PaymentService.GetAllPayment({}));
+      if (!response.success) { return response; }
+      const combinedData = await Promise.all(
+        response.data.map(async (pay) => {
+          const student = await this.studentRepo.findOne({
+            where: { uuid: pay.student_id },
+            relations: ['course'],
+          });
+          return {
+            studentID: student?.student_id || pay.student_id,
+            uuid: pay.student_id,
+            name: student?.student_name || pay.student_name,
+            course: student?.course?.course_name || 'N/A',
+            totalFee: pay.total_fees || 0,
+            paidAmount: pay.paid_amount || 0,
+            pendingAmount: pay.pending_amount || 0,
+            status: pay.status,
+            lastPayment: pay.payment_date || '-',
+          };
+        }),
+      );
+      return {
+        success: true,
+        message: 'payment data fetched',
+        data: combinedData,
+        meta: response.meta,
+      };
+    } catch (error) {
+      console.error(error, 'feesgetall error');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
+
 
 }

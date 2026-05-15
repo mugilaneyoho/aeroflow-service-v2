@@ -1,5 +1,3 @@
-version: "2.0.0"
-
 services:
   # ---------------- API GATEWAY ---------------- #
   api-gateway:
@@ -17,6 +15,7 @@ services:
       notify: http://notifyandlogs:3010
       ticket: http://ticket-service:3018
       content: http://content-service:3016
+      payment: http://payment-service:3021
     networks:
       - app-network
 

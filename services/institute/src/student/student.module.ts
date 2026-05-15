@@ -19,15 +19,33 @@ import { BatchEntity } from 'src/entities/batch.entity';
           package: 'student',
           protoPath: join(__dirname, '../proto/student.proto'),
           url: 'authentication-service:3001',
+          loader: {
+            keepCase: true,
+          },
         },
       },
       {
-        name: 'payment',
+        name: 'payment_fee',
         transport: Transport.GRPC,
         options: {
           package: 'fees',
           protoPath: join(__dirname, '../proto/fees.proto'),
           url: 'payment-service:3011',
+          loader: {
+            keepCase: true,
+          },
+        },
+      },
+      {
+        name: 'payment_record',
+        transport: Transport.GRPC,
+        options: {
+          package: 'payment',
+          protoPath: join(__dirname, '../proto/payment.proto'),
+          url: 'payment-service:3011',
+          loader: {
+            keepCase: true,
+          },
         },
       },
     ]),

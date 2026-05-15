@@ -32,8 +32,11 @@ message PaymentData {
     string student_name = 8;
     string notes = 9;
     string status = 10;
-    string paymentPerpose = 11;
+    string payment_perpose = 11;
     string phoneNumber = 12;
+    double total_fees = 13;
+    double paid_amount = 14;
+    double pending_amount = 15;
 }
 
 message CommonResponse {
