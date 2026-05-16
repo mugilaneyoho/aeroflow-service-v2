@@ -73,4 +73,23 @@ export class AppController {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     res.end(pdfBuffer);
   }
+
+  @Get('download/:uuid/student')
+  async downloadByuser(@Res() res: any, @Param('uuid') uuid: string) {
+    const student = await this.appService.findAdmissionFees(uuid);
+    const pdfBuffer = await this.appService.DownloadPaymentSlip(
+      student?.admissionFeesId,
+    );
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=invoice.pdf',
+
+      // 'Content-Length': pdfBuffer.length,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.end(pdfBuffer);
+  }
 }

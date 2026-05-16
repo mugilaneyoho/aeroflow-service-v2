@@ -312,4 +312,15 @@ export class AppService implements OnModuleInit {
       return new InternalServerErrorException();
     }
   }
+
+  async findAdmissionFees(studentId:string) {
+    try {
+      const student = await this.feesRepo.findOne({where:{studentId}})
+
+      return student
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
+    }
+  }
 }
