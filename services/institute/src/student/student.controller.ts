@@ -9,6 +9,7 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
+import type { Response } from 'express';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { Roles } from 'src/role/role.decorator';
@@ -18,6 +19,11 @@ import { GrpcMethod } from '@nestjs/microservices';
 @Controller('student')
 export class StudentController {
   constructor(private readonly studentService: StudentService) {}
+
+  @Get('/feesgetall')
+  feesgetall() {
+    return this.studentService.feesgetall();
+  }
 
   @Post('create')
   create(@Body() data: CreateStudentDto) {
@@ -43,6 +49,16 @@ export class StudentController {
   @Delete(':uuid')
   deleteOne(@Param('uuid') uuid: string) {
     return this.studentService.deleteOne(uuid);
+  }
+
+  @Get('report-student')
+  getStudentReport() {
+    return this.studentService.getStudentReport();
+  }
+
+  @Get('report/:uuid')
+  async downloadPaymentReport(@Param('uuid') uuid: string, @Res() res: Response) {
+    await this.studentService.generatePaymentExcel(uuid, res);
   }
 
   @Roles([Role.STUDENT])

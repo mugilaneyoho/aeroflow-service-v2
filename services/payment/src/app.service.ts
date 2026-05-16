@@ -51,6 +51,7 @@ export class AppService implements OnModuleInit {
   async findall() {
     const [data, total] = await this.paymentRepo.findAndCount({
       where: { paymentPerpose: PaymentPerpose.ADMISSIONFEE },
+      relations: ['studentFees'],
     });
 
     const paystatus = await this.paymentRepo
@@ -63,10 +64,30 @@ export class AppService implements OnModuleInit {
       .groupBy('payment.status')
       .getRawMany();
 
+    const mappedData = data.map((pay) => ({
+      uuid: pay.uuid,
+      amount: pay.amount,
+      payment_date: pay.paymentDate ? pay.paymentDate.toISOString() : '',
+      receipt_number: pay.receiptNumber,
+      transaction_id: pay.transactionId,
+      collected_by: pay.collectedBy,
+      student_id: pay.studentId,
+      student_name: pay.studentName,
+      notes: pay.notes,
+      status: pay.status,
+      payment_perpose: pay.paymentPerpose,
+      phoneNumber: pay.phoneNumber,
+      total_fees: pay.studentFees ? Number(pay.studentFees.totalFees || 0) : 0,
+      paid_amount: pay.studentFees ? Number(pay.studentFees.paidAmount || 0) : 0,
+      pending_amount: pay.studentFees
+        ? Number(pay.studentFees.totalFees || 0) -
+        Number(pay.studentFees.paidAmount || 0) : 0,
+    }));
+
     return {
       success: true,
       message: 'payment data fetched',
-      data,
+      data: mappedData,
       paystatus,
       meta: {
         total,

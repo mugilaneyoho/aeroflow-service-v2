@@ -58,6 +58,9 @@ export class PaymentEntiry {
   @Column()
   transactionId!: string;
 
+  @Column({ nullable: true })
+  collectedBy!: string;
+
   @Column('uuid')
   studentId!: string;
 
