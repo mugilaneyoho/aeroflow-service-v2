@@ -41,6 +41,11 @@ export class StudentController {
     return this.studentService.dashboard(req);
   }
 
+  @Get('export-Report')
+  async exportStudentReport(@Res() res: Response){
+    await this.studentService.generateStudentReportExcel(res)
+  }
+
   @Get(':uuid')
   findOne(@Param('uuid') uuid: string) {
     return this.studentService.findOne(uuid);
@@ -51,8 +56,8 @@ export class StudentController {
     return this.studentService.deleteOne(uuid);
   }
 
-  @Get('report-student')
-  getStudentReport() {
+   @Get('report-student')
+   getStudentReport() {
     return this.studentService.getStudentReport();
   }
 
