@@ -15,6 +15,8 @@ import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { CourseEntity } from 'src/entities/course.entity';
 import { BatchEntity } from 'src/entities/batch.entity';
+import fs from 'fs';
+import { PdfService } from 'src/template/pdfService';
 
 interface studentgrpc {
   CreateStudent(data: {
@@ -49,6 +51,7 @@ export class StudentService implements OnModuleInit {
     private client: microservices.ClientGrpc,
     @Inject('payment')
     private paymentClient: microservices.ClientGrpc,
+    private pdfService: PdfService,
   ) {}
 
   onModuleInit() {
@@ -239,4 +242,62 @@ export class StudentService implements OnModuleInit {
     }
   }
 
+  async getApplication(uuid: string) {
+    try {
+      const studentDetails = await this.studentRepo.findOne({
+        where: { uuid },
+        relations: ['course', 'batch'],
+      });
+
+      if (!studentDetails) {
+        return new NotFoundException();
+      }
+
+      console.log(studentDetails);
+
+      let html = fs.readFileSync('src/template/application.html', 'utf-8');
+
+      html = html.replace('{{studentName}}', studentDetails.student_name);
+      html = html.replace('{{applicationNo}}', studentDetails.student_id);
+      html = html.replace(
+        '{{applyDate}}',
+        studentDetails.admission_date.toString(),
+      );
+      html = html.replace('{{courseName}}', studentDetails.course.course_name);
+      html = html.replace('{{batchName}}', studentDetails.batch.batchName);
+      html = html.replace('{{batchCode}}', studentDetails.batch.batchCode);
+      html = html.replace(
+        '{{batchTiming}}',
+        studentDetails.batch.classStartTime + studentDetails.batch.classEndTime,
+      );
+      html = html.replace('{{gender}}', studentDetails.gender);
+      html = html.replace('{{phoneNumber}}', studentDetails.phone_number);
+      html = html.replace('{{email}}', studentDetails.email);
+      html = html.replace('{{qualification}}', studentDetails.qualification);
+
+      const address =
+        studentDetails.address +
+        ' ' +
+        studentDetails.city +
+        ' ' +
+        studentDetails.state +
+        ' ' +
+        studentDetails.pincode;
+
+      html = html.replace('{{address}}', address);
+
+      html = html.replace('{{courseFee}}', String(studentDetails.course.price));
+      html = html.replace('{{AdmittedBy}}', studentDetails.admittedBy);
+
+      const pdfBuffer = await this.pdfService.generatePdf(html);
+
+      return pdfBuffer;
+    } catch (error) {
+      console.error(error, 'getStudentFees error');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
 }

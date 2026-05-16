@@ -1,4 +1,4 @@
-import { Controller, Get, Res, Response } from '@nestjs/common';
+import { Controller, Get, Param, Res, Response } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import { CreateGRPCdto, CreatePaymentDto } from './dto/createpayment.dto';
@@ -59,16 +59,14 @@ export class AppController {
   }
 
   @Get('download/:uuid')
-  async downloadPdf(@Res() res: any) {
-    const pdfBuffer = await this.appService.DownloadPaymentSlip(
-      '2d570641-3042-4794-90cb-de6ee4d52e71',
-    );
+  async downloadPdf(@Res() res: any, @Param('uuid') uuid: string) {
+    const pdfBuffer = await this.appService.DownloadPaymentSlip(uuid);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'attachment; filename=invoice.pdf',
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
       // 'Content-Length': pdfBuffer.length,
     });
 

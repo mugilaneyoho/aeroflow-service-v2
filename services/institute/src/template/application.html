@@ -100,7 +100,7 @@ th, td{
 
         <tr>
             <td><strong>Application No</strong></td>
-            <td>_______________</td>
+            <td>{{applicationNo}}</td>
 
             <td rowspan="4" class="photo-box">
                 Paste Photo
@@ -109,17 +109,27 @@ th, td{
 
         <tr>
             <td><strong>Date</strong></td>
-            <td>_______________</td>
+            <td>{{applyDate}}</td>
         </tr>
 
         <tr>
             <td><strong>Course Name</strong></td>
-            <td>_______________</td>
+            <td>{{courseName}}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Batch Name</strong></td>
+            <td>{{batchName}}</td>
+        </tr>
+
+        <tr>
+            <td><strong>Batch Code</strong></td>
+            <td>{{batchCode}}</td>
         </tr>
 
         <tr>
             <td><strong>Batch Timing</strong></td>
-            <td>_______________</td>
+            <td>{{batchTiming}}</td>
         </tr>
 
         <tr class="section-title">
@@ -128,38 +138,38 @@ th, td{
 
         <tr>
             <td><strong>Student Name</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{studentName}}</td>
         </tr>
 
-        <tr>
+        <!-- <tr>
             <td><strong>Father / Guardian Name</strong></td>
-            <td colspan="2">________________________________________</td>
-        </tr>
+            <td colspan="2">{{}}</td>
+        </tr> -->
 
         <tr>
             <td><strong>Date of Birth</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{dob}}</td>
         </tr>
 
         <tr>
             <td><strong>Gender</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{gender}}</td>
         </tr>
 
         <tr>
             <td><strong>Mobile Number</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{phoneNumber}}</td>
         </tr>
 
         <tr>
             <td><strong>Email ID</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{email}}</td>
         </tr>
 
         <tr>
             <td><strong>Address</strong></td>
             <td colspan="2" style="height:70px;">
-                ________________________________________
+                {{address}}
             </td>
         </tr>
 
@@ -169,10 +179,10 @@ th, td{
 
         <tr>
             <td><strong>Qualification</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{qualification}}</td>
         </tr>
 
-        <tr>
+        <!-- <tr>
             <td><strong>College / Company</strong></td>
             <td colspan="2">________________________________________</td>
         </tr>
@@ -180,7 +190,7 @@ th, td{
         <tr>
             <td><strong>Experience (if any)</strong></td>
             <td colspan="2">________________________________________</td>
-        </tr>
+        </tr> -->
 
         <tr class="section-title">
             <td colspan="3">PAYMENT DETAILS</td>
@@ -188,7 +198,7 @@ th, td{
 
         <tr>
             <td><strong>Course Fee</strong></td>
-            <td colspan="2">________________________________________</td>
+            <td colspan="2">{{courseFee}}</td>
         </tr>
 
         <tr>
@@ -215,7 +225,7 @@ th, td{
         <div>
             <br><br>
             _______________________<br>
-            Authorized Signature
+            Admitted by {{AdmittedBy}}
         </div>
 
     </div>

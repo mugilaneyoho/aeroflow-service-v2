@@ -7,6 +7,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { CourseEntity } from 'src/entities/course.entity';
 import { BatchEntity } from 'src/entities/batch.entity';
+import { PdfService } from 'src/template/pdfService';
 
 @Module({
   imports: [
@@ -33,6 +34,6 @@ import { BatchEntity } from 'src/entities/batch.entity';
     ]),
   ],
   controllers: [StudentController],
-  providers: [StudentService],
+  providers: [StudentService, PdfService],
 })
 export class StudentModule {}

@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  Res,
 } from '@nestjs/common';
 import { StudentService } from './student.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -54,6 +55,22 @@ export class StudentController {
       profile_id: string;
     };
     return this.studentService.getStudentFees(user.profile_id ?? uuid);
+  }
+
+  @Get(':uuid/application')
+  async getapplication(@Param(':uuid') uuid: string, @Res() res: any) {
+    const pdfBuffer = await this.studentService.getApplication(uuid);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename=application.pdf',
+
+      // 'Content-Length': pdfBuffer.length,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    res.end(pdfBuffer);
   }
 
   @GrpcMethod('StudentService', 'GetStudent')
