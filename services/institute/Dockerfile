@@ -27,8 +27,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm ci
+RUN npm i
 
 COPY . .
 
-CMD ["npm","start"]
+RUN npm run build
+
+CMD ["npm", "start"]

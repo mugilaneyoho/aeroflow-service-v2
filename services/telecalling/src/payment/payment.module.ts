@@ -4,6 +4,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LeadsEntity } from 'src/entities/leads.entity';
+import { ExportService } from './Export.service';
 
 @Module({
   imports: [
@@ -21,5 +22,6 @@ import { LeadsEntity } from 'src/entities/leads.entity';
     ]),
   ],
   controllers: [PaymentController],
+  providers: [ExportService],
 })
 export class PaymentModule {}

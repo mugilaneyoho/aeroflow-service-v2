@@ -5,16 +5,16 @@ import { Meeting } from './entities/meeting.entity';
 
 @Controller('meetings')
 export class MeetingsController {
-  constructor(private readonly meetingsService: MeetingsService) { }
+  constructor(private readonly meetingsService: MeetingsService) {}
 
   @Post()
   create(@Body() createMeetingDto: CreateMeetingDto) {
     return this.meetingsService.create(createMeetingDto);
   }
 
-  @Get()
-  findAll() {
-    return this.meetingsService.findAll();
+  @Get(':type')
+  findAll(@Param('type') type: string) {
+    return this.meetingsService.findAll(type);
   }
 
   @Patch(':id')

@@ -78,10 +78,13 @@ export class AppService implements OnModuleInit {
       payment_perpose: pay.paymentPerpose,
       phoneNumber: pay.phoneNumber,
       total_fees: pay.studentFees ? Number(pay.studentFees.totalFees || 0) : 0,
-      paid_amount: pay.studentFees ? Number(pay.studentFees.paidAmount || 0) : 0,
+      paid_amount: pay.studentFees
+        ? Number(pay.studentFees.paidAmount || 0)
+        : 0,
       pending_amount: pay.studentFees
         ? Number(pay.studentFees.totalFees || 0) -
-        Number(pay.studentFees.paidAmount || 0) : 0,
+          Number(pay.studentFees.paidAmount || 0)
+        : 0,
     }));
 
     return {
@@ -306,6 +309,7 @@ export class AppService implements OnModuleInit {
       const studentDetails = JSON.parse(grpc_res.data as unknown as string);
 
       console.log(studentDetails);
+
       let html = fs.readFileSync('src/template/admission.html', 'utf-8');
 
       html = html.replace('{{studentName}}', studentDetails.data.student_name);
@@ -334,14 +338,14 @@ export class AppService implements OnModuleInit {
     }
   }
 
-  async findAdmissionFees(studentId:string) {
+  async findAdmissionFees(studentId: string) {
     try {
-      const student = await this.feesRepo.findOne({where:{studentId}})
+      const student = await this.feesRepo.findOne({ where: { studentId } });
 
-      return student
+      return student;
     } catch (error) {
       console.log(error);
-      return new InternalServerErrorException();
+      return null;
     }
   }
 }

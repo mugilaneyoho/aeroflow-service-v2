@@ -57,7 +57,10 @@ export class StudentController {
   }
 
   @Get('report/:uuid')
-  async downloadPaymentReport(@Param('uuid') uuid: string, @Res() res: Response) {
+  async downloadPaymentReport(
+    @Param('uuid') uuid: string,
+    @Res() res: Response,
+  ) {
     await this.studentService.generatePaymentExcel(uuid, res);
   }
 

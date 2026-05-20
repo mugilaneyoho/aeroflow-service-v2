@@ -6,12 +6,15 @@ import {
   InternalServerErrorException,
   OnModuleInit,
   Post,
+  Res,
 } from '@nestjs/common';
 import * as microservices from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { lastValueFrom, Observable } from 'rxjs';
 import { LeadsEntity, LeadStatus } from 'src/entities/leads.entity';
 import { Repository } from 'typeorm';
+import { ExportService } from './Export.service';
+import type { Response } from 'express';
 
 interface PaymentGrpc {
   GetAllPayment(data: any): Observable<any>;
@@ -27,6 +30,7 @@ export class PaymentController implements OnModuleInit {
     private client: microservices.ClientGrpc,
     @InjectRepository(LeadsEntity)
     private leadRepo: Repository<LeadsEntity>,
+    private exportService: ExportService,
   ) {}
 
   onModuleInit() {
@@ -52,6 +56,21 @@ export class PaymentController implements OnModuleInit {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       data: grpc_res?.data,
     };
+  }
+
+  @Get('report')
+  async report(@Res() res: Response) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const grpc_res = await lastValueFrom(this.PaymentService.GetAllPayment({}));
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (!grpc_res.success) {
+      console.error('grpc telecaller auth create error!');
+      return new InternalServerErrorException('internal server error');
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+    return this.exportService.exportPayments(res, grpc_res?.data);
   }
 
   @Post('create')

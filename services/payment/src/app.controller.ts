@@ -58,9 +58,17 @@ export class AppController {
     return this.appService.getStudentFees(data);
   }
 
-  @Get('download/:uuid')
-  async downloadPdf(@Res() res: any, @Param('uuid') uuid: string) {
-    const pdfBuffer = await this.appService.DownloadPaymentSlip(uuid);
+  @Get('downloadByuser/:uuid')
+  async downloadByuser(@Res() res: any, @Param('uuid') uuid: string) {
+    const student: { admissionFeesId: string } | null =
+      await this.appService.findAdmissionFees(uuid);
+
+    if (!student) {
+      return null;
+    }
+    const pdfBuffer = await this.appService.DownloadPaymentSlip(
+      student?.admissionFeesId,
+    );
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     res.set({
@@ -74,12 +82,9 @@ export class AppController {
     res.end(pdfBuffer);
   }
 
-  @Get('download/:uuid/student')
-  async downloadByuser(@Res() res: any, @Param('uuid') uuid: string) {
-    const student = await this.appService.findAdmissionFees(uuid);
-    const pdfBuffer = await this.appService.DownloadPaymentSlip(
-      student?.admissionFeesId,
-    );
+  @Get('download/:uuid')
+  async downloadPdf(@Res() res: any, @Param('uuid') uuid: string) {
+    const pdfBuffer = await this.appService.DownloadPaymentSlip(uuid);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     res.set({

@@ -6,23 +6,23 @@ import { Repository } from 'typeorm';
 
 @Injectable()
 export class MeetingsService {
-
   constructor(
     @InjectRepository(Meeting)
     private meetingsRepository: Repository<Meeting>,
-  ) { }
+  ) {}
 
   async create(createMeetingDto: CreateMeetingDto) {
-    const newMeeting = this.meetingsRepository.create({ ...createMeetingDto })
+    const newMeeting = this.meetingsRepository.create({ ...createMeetingDto });
     return await this.meetingsRepository.save(newMeeting);
   }
 
-  async findAll() {
-    return await this.meetingsRepository.find();
+  async findAll(status: string) {
+    return await this.meetingsRepository.find({
+      where: { status: status === 'completed' ? 'completed' : 'pending' },
+    });
   }
 
   async update(id: number, updateData: Partial<Meeting>) {
     return await this.meetingsRepository.update(id, updateData);
   }
-
 }

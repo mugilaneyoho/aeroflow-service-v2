@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  Req,
 } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { CreateStaffDto } from './dto/create-staff.dto';
@@ -14,6 +15,7 @@ import { ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { Roles } from 'src/role/role.decorator';
 import { Role } from 'src/role/role.enum';
+import type { Request } from 'express';
 
 @ApiTags('Staff')
 @Controller('staff')
@@ -54,8 +56,17 @@ export class StaffController {
   @Get(':uuid')
   @ApiOperation({ summary: 'get single staff details' })
   @ApiParam({ name: 'uuid', type: String })
-  findOne(@Param('uuid') uuid: string) {
-    return this.staffService.findOne(uuid);
+  findOne(@Param('uuid') uuid: string, @Req() req: Request) {
+    if (uuid === 'token') {
+      const user: { profile_id: string } = JSON.parse(
+        req.headers.user as string,
+      ) as {
+        profile_id: string;
+      };
+      return this.staffService.findOne(user?.profile_id);
+    } else {
+      return this.staffService.findOne(uuid);
+    }
   }
 
   @Roles([Role.HOD])
