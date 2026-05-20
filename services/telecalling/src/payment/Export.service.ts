@@ -10,7 +10,7 @@ export class ExportService {
     const workbook = new ExcelJS.Workbook();
 
     const worksheet = workbook.addWorksheet('Payments');
-    
+
     // Columns
     worksheet.columns = [
       { header: 'Phone Number', key: 'phoneNumber', width: 20 },

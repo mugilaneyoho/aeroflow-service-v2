@@ -1,6 +1,7 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
 import { AppService } from './app.service';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Response } from 'express';
 
 @ApiTags('common')
 @Controller()
@@ -23,5 +24,10 @@ export class AppController {
   @ApiOperation({ summary: 'get telecaller work status' })
   getstatus() {
     return this.appService.getstatus();
+  }
+
+  @Get('emp-reports')
+  getReports(@Res() res: Response) {
+    return this.appService.getReports(res);
   }
 }

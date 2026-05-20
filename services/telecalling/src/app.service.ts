@@ -4,6 +4,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { EmployeEntity } from './entities/employee.entity';
 import { Repository } from 'typeorm';
 import { LeadsEntity } from './entities/leads.entity';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 @Injectable()
 export class AppService {
@@ -95,6 +97,80 @@ export class AppService {
         message: 'internal server error',
       });
     }
+  }
+
+  async getReports(res: Response) {
+    const reports = await this.getstatus();
+
+    const data = reports.data;
+
+    const workbook = new ExcelJS.Workbook();
+
+    const worksheet = workbook.addWorksheet('employee-reports');
+
+    // Columns
+    worksheet.columns = [
+      { header: 'Employee Id', key: 'emp_id', width: 20 },
+      { header: 'Employee Name', key: 'emp_name', width: 25 },
+      { header: 'Pending Leads', key: 'pending', width: 15 },
+      { header: 'Waiting Leads', key: 'waiting', width: 15 },
+      { header: 'Interested Leads', key: 'interested', width: 15 },
+      { header: 'Not-Interested Leads', key: 'notinterested', width: 15 },
+      { header: 'Admitted Leads', key: 'admintted', width: 15 },
+      { header: 'Total Leads', key: 'total', width: 15 },
+    ];
+
+    // Add rows
+    data.forEach((report) => {
+      worksheet.addRow({
+        emp_id: report?.emp_id,
+        emp_name: report?.employee_name,
+        pending: report?.leadcounts?.ASSIGNED || 0,
+        waiting: report?.leadcounts?.WAITING || 0,
+        interested: report?.leadcounts?.INTERESTED || 0,
+        notinterested: report?.leadcounts?.REJECTED || 0,
+        admitted: report?.leadcounts?.ADMITTED || 0,
+        total:
+          (report?.leadcounts?.ASSIGNED || 0) +
+          (report?.leadcounts?.WAITING || 0) +
+          (report?.leadcounts?.INTERESTED || 0) +
+          (report?.leadcounts?.REJECTED || 0) +
+          (report?.leadcounts?.ADMITTED || 0),
+      });
+    });
+
+    // Header style
+    worksheet.getRow(1).font = {
+      bold: true,
+      color: { argb: 'FFFFFF' },
+    };
+
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: '1F4E78' },
+    };
+
+    // Center align
+    worksheet.eachRow((row) => {
+      row.alignment = {
+        vertical: 'middle',
+        horizontal: 'center',
+      };
+    });
+
+    // Response headers
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+
+    res.setHeader('Content-Disposition', 'attachment; filename=employee.xlsx');
+
+    // Export
+    await workbook.xlsx.write(res);
+
+    res.end();
   }
 
   getHello(): string {

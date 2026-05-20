@@ -17,9 +17,13 @@ export class MeetingsService {
   }
 
   async findAll(status: string) {
-    return await this.meetingsRepository.find({
-      where: { status: status === 'completed' ? 'completed' : 'pending' },
-    });
+    if (status === 'all') {
+      return await this.meetingsRepository.find();
+    } else {
+      return await this.meetingsRepository.find({
+        where: { status: status === 'completed' ? 'completed' : 'pending' },
+      });
+    }
   }
 
   async update(id: number, updateData: Partial<Meeting>) {
