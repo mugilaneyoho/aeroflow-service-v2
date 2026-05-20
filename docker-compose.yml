@@ -209,7 +209,7 @@ services:
     ports:
       - "3016:3016"
     environment:
-      PORT: 3010
+      PORT: 3016
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: content

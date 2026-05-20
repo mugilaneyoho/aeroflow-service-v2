@@ -20,7 +20,7 @@ export class ResourcesController {
   private readonly logger = new Logger(ResourcesController.name);
   constructor(private readonly resourcesService: ResourcesService) {}
 
-  @Post('note')
+  @Post()
   async createNote(@Body() dto: CreateNoteDto) {
     return await this.resourcesService.createNote(dto);
   }
@@ -32,12 +32,12 @@ export class ResourcesController {
     return await this.resourcesService.uploadFile(file);
   }
 
-  @Get('notes')
+  @Get()
   async getNotes() {
     return await this.resourcesService.getNotes();
   }
 
-  @Get('notes/:id')
+  @Get('/:id')
   async getNoteById(@Param('id') id: string) {
     return await this.resourcesService.getByIdNotes(Number(id));
   }
