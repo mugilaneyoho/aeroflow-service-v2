@@ -42,8 +42,8 @@ export class StudentController {
   }
 
   @Get('export-Report')
-  async exportStudentReport(@Res() res: Response){
-    await this.studentService.generateStudentReportExcel(res)
+  async exportStudentReport(@Res() res: Response) {
+    await this.studentService.generateStudentReportExcel(res);
   }
 
   @Get(':uuid')
@@ -56,8 +56,8 @@ export class StudentController {
     return this.studentService.deleteOne(uuid);
   }
 
-   @Get('report-student')
-   getStudentReport() {
+  @Get('report-student')
+  getStudentReport() {
     return this.studentService.getStudentReport();
   }
 
