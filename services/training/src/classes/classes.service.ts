@@ -6,6 +6,8 @@ import {
   NotFoundException,
   OnModuleInit,
   Logger,
+  BadRequestException,
+  HttpException,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,6 +20,7 @@ import {
   LessThanOrEqual,
   MoreThan,
   MoreThanOrEqual,
+  Not,
   Repository,
 } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
@@ -93,8 +96,56 @@ export class ClassesService implements OnModuleInit {
     }
   }
 
+  async checkStaffConflict(
+    staffId: string,
+    startTime: any,
+    endTime: any,
+    excludeUuid?: string,
+  ): Promise<boolean> {
+    const proposedStart = new Date(startTime).getTime();
+    const proposedEnd = new Date(endTime).getTime();
+
+    const onlineClasses = await this.onlineRepo.find({
+      where: { staff_id: staffId, is_delete: false },
+    });
+
+    for (const cls of onlineClasses) {
+      if (excludeUuid && cls.uuid === excludeUuid) continue;
+      const start = new Date(cls.start_time).getTime();
+      const end = new Date(cls.end_time).getTime();
+      if (start < proposedEnd && end > proposedStart) {
+        return true;
+      }
+    }
+
+    const offlineClasses = await this.offlineRepo.find({
+      where: { staff_id: staffId, is_delete: false },
+    });
+
+    for (const cls of offlineClasses) {
+      if (excludeUuid && cls.uuid === excludeUuid) continue;
+      const start = new Date(cls.start_time).getTime();
+      const end = new Date(cls.end_time).getTime();
+      if (start < proposedEnd && end > proposedStart) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   async create(data: CreateClassDto) {
     try {
+      const hasConflict = await this.checkStaffConflict(
+        data.staff_id,
+        data.start_time,
+        data.end_time,
+      );
+
+      if (hasConflict) {
+        throw new BadRequestException('staff already has a class during this time.');
+      }
+
       const grpc_batch: {
         success: boolean;
         data: {
@@ -134,6 +185,9 @@ export class ClassesService implements OnModuleInit {
         data: final,
       };
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error, 'create class error');
       throw new InternalServerErrorException({
         success: false,
@@ -191,8 +245,7 @@ export class ClassesService implements OnModuleInit {
         filter = {
           where: {
             is_delete: false,
-            staff_id: uuid,
-            start_date: LessThanOrEqual(nowDate),
+            ...(uuid ? { staff_id: uuid } : {}),
             end_time: MoreThanOrEqual(nowDate),
           },
           skip: (page - 1) * limit,
@@ -204,8 +257,7 @@ export class ClassesService implements OnModuleInit {
         filter = {
           where: {
             is_delete: false,
-            staff_id: uuid,
-            start_date: LessThan(nowDate),
+            ...(uuid ? { staff_id: uuid } : {}),
             end_time: LessThan(nowDate),
           },
           skip: (page - 1) * limit,
@@ -270,12 +322,23 @@ export class ClassesService implements OnModuleInit {
 
   async update(uuid: string, data: UpdateClassDto, mode: string) {
     try {
+      const hasConflict = await this.checkStaffConflict(
+        data.staff_id,
+        data.start_time,
+        data.end_time,
+        uuid,
+      );
+
+      if (hasConflict) {
+        throw new BadRequestException('staff already has a class during this time.');
+      }
+
       const classRepo = this.selectMode(mode);
 
       const classes = await classRepo.findOne({ where: { uuid } });
 
       if (!classes) {
-        return new NotFoundException({
+        throw new NotFoundException({
           success: false,
           message: 'classes not founded.',
         });
@@ -285,6 +348,9 @@ export class ClassesService implements OnModuleInit {
 
       await classRepo.save(classes);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
       console.error(error, 'find class error');
       throw new InternalServerErrorException({
         success: false,

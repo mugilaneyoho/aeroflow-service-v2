@@ -40,7 +40,7 @@ import { ConfigModule } from '@nestjs/config';
         name: 'notifyandlogs',
         transport: Transport.KAFKA,
         options: {
-          Client: {
+          client: {
             clientId: 'notifyandlog',
             brokers: ['kafka:9092'],
           },
