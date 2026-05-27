@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Meeting } from './entities/meeting.entity';
@@ -28,5 +28,22 @@ export class MeetingsService {
 
   async update(id: number, updateData: Partial<Meeting>) {
     return await this.meetingsRepository.update(id, updateData);
+  }
+
+  async MeetingCount() {
+    try {
+      const MeetingCount = await this.meetingsRepository.count();
+
+      const meeting = await this.meetingsRepository.find();
+      return {
+        data: {
+          meeting,
+          MeetingCount,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
+    }
   }
 }

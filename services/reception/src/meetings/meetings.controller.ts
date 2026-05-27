@@ -12,6 +12,11 @@ export class MeetingsController {
     return this.meetingsService.create(createMeetingDto);
   }
 
+  @Get('masterdash')
+  masterdash() {
+    return this.meetingsService.MeetingCount();
+  }
+
   @Get(':type')
   findAll(@Param('type') type: string) {
     return this.meetingsService.findAll(type);

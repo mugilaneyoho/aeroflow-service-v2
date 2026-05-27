@@ -87,4 +87,27 @@ export class AppService implements OnModuleInit {
       throw new InternalServerErrorException('internal server error.');
     }
   }
+
+  async MasterDashboard() {
+    try {
+      const staff = await this.staffRepo.count({ where: { is_delete: false } });
+      const online = await this.onlineRepo.count({
+        where: { start_date: new Date() },
+      });
+      const offline = await this.offlineRepo.count({
+        where: { start_date: new Date() },
+      });
+
+      return {
+        data: {
+          staff,
+          online,
+          offline,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
+    }
+  }
 }

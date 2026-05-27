@@ -441,70 +441,99 @@ export class StudentService implements OnModuleInit {
   }
 
   async generateStudentReportExcel(res: Response): Promise<void> {
-    try{
+    try {
       const students = await this.studentRepo.find({
         where: { is_delete: false },
         relations: ['course', 'batch'],
-        order: { createdAt: 'DESC' }
-      })
-      const workbook = new ExcelJS.Workbook()
-      const sheet = workbook.addWorksheet('Student Report')
+        order: { createdAt: 'DESC' },
+      });
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Student Report');
       sheet.columns = [
-        {header: 'SI.NO', key: 'sino', width: 10},
-        {header: 'Student Name', key: 'name', width: 25},
-        {header: 'Student ID', key: 'id', width: 20},
-        {header: 'Course', key: 'course', width: 20},
-        {header: 'Joined Date', key: 'date', width: 15},
-        {header: 'Joined Time', key: 'time', width: 15},
-        {header: 'Phone', key: 'phone', width: 15},
-        {header: 'Email', key: 'email', width: 25}
-      ]
-      sheet.getRow(1).font = { bold: true }
-      sheet.getRow(1).alignment = { horizontal: 'center' }
-      const groupedStudents: { [key: string]: StudentProfileEntity[] } = {}
-      students.forEach(student => {
-        const date = student.batch?.startDate ? new Date(student.batch.startDate) : new Date(student.createdAt)
-        const monthYear = date.toLocaleString('default', { month: 'long', year: 'numeric' })
+        { header: 'SI.NO', key: 'sino', width: 10 },
+        { header: 'Student Name', key: 'name', width: 25 },
+        { header: 'Student ID', key: 'id', width: 20 },
+        { header: 'Course', key: 'course', width: 20 },
+        { header: 'Joined Date', key: 'date', width: 15 },
+        { header: 'Joined Time', key: 'time', width: 15 },
+        { header: 'Phone', key: 'phone', width: 15 },
+        { header: 'Email', key: 'email', width: 25 },
+      ];
+      sheet.getRow(1).font = { bold: true };
+      sheet.getRow(1).alignment = { horizontal: 'center' };
+      const groupedStudents: { [key: string]: StudentProfileEntity[] } = {};
+      students.forEach((student) => {
+        const date = student.batch?.startDate
+          ? new Date(student.batch.startDate)
+          : new Date(student.createdAt);
+        const monthYear = date.toLocaleString('default', {
+          month: 'long',
+          year: 'numeric',
+        });
         if (!groupedStudents[monthYear]) {
-          groupedStudents[monthYear] = []
+          groupedStudents[monthYear] = [];
         }
-        groupedStudents[monthYear].push(student)
-      })
-      Object.keys(groupedStudents).forEach(monthYear => {
-        const headerRow = sheet.addRow([monthYear])
-        headerRow.font = { bold: true, size: 12 }
+        groupedStudents[monthYear].push(student);
+      });
+      Object.keys(groupedStudents).forEach((monthYear) => {
+        const headerRow = sheet.addRow([monthYear]);
+        headerRow.font = { bold: true, size: 12 };
         headerRow.getCell(1).fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FFD3D3D3' }
-        }
-        sheet.mergeCells(headerRow.number, 1, headerRow.number, 8)
+          fgColor: { argb: 'FFD3D3D3' },
+        };
+        sheet.mergeCells(headerRow.number, 1, headerRow.number, 8);
         groupedStudents[monthYear].forEach((student, index) => {
-          const joinedDate = student.batch?.startDate ? new Date(student.batch.startDate) : new Date(student.createdAt)
-          const joinedTime = new Date(student.createdAt)
+          const joinedDate = student.batch?.startDate
+            ? new Date(student.batch.startDate)
+            : new Date(student.createdAt);
+          const joinedTime = new Date(student.createdAt);
           sheet.addRow({
             sino: index + 1,
             name: student.student_name,
             id: student.student_id,
             course: student.course?.course_name || 'N/A',
             date: joinedDate.toLocaleDateString('en-IN'),
-            time: joinedTime.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }),
+            time: joinedTime.toLocaleTimeString('en-IN', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
             phone: student.phone_number,
-            email: student.email
-          })
-        })
-        sheet.addRow([])
-      })
+            email: student.email,
+          });
+        });
+        sheet.addRow([]);
+      });
       res.set({
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Type':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'Content-Disposition': `attachment; filename="Student_Report_${new Date().toISOString().split('T')[0]}.xlsx"`,
-      })
-      await workbook.xlsx.write(res)
-      res.end()
+      });
+      await workbook.xlsx.write(res);
+      res.end();
     } catch (error) {
-      console.error('Student report generation error:', error)
-      res.status(500).json({ success: false, message: 'Failed to generate report' })
+      console.error('Student report generation error:', error);
+      res
+        .status(500)
+        .json({ success: false, message: 'Failed to generate report' });
+    }
+  }
+
+  async studentCount() {
+    try {
+      const student = await this.studentRepo.count();
+      const pending = await this.studentRepo.count();
+      return {
+        data: {
+          student,
+          pending,
+        },
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
     }
   }
 }
-

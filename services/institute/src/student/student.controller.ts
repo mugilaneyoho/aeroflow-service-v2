@@ -41,6 +41,11 @@ export class StudentController {
     return this.studentService.dashboard(req);
   }
 
+  @Get('masterdash')
+  masterdash() {
+    return this.studentService.studentCount();
+  }
+
   @Get('export-Report')
   async exportStudentReport(@Res() res: Response) {
     await this.studentService.generateStudentReportExcel(res);

@@ -17,4 +17,9 @@ export class AppController {
   adminDash() {
     return this.appService.AdminDashboard();
   }
+
+  @Get('masterdash')
+  masterdash() {
+    return this.appService.MasterDashboard();
+  }
 }
