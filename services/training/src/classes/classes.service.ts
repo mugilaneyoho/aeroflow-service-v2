@@ -245,8 +245,8 @@ export class ClassesService implements OnModuleInit {
         filter = {
           where: {
             is_delete: false,
-            ...(uuid ? { staff_id: uuid } : {}),
-            end_time: MoreThanOrEqual(nowDate),
+            // ...(uuid ? { staff_id: uuid } : {}),
+            // end_time: MoreThanOrEqual(nowDate),
           },
           skip: (page - 1) * limit,
           take: limit,
@@ -257,8 +257,8 @@ export class ClassesService implements OnModuleInit {
         filter = {
           where: {
             is_delete: false,
-            ...(uuid ? { staff_id: uuid } : {}),
-            end_time: LessThan(nowDate),
+            // ...(uuid ? { staff_id: uuid } : {}),
+            // end_time: LessThan(nowDate),
           },
           skip: (page - 1) * limit,
           take: limit,
