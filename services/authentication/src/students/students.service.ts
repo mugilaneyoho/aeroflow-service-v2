@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { StudentEntity } from '../entities/student.entity';
@@ -12,16 +14,24 @@ import { StudentBody } from '../types';
 import { JwtService } from '@nestjs/jwt';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { roles, rolesEntity } from 'src/entities/role.entity';
+import { ClientKafka } from '@nestjs/microservices';
 
 @Injectable()
-export class StudentsService {
+export class StudentsService implements OnModuleInit {
   constructor(
     @InjectRepository(StudentEntity)
     private StudentRepo: Repository<StudentEntity>,
     @InjectRepository(rolesEntity)
     private rolesRepo: Repository<rolesEntity>,
     private JwtService: JwtService,
+    @Inject('mailservice')
+    private readonly MailService: ClientKafka,
   ) {}
+
+  async onModuleInit() {
+    this.MailService.subscribeToResponseOf('mailservice');
+    await this.MailService.connect();
+  }
 
   async create(data: { email: string; password: string; profileId: string }) {
     try {
@@ -70,6 +80,11 @@ export class StudentsService {
         });
       }
 
+      this.MailService.emit('mailservice,welcomesstudent', {
+        email: user.email,
+        password: hashpass,
+      });
+
       return { success: true, message: 'new user created' };
     } catch (error) {
       console.error('student created', error);
@@ -100,6 +115,25 @@ export class StudentsService {
           success: false,
           message: 'enter password is not correct',
         });
+      }
+
+      if (!user.mustChangePassword) {
+        const token = this.JwtService.sign(
+          {
+            uuid: user.uuid,
+            email: user.email,
+          },
+          {
+            expiresIn: '10m',
+          },
+        );
+
+        return {
+          success: true,
+          changepass: true,
+          token,
+          message: 'reset default password',
+        };
       }
 
       const token = this.JwtService.sign(
@@ -140,6 +174,37 @@ export class StudentsService {
         success: false,
         message: 'internal server error',
       });
+    }
+  }
+
+  async updatePassword(uuid: string, password: string) {
+    try {
+      const user = await this.StudentRepo.findOne({ where: { uuid } });
+
+      if (!user) {
+        return new BadRequestException();
+      }
+
+      user.password = await PasswordUtils.hash(password);
+      user.mustChangePassword = true;
+
+      await this.StudentRepo.save(user);
+
+      const token = this.JwtService.sign(
+        { uuid: user.uuid, role_id: user.role_id, profile_id: user.profile_id },
+        {
+          expiresIn: '7d',
+        },
+      );
+
+      return {
+        success: true,
+        data: token,
+        message: 'password updated successfully',
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
     }
   }
 }

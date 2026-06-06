@@ -17,6 +17,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './role/role.guard';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -26,10 +27,6 @@ import { RolesGuard } from './role/role.guard';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      // url: 'postgresql://patron_727o_user:vNL871u0UdD5lEwe01ZqngnTCDgO7NtE@dpg-d6bvqg7tn9qs73c7qcqg-a.singapore-postgres.render.com/patron_727o',
-      // ssl: {
-      //   rejectUnauthorized: false,
-      // },
       host: process.env.DB_HOST,
       port: 3306,
       username: process.env.DB_USER,
@@ -54,6 +51,24 @@ import { RolesGuard } from './role/role.guard';
           url: 'institute-service:3003',
         },
       },
+      {
+        name: 'batch',
+        transport: Transport.GRPC,
+        options: {
+          package: 'batch',
+          protoPath: join(__dirname, './proto/batch.proto'),
+          url: 'institute-service:3003',
+        },
+      },
+      {
+        name: 'student',
+        transport: Transport.GRPC,
+        options: {
+          package: 'student',
+          protoPath: join(__dirname, './proto/student.proto'),
+          url: 'institute-service:3003',
+        },
+      },
     ]),
     TypeOrmModule.forFeature([
       OnlineClassesEntity,
@@ -68,6 +83,7 @@ import { RolesGuard } from './role/role.guard';
         port: 6379,
       },
     }),
+    ScheduleModule.forRoot(),
     StaffModule,
     ClassesModule,
     AttendanceModule,

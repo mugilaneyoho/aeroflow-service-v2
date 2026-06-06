@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -133,6 +134,25 @@ export class StaffService implements OnModuleInit {
         });
       }
 
+      if (!user.mustChangePassword) {
+        const token = this.JwtService.sign(
+          {
+            uuid: user.uuid,
+            email: user.email,
+          },
+          {
+            expiresIn: '10m',
+          },
+        );
+
+        return {
+          success: true,
+          changepass: true,
+          token,
+          message: 'reset default password',
+        };
+      }
+
       const token = await this.JwtService.signAsync(
         { ...user },
         { expiresIn: '7d' },
@@ -149,6 +169,37 @@ export class StaffService implements OnModuleInit {
         success: false,
         message: 'internal server error',
       });
+    }
+  }
+
+  async updatePassword(uuid: string, password: string) {
+    try {
+      const user = await this.staffRepo.findOne({ where: { uuid } });
+
+      if (!user) {
+        return new BadRequestException();
+      }
+
+      user.password = await PasswordUtils.hash(password);
+      user.mustChangePassword = true;
+
+      await this.staffRepo.save(user);
+
+      const token = this.JwtService.sign(
+        { uuid: user.uuid, role_id: user.role_id, profile_id: user.profile_id },
+        {
+          expiresIn: '7d',
+        },
+      );
+
+      return {
+        success: true,
+        data: token,
+        message: 'password updated successfully',
+      };
+    } catch (error) {
+      console.log(error);
+      return new InternalServerErrorException();
     }
   }
 }

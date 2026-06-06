@@ -73,6 +73,11 @@ export class BatchController {
 
   @GrpcMethod('BatchService', 'GetByStudentId')
   findstudent(data: { studentId: string }) {
-    return this.batchService.findByStudntId(data.studentId)
+    return this.batchService.findByStudntId(data.studentId);
+  }
+
+  @GrpcMethod('BatchService', 'GetcompleteBatch')
+  findcompletedbatch() {
+    return this.batchService.completedbatch();
   }
 }

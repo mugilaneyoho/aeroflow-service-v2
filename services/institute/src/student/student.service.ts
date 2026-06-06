@@ -536,4 +536,26 @@ export class StudentService implements OnModuleInit {
       return new InternalServerErrorException();
     }
   }
+
+  async updatePlacementEligible(data: any[]) {
+    try {
+      for (const student of data) {
+        await this.studentRepo.update(
+          { uuid: student },
+          { is_eligible_placement: true },
+        );
+      }
+
+      return {
+        success: true,
+        message: 'status updated',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'internal server error',
+      };
+    }
+  }
 }

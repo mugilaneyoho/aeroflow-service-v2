@@ -109,4 +109,10 @@ export class StudentController {
       data: JSON.stringify(res),
     };
   }
+
+  @GrpcMethod('StudentService', 'PlacementEligible')
+  async placement(req: { data: string[] }) {
+    const res = await this.studentService.updatePlacementEligible(req.data);
+    return res;
+  }
 }

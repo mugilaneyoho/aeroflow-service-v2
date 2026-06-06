@@ -1,14 +1,25 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
 import { TelecallingService } from './telecalling.service';
 import { GrpcMethod } from '@nestjs/microservices';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('telecalling')
 export class TelecallingController {
-  constructor(private readonly telecallerService: TelecallingService) {}
+  constructor(
+    private readonly telecallerService: TelecallingService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('login')
   login(@Body() data: { email: string; password: string }) {
     return this.telecallerService.login(data.email, data.password);
+  }
+
+  @Put('reset-pass')
+  resetpassword(@Body() data: { password: string; token: string }) {
+    const decoded: { uuid: string } = this.jwtService.verify(data.token);
+
+    return this.telecallerService.updatePassword(decoded.uuid, data.password);
   }
 
   @Get(':uuid')

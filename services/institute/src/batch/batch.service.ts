@@ -297,4 +297,14 @@ export class BatchService {
       console.log(error);
     }
   }
+
+  async completedbatch() {
+    const nowDate = new Date();
+    const data = await this.batchRepo.find({
+      // where: { endDate: LessThan(nowDate) },
+      relations: ['students'],
+    });
+
+    return { data: JSON.stringify(data) };
+  }
 }

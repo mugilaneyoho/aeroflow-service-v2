@@ -31,6 +31,9 @@ export class StudentEntity {
   @Column({ type: 'char', length: 36 })
   profile_id!: string;
 
+  @Column({ default: false })
+  mustChangePassword!: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 

@@ -5,6 +5,11 @@ package student;
 service StudentService {
     rpc CreateStudent (create) returns (response);
     rpc GetStudent (getparams) returns (getresponse);
+    rpc PlacementEligible (placementdata) returns (response);
+}
+
+message placementdata {
+    repeated string data = 1;               
 }
 
 message create {

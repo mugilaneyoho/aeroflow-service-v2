@@ -2,14 +2,25 @@ import { Body, Controller, Param, Post, Put } from '@nestjs/common';
 import { StaffService } from './staff.service';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { GrpcMethod } from '@nestjs/microservices';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('staff')
 export class StaffController {
-  constructor(private staffService: StaffService) {}
+  constructor(
+    private staffService: StaffService,
+    private jwtService: JwtService,
+  ) {}
 
   @Post('login')
   login(@Body() data: { email: string; password: string }) {
     return this.staffService.login(data.email, data.password);
+  }
+
+  @Put('reset-pass')
+  resetpassword(@Body() data: { password: string; token: string }) {
+    const decoded: { uuid: string } = this.jwtService.verify(data.token);
+
+    return this.staffService.updatePassword(decoded.uuid, data.password);
   }
 
   @GrpcMethod('StaffService', 'CreateStaff')

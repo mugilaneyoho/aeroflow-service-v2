@@ -6,6 +6,7 @@ service BatchService {
   rpc GetAllBatch (GetAll) returns (BatchsResponse);
   rpc GetById (GetId) returns (BatchResponse);
   rpc GetByStudentId (studentId) returns (studentsData);
+  rpc GetcompleteBatch (Empty) returns (studentsData);
 }
 
 message Empty {}

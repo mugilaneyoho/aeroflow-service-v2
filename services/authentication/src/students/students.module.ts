@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { StudentEntity } from '../entities/student.entity';
 import { rolesEntity } from 'src/entities/role.entity';
 import { JwtModule } from '@nestjs/jwt';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -13,6 +14,21 @@ import { JwtModule } from '@nestjs/jwt';
       secret: 'auth-key',
       signOptions: { expiresIn: '30d' },
     }),
+    ClientsModule.register([
+      {
+        name: 'mailservice',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'mailservice',
+            brokers: ['kafka:9092'],
+          },
+          consumer: {
+            groupId: 'mailservice-consumer',
+          },
+        },
+      },
+    ]),
   ],
   providers: [StudentsService],
   controllers: [StudentsController],

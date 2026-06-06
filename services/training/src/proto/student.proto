@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package student;
+
+service StudentService {
+    rpc PlacementEligible (placementdata) returns (response);
+}
+
+message placementdata {
+    repeated string data = 1;
+}
+
+
+message response {
+    bool success = 1;
+    string message = 2;
+}

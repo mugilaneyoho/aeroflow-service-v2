@@ -77,6 +77,9 @@ export class StudentProfileEntity {
   @Column({ type: 'boolean', default: false })
   is_delete!: boolean;
 
+  @Column({ default: false })
+  is_eligible_placement!: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
