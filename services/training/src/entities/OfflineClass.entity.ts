@@ -37,13 +37,13 @@ export class OfflineClassesEntity {
   @Column({ type: 'simple-array', nullable: true })
   notes!: string[];
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamptz' })
   start_date!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamptz' })
   start_time!: Date;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamptz' })
   end_time!: Date;
 
   @Column()

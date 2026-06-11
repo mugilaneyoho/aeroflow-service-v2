@@ -16,7 +16,11 @@ import { ConfigModule } from '@nestjs/config';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
+      type: 'postgres',
+      url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
+      ssl: {
+        rejectUnauthorized: false,
+      },
       host: process.env.DB_HOST,
       port: 3306,
       username: process.env.DB_USER,

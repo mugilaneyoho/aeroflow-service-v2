@@ -46,7 +46,7 @@ export class PaymentEntiry {
   @Column()
   amount!: number;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamptz' })
   paymentDate!: Date;
 
   @Column()

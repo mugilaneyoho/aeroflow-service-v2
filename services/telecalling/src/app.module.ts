@@ -20,16 +20,16 @@ import { RolesGuard } from './role/role.guard';
       envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      // url: 'postgresql://patron_727o_user:vNL871u0UdD5lEwe01ZqngnTCDgO7NtE@dpg-d6bvqg7tn9qs73c7qcqg-a.singapore-postgres.render.com/patron_727o',
-      // ssl: {
-      //   rejectUnauthorized: false,
-      // },
-      host: process.env.DB_HOST,
-      port: 3306,
-      username: process.env.DB_USER,
-      database: process.env.DB_NAME,
-      password: process.env.DB_PASS,
+      type: 'postgres',
+      url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
+      ssl: {
+        rejectUnauthorized: false,
+      },
+      // host: process.env.DB_HOST, vvhRSnD23kdzuqKW
+      // port: 3306,
+      // username: process.env.DB_USER,
+      // database: process.env.DB_NAME,
+      // password: process.env.DB_PASS,
       entities: [LeadsEntity, EmployeEntity],
       synchronize: true,
       maxQueryExecutionTime: 20,

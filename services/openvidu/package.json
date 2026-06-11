@@ -30,6 +30,7 @@
     "class-validator": "^0.15.1",
     "mysql2": "^3.20.0",
     "openvidu-node-client": "^2.32.2",
+    "pg": "^8.21.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.28"

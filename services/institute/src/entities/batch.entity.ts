@@ -52,10 +52,10 @@ export class BatchEntity {
   @Column({ type: 'integer' })
   totalSeats!: number;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   startDate!: Date;
 
-  @Column({ type: 'datetime', nullable: true })
+  @Column({ type: 'timestamptz', nullable: true })
   endDate!: Date;
 
   @Column({ type: 'integer' })
