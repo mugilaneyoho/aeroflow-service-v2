@@ -17,20 +17,35 @@ export class LeadProcessor {
     try {
       const { id, limit } = job.data;
       await this.leadsRepo.query(
-        `UPDATE leads
-  SET assignedTo = ?,
-      assignedAt = NOW(),
-      status = 'ASSIGNED'
-  WHERE id IN (
-    SELECT id FROM (
-      SELECT id
-      FROM leads
-      WHERE assignedTo IS NULL
-      LIMIT ?
-    ) AS temp
-  )`,
+        `WITH selected AS (
+          SELECT id
+          FROM leads
+          WHERE "assignedTo" IS NULL
+          LIMIT $2
+        )
+        UPDATE leads
+        SET "assignedTo" = $1,
+            "assignedAt" = CURRENT_TIMESTAMP,
+            status = 'ASSIGNED'
+        WHERE id IN (SELECT id FROM selected)
+        `,
         [id, Number(limit)],
       );
+      // await this.leadsRepo.query(
+      //   `UPDATE leads
+      //   SET assignedTo = ?,
+      //       assignedAt = NOW(),
+      //       status = 'ASSIGNED'
+      //   WHERE id IN (
+      //     SELECT id FROM (
+      //       SELECT id
+      //       FROM leads
+      //       WHERE assignedTo IS NULL
+      //       LIMIT ?
+      //     ) AS temp
+      //   )`,
+      //   [id, Number(limit)],
+      // );
     } catch (error) {
       console.log(error, 'assign queue error');
     }
