@@ -43,6 +43,23 @@ export class LeadsController {
     return this.leadsService.assignLeads(userid, count);
   }
 
+  @Roles([Role.TELEADMIN])
+  @Post('manual-allocate')
+  @ApiOperation({ summary: 'manually allocate a lead to a telecaller' })
+  manualAllocate(
+    @Body()
+    data: {
+      name?: string;
+      phone: string;
+      notes?: string;
+      status: LeadStatus;
+      assignedTo: string;
+    },
+  ) {
+    return this.leadsService.createManualLead(data);
+  }
+
+
   @Get('temp-recent-admit')
   tempadmit() {
     return this.leadsService.recentAdmit();

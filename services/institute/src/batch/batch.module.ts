@@ -4,10 +4,23 @@ import { BatchService } from './batch.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BatchEntity } from 'src/entities/batch.entity';
 import { StudentProfileEntity } from 'src/entities/student.entity';
+import { BullModule } from '@nestjs/bull';
+import { QueueModule } from 'src/queue/queue.module';
+import { BatchProcessor } from './batch.processor';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([BatchEntity, StudentProfileEntity])],
+  imports: [
+    TypeOrmModule.forFeature([BatchEntity, StudentProfileEntity]),
+    BullModule.forRoot({
+      redis: {
+        host: 'host.docker.internal',
+        port: 6379,
+        maxRetriesPerRequest: null,
+      },
+    }),
+    QueueModule,
+  ],
   controllers: [BatchController],
-  providers: [BatchService],
+  providers: [BatchService, BatchProcessor],
 })
 export class BatchModule {}

@@ -26,11 +26,11 @@ export class StudentProfileEntity {
   @JoinColumn({ name: 'course_id' })
   course!: CourseEntity;
 
-  @Column('uuid')
+  @Column({ type: 'uuid', nullable: true })
   batch_id!: string;
-  @ManyToOne(() => BatchEntity, (batch) => batch.students)
+  @ManyToOne(() => BatchEntity, (batch) => batch.students, { nullable: true })
   @JoinColumn({ name: 'batch_id' })
-  batch!: BatchEntity;
+  batch!: BatchEntity | null;
 
   @Column('uuid')
   admittedBy!: string;
@@ -79,6 +79,12 @@ export class StudentProfileEntity {
 
   @Column({ default: false })
   is_eligible_placement!: boolean;
+
+  @Column({ default: false })
+  is_approved!: boolean;
+
+  @Column({ default: false })
+  is_batch_assign!: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;

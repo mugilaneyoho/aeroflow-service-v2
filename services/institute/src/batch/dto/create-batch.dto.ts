@@ -10,6 +10,7 @@ import {
 import { BatchMode } from 'src/entities/batch.entity';
 
 export class CreateBatchDto {
+  [x: string]: any;
   @ApiProperty({
     example:
       'institute uuid (use this default "4f93f601-2e2d-4912-b9b7-ef2831e1b27d")',

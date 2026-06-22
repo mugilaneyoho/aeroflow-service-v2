@@ -14,10 +14,10 @@ export class CreateStudentDto {
   @IsNotEmpty()
   course_id!: string;
 
-  @ApiProperty({ example: 'batch uuid' })
-  @IsUUID()
-  @IsNotEmpty()
-  batch_id!: string;
+  // @ApiProperty({ example: 'batch uuid' })
+  // @IsUUID()
+  // @IsNotEmpty()
+  // batch_id!: string;
 
   @ApiProperty({ example: 'devilhackii' })
   @IsString()

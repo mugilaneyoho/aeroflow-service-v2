@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   ConflictException,
@@ -111,12 +113,12 @@ export class StudentService implements OnModuleInit {
         });
       }
 
-      await this.batchRepo
-        .createQueryBuilder()
-        .update()
-        .set({ seatsFilled: () => 'seatsFilled + 1' })
-        .where('uuid = :uuid', { uuid: data.batch_id })
-        .execute();
+      // await this.batchRepo
+      //   .createQueryBuilder()
+      //   .update()
+      //   .set({ seatsFilled: () => 'seatsFilled + 1' })
+      //   .where('uuid = :uuid', { uuid: data.batch_id })
+      //   .execute();
 
       const final = await this.studentRepo.findOne({
         where: { uuid: student?.uuid },
@@ -258,11 +260,9 @@ export class StudentService implements OnModuleInit {
         relations: ['course', 'batch'],
       });
 
-      if (!studentDetails) {
+      if (!studentDetails || !studentDetails.batch) {
         return new NotFoundException();
       }
-
-      console.log(studentDetails);
 
       let html = fs.readFileSync('src/template/application.html', 'utf-8');
 
@@ -277,7 +277,7 @@ export class StudentService implements OnModuleInit {
       html = html.replace('{{batchCode}}', studentDetails.batch.batchCode);
       html = html.replace(
         '{{batchTiming}}',
-        studentDetails.batch.classStartTime + studentDetails.batch.classEndTime,
+        studentDetails?.batch.classStartTime + studentDetails.batch.classEndTime,
       );
       html = html.replace('{{gender}}', studentDetails.gender);
       html = html.replace('{{phoneNumber}}', studentDetails.phone_number);

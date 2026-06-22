@@ -155,6 +155,47 @@ export class LeadsService implements OnModuleInit {
     }
   }
 
+  async createManualLead(data: {
+    name?: string;
+    phone: string;
+    notes?: string;
+    status: LeadStatus;
+    assignedTo: string;
+  }) {
+    try {
+      if (!data.phone) {
+        throw new BadRequestException('Phone number is required');
+      }
+      if (!data.assignedTo) {
+        throw new BadRequestException('Telecaller is required');
+      }
+
+      const lead = this.leadsRepo.create({
+        name: data.name,
+        phone: data.phone,
+        notes: data.notes,
+        status: data.status || LeadStatus.ASSIGNED,
+        assignedTo: data.assignedTo,
+        assignedAt: new Date(),
+      });
+
+      await this.leadsRepo.save(lead);
+
+      return {
+        success: true,
+        message: 'Lead manually allocated successfully.',
+        data: lead,
+      };
+    } catch (error) {
+      console.error(error, 'manual lead allocation error');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
+
+
   async update(data: LeadsUpdateDto, uuid: string) {
     try {
       const lead = await this.leadsRepo.findOne({
