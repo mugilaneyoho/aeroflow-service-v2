@@ -20,4 +20,10 @@ export class InterviewFeedback {
 
     @Column()
     comments!: string;
+
+    @Column({default: true})
+    is_active!: boolean;
+
+    @Column({default: false})
+    is_deleted!: boolean;
 }

@@ -20,4 +20,10 @@ export class PlacementStatus {
 
     @Column()
     remarks!: string;
+
+    @Column({default: true})
+    is_active!: boolean;
+
+    @Column({default: false})
+    is_deleted!: boolean;
 }

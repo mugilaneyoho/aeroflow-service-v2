@@ -12,21 +12,21 @@ export class InterviewStatus {
     @Column('uuid')
     student_id!: string;
 
-    @Column()
-    round_no?: number;
-
     @Column({default: 'PENDING'})
     status!: 'PENDING' | 'ATTENDED' | 'SELECTED' | 'REJECTED' | 'ON_HOLD' | 'NO_SHOW';
 
-    @Column()
-    interview_type!: 'VIRTUAL' | 'ON-SITE';
+    @Column({nullable: true})
+    remarks?: string;
 
-    @Column()
-    remarks!: string;
+    // @Column({type: 'uuid', nullable: true})
+    // updated_by?: string;
 
-    @Column('uuid')
-    updated_by!: string;
+    @Column({type: 'timestamptz', nullable: true})
+    updated_at?: Date;
 
-    @Column('timestamptz')
-    updated_at!: Date;
+    @Column({default: true})
+    is_active!: boolean;
+
+    @Column({default: false})
+    is_deleted!: boolean;
 }

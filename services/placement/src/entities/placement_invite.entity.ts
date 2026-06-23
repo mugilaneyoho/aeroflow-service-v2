@@ -12,8 +12,8 @@ export class PlacementInvite {
     @Column('uuid')
     student_id!: string;
 
-    @Column('uuid')
-    invited_by!: string;
+    @Column({type: 'uuid', nullable: true})
+    invited_by?: string;
 
     @Column()
     invited_at!: Date;
@@ -21,9 +21,15 @@ export class PlacementInvite {
     @Column({default: 'PENDING'})
     response_status!: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED';
 
-    @Column()
-    response_date!: Date;
+    @Column({nullable: true})
+    response_date?: Date;
 
-    @Column()
-    reason!: string;
+    @Column({nullable: true})
+    reason?: string;
+
+    @Column({default: true})
+    is_active!: boolean;
+
+    @Column({default: false})
+    is_deleted!: boolean;
 }

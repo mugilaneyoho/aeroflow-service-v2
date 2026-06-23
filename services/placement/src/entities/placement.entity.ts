@@ -45,6 +45,12 @@ export class Placements  {
     @Column({type: 'uuid', nullable: true})
     created_by?: string;
 
+    @Column({default: true})
+    is_active!: boolean;
+
+    @Column({default: false})
+    is_deleted!: boolean;
+
     @CreateDateColumn({type: 'timestamptz'})
     created_at?: Date;
 
