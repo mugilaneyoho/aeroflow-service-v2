@@ -30,6 +30,11 @@ export class PlacementController {
         return this.placementService.getInvitePlacementById(id);
     }
 
+    @Get('invite')
+    getAllInvitePlacements( @Query('page') page = 1, @Query('limit') limit = 10,) {
+        return this.placementService.getAllInvitePlacements(Number(page), Number(limit));
+    }
+
     @Get(':id')
     getPlacementById(@Param('id') id: string) {
         return this.placementService.getPlacementById(id);

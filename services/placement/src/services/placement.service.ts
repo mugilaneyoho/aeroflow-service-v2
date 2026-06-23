@@ -166,6 +166,31 @@ export class PlacementService {
         }
     }
 
+    async getAllInvitePlacements(page = 1, limit = 10) {
+        try {
+            const [placements, total] = await this.placementInviteRepo.findAndCount({
+                skip: (page - 1) * limit,
+                take: limit,
+            });
+
+            return {
+                success: true,
+                data: placements,
+                pagination: {
+                    total,
+                    page,
+                    limit,
+                    totalPages: Math.ceil(total / limit)
+                }
+            };
+        } catch (error: any) {
+            throw new HttpException(
+                { success: false, message: error?.message },
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
     async deletePlacement(id: string) {
         try {
             const placement = await this.placementRepo.findOne({
