@@ -102,5 +102,12 @@ routes.use("/resources", AuthVerify, createProxyMiddleware({
     secure:true,
 }))
 
+routes.use("/placement", AuthVerify, createProxyMiddleware({
+    target:process.env.placement,
+    changeOrigin:true,
+    agent,
+    secure:true,
+}))
+
 
 export default routes
