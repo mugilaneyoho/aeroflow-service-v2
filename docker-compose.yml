@@ -16,6 +16,7 @@ services:
       ticket: http://ticket-service:3018
       content: http://content-service:3016
       payment: http://payment-service:3021
+      placement: http://placement-service:3020
     networks:
       - app-network
 
@@ -236,6 +237,25 @@ services:
     depends_on:
       - api-gateway
       - patron
+    networks:
+      - app-network
+
+  placement-service:
+    build: ./services/placement
+    ports:
+      - "3020:3020"
+    environment:
+      PORT: 3020
+      PORT_GRPC: 3001
+      DB_HOST: patron
+      DB_PORT: 3306
+      DB_NAME: auth
+      DB_USER: root
+      DB_PASS: root
+    depends_on:
+      - kafka
+      - patron
+      - api-gateway
     networks:
       - app-network
 
