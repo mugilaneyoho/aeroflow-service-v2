@@ -3,6 +3,7 @@ import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BatchEntity } from 'src/entities/batch.entity';
@@ -10,15 +11,25 @@ import { LessThan, Repository } from 'typeorm';
 import { CreateBatchDto } from './dto/create-batch.dto';
 import { UpdateBatchDto } from './dto/update-batch.dto';
 import { StudentProfileEntity } from 'src/entities/student.entity';
+import { InjectQueue } from '@nestjs/bull';
+import type { Queue } from 'bull';
 
 @Injectable()
-export class BatchService {
+export class BatchService implements OnModuleInit {
   constructor(
     @InjectRepository(BatchEntity)
     private batchRepo: Repository<BatchEntity>,
     @InjectRepository(StudentProfileEntity)
     private studentRepo: Repository<StudentProfileEntity>,
+    @InjectQueue('batch-assign')
+    private queue: Queue,
   ) {}
+
+  onModuleInit() {
+    this.queue.on('error', (err) => {
+      console.error('Redis connection error', err);
+    });
+  }
 
   async create(data: CreateBatchDto) {
     try {
@@ -51,6 +62,17 @@ export class BatchService {
       });
 
       await this.batchRepo.save(batch);
+
+      console.log(data?.studentIds);
+
+      // eslint-disable-next-line no-unsafe-optional-chaining
+      for (const user of data?.studentIds) {
+        await this.queue.add('assign', {
+          batchId: batch.uuid,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          studentId: user,
+        });
+      }
 
       return {
         success: true,
@@ -295,6 +317,43 @@ export class BatchService {
       };
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async reAllocationBatch(studentId: string, batchid: string) {
+    try {
+      const user = await this.studentRepo.findOne({
+        where: { uuid: studentId },
+      });
+
+      if (!user) {
+        return new NotFoundException('user not founded');
+      }
+
+      const batch = await this.batchRepo.findOne({
+        where: {
+          uuid: batchid,
+        },
+      });
+
+      if (!batch) {
+        return new NotFoundException('batch not founded');
+      }
+
+      Object.assign(user, { batch_id: batch.uuid });
+
+      await this.studentRepo.save(user);
+
+      return {
+        message: 'student re-allocated success',
+        sucess: true,
+      };
+    } catch (error) {
+      console.error(error, 'update batch error!');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
     }
   }
 

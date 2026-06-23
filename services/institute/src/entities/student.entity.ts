@@ -26,14 +26,17 @@ export class StudentProfileEntity {
   @JoinColumn({ name: 'course_id' })
   course!: CourseEntity;
 
-  @Column('uuid')
+  @Column({ type: 'uuid', nullable: true })
   batch_id!: string;
-  @ManyToOne(() => BatchEntity, (batch) => batch.students)
+  @ManyToOne(() => BatchEntity, (batch) => batch.students, { nullable: true })
   @JoinColumn({ name: 'batch_id' })
-  batch!: BatchEntity;
+  batch!: BatchEntity | null;
 
   @Column('uuid')
   admittedBy!: string;
+
+  @Column('uuid')
+  leadId!: string;
 
   @Column({ length: 191 })
   student_name!: string;
@@ -48,22 +51,25 @@ export class StudentProfileEntity {
   phone_number!: string;
 
   @Column({ length: 20, nullable: true })
-  alter_number!: string;
+  parent_number!: string;
+
+  @Column({ length: 191, nullable: false, default: '' })
+  father_name!: string;
+
+  @Column({ length: 191, nullable: false, default: '' })
+  mother_name!: string;
+
+  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_DATE' })
+  dob!: Date;
 
   @Column({ length: 10 })
   gender!: string;
 
-  @Column({ length: 255 })
-  address!: string;
+  @Column({ type: 'text', nullable: false, default: '' })
+  currentAddress!: string;
 
-  @Column({ length: 100 })
-  city!: string;
-
-  @Column({ length: 100 })
-  state!: string;
-
-  @Column({ length: 20 })
-  pincode!: string;
+  @Column({ type: 'text', nullable: false, default: '' })
+  permantAddress!: string;
 
   @Column({ length: 100 })
   qualification!: string;
@@ -79,6 +85,12 @@ export class StudentProfileEntity {
 
   @Column({ default: false })
   is_eligible_placement!: boolean;
+
+  @Column({ default: false })
+  is_approved!: boolean;
+
+  @Column({ default: false })
+  is_batch_assign!: boolean;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
