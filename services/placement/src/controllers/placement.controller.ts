@@ -25,6 +25,11 @@ export class PlacementController {
         return this.placementService.invitePlacement(req, dto)
     }
 
+    @Get('invite/:id')
+    getPlacementInviteById(@Param('id') id: string) {
+        return this.placementService.getInvitePlacementById(id);
+    }
+
     @Get(':id')
     getPlacementById(@Param('id') id: string) {
         return this.placementService.getPlacementById(id);

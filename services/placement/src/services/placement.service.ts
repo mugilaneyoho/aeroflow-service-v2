@@ -116,6 +116,28 @@ export class PlacementService {
         }
     }
 
+    async getInvitePlacementById(id: string) {
+        try {
+            const placement = await this.placementInviteRepo.findOne({
+                where: { id }
+            });
+
+            if (!placement) {
+                throw new NotFoundException('Placement not found');
+            }
+
+            return {
+                success: true,
+                data: placement
+            };
+        } catch (error: any) {
+            throw new HttpException(
+                { success: false, message: error?.message },
+                HttpStatus.INTERNAL_SERVER_ERROR
+            );
+        }
+    }
+
     async getAllPlacements(page = 1, limit = 10) {
         try {
             const [placements, total] = await this.placementRepo.findAndCount({

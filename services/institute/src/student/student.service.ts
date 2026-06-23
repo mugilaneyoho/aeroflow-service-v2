@@ -73,8 +73,9 @@ export class StudentService implements OnModuleInit {
   async create(data: CreateStudentDto) {
     try {
       const nowDate = new Date();
+      const leadId = Array.isArray(data?.lead) ? data.lead[0] : data?.lead;
       const exist = await this.studentRepo.findOne({
-        where: { phone_number: data.phone_number, leadId: data?.lead },
+        where: { phone_number: data.phone_number },
       });
 
       if (exist) {

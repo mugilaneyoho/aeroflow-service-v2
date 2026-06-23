@@ -10,7 +10,8 @@ import {
 import { FindOperator } from 'typeorm';
 
 export class CreateStudentDto {
-  [x: string]: string | FindOperator<string> | undefined;
+  [x: string]: string | string[] | FindOperator<string> | undefined;
+
   @ApiProperty({ example: 'course uuid' })
   @IsUUID()
   @IsNotEmpty()
@@ -80,4 +81,10 @@ export class CreateStudentDto {
   @IsDateString()
   @IsNotEmpty()
   permantAddress!: string;
+
+  @IsString()
+  preferredLocations?: string[];
+
+  @IsString()
+  leadId?: string;
 }
