@@ -139,18 +139,24 @@ export class StudentService implements OnModuleInit {
     }
   }
 
-  async findAll(query: { page: string; limit: string }) {
+  async findAll(query: { page: string; limit: string; approved?: string }) {
     try {
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 10;
+ const whereClause: any = { is_delete: false };
 
-      const [students, total] = await this.studentRepo.findAndCount({
-        where: { is_delete: false },
-        skip: (page - 1) * limit,
-        take: limit,
-        order: { createdAt: 'DESC' },
-        relations: ['batch'],
-      });
+  // filter: ?approved=false → pending students, ?approved=true → approved students
+  if (query.approved !== undefined) {
+    whereClause.is_approved = query.approved === 'true';
+  }
+
+  const [students, total] = await this.studentRepo.findAndCount({
+    where: whereClause,
+    skip: (page - 1) * limit,
+    take: limit,
+    order: { createdAt: 'DESC' },
+    relations: ['batch'],
+  });
 
       return {
         success: true,
@@ -208,6 +214,39 @@ export class StudentService implements OnModuleInit {
       });
     }
   }
+
+  async approveStudent(uuid: string) {
+  try {
+    const student = await this.studentRepo.findOne({ where: { uuid } });
+
+    if (!student) {
+      throw new NotFoundException({
+        success: false,
+        message: 'Student not found.',
+      });
+    }
+
+    if (student.is_approved) {
+      return {
+        success: false,
+        message: 'Student is already approved.',
+      };
+    }
+
+    await this.studentRepo.update({ uuid }, { is_approved: true });
+
+    return {
+      success: true,
+      message: 'Student approved successfully.',
+    };
+  } catch (error) {
+    console.error(error, 'approveStudent error');
+    throw new InternalServerErrorException({
+      success: false,
+      message: 'internal server error',
+    });
+  }
+}
 
   async dashboard(req: { headers: { user: string } }) {
     try {

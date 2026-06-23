@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -18,7 +19,7 @@ import { GrpcMethod } from '@nestjs/microservices';
 
 @Controller('student')
 export class StudentController {
-  constructor(private readonly studentService: StudentService) {}
+  constructor(private readonly studentService: StudentService) { }
 
   @Get('/feesgetall')
   feesgetall() {
@@ -31,8 +32,14 @@ export class StudentController {
   }
 
   @Get('all')
-  findAll(@Query() query: { page: string; limit: string }) {
+  findAll(@Query() query: { page: string; limit: string; approved?: string }) {
     return this.studentService.findAll(query);
+  }
+
+  @Roles([Role.MASTER, Role.HOD, Role.SUBADMIN])
+  @Patch(':uuid/approve')
+  approveStudent(@Param('uuid') uuid: string) {
+    return this.studentService.approveStudent(uuid);
   }
 
   @Roles([Role.STUDENT])
