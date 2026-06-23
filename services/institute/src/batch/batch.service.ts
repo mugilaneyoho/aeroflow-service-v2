@@ -320,6 +320,43 @@ export class BatchService implements OnModuleInit {
     }
   }
 
+  async reAllocationBatch(studentId: string, batchid: string) {
+    try {
+      const user = await this.studentRepo.findOne({
+        where: { uuid: studentId },
+      });
+
+      if (!user) {
+        return new NotFoundException('user not founded');
+      }
+
+      const batch = await this.batchRepo.findOne({
+        where: {
+          uuid: batchid,
+        },
+      });
+
+      if (!batch) {
+        return new NotFoundException('batch not founded');
+      }
+
+      Object.assign(user, { batch_id: batch.uuid });
+
+      await this.studentRepo.save(user);
+
+      return {
+        message: 'student re-allocated success',
+        sucess: true,
+      };
+    } catch (error) {
+      console.error(error, 'update batch error!');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
+
   async completedbatch() {
     const nowDate = new Date();
     const data = await this.batchRepo.find({

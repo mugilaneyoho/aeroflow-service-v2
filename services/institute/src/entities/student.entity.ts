@@ -35,6 +35,9 @@ export class StudentProfileEntity {
   @Column('uuid')
   admittedBy!: string;
 
+  @Column('uuid')
+  leadId!: string;
+
   @Column({ length: 191 })
   student_name!: string;
 
@@ -48,22 +51,25 @@ export class StudentProfileEntity {
   phone_number!: string;
 
   @Column({ length: 20, nullable: true })
-  alter_number!: string;
+  parent_number!: string;
+
+  @Column({ length: 191, nullable: false, default: '' })
+  father_name!: string;
+
+  @Column({ length: 191, nullable: false, default: '' })
+  mother_name!: string;
+
+  @Column({ type: 'timestamp', nullable: false, default: () => 'CURRENT_DATE' })
+  dob!: Date;
 
   @Column({ length: 10 })
   gender!: string;
 
-  @Column({ length: 255 })
-  address!: string;
+  @Column({ type: 'text', nullable: false, default: '' })
+  currentAddress!: string;
 
-  @Column({ length: 100 })
-  city!: string;
-
-  @Column({ length: 100 })
-  state!: string;
-
-  @Column({ length: 20 })
-  pincode!: string;
+  @Column({ type: 'text', nullable: false, default: '' })
+  permantAddress!: string;
 
   @Column({ length: 100 })
   qualification!: string;

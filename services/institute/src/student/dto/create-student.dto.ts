@@ -7,17 +7,14 @@ import {
   IsString,
   IsUUID,
 } from 'class-validator';
+import { FindOperator } from 'typeorm';
 
 export class CreateStudentDto {
+  [x: string]: string | FindOperator<string> | undefined;
   @ApiProperty({ example: 'course uuid' })
   @IsUUID()
   @IsNotEmpty()
   course_id!: string;
-
-  // @ApiProperty({ example: 'batch uuid' })
-  // @IsUUID()
-  // @IsNotEmpty()
-  // batch_id!: string;
 
   @ApiProperty({ example: 'devilhackii' })
   @IsString()
@@ -33,11 +30,6 @@ export class CreateStudentDto {
   @IsPhoneNumber()
   @IsNotEmpty()
   phone_number!: string;
-
-  @ApiProperty({ example: '9876543210' })
-  @IsPhoneNumber()
-  @IsNotEmpty()
-  alter_number!: string;
 
   @ApiProperty({ example: 'b.tech' })
   @IsString()
@@ -59,23 +51,33 @@ export class CreateStudentDto {
   @IsNotEmpty()
   gender!: string;
 
-  @ApiProperty({ example: 'address' })
+  @ApiProperty({ example: 'parents number' })
   @IsString()
   @IsNotEmpty()
-  address!: string;
+  parent_number!: string;
 
-  @ApiProperty({ example: 'city' })
+  @ApiProperty({ example: 'father name' })
   @IsString()
   @IsNotEmpty()
-  city!: string;
+  father_name!: string;
 
-  @ApiProperty({ example: 'state' })
+  @ApiProperty({ example: 'mother name' })
   @IsString()
   @IsNotEmpty()
-  state!: string;
+  mother_name!: string;
 
-  @ApiProperty({ example: 'pincode' })
-  @IsString()
+  @ApiProperty({ example: '2026-02-06 16:58:45.130761' })
+  @IsDateString()
   @IsNotEmpty()
-  pincode!: string;
+  dob!: string;
+
+  @ApiProperty({ example: 'current address' })
+  @IsDateString()
+  @IsNotEmpty()
+  currentAddress!: string;
+
+  @ApiProperty({ example: 'permanent address' })
+  @IsDateString()
+  @IsNotEmpty()
+  permantAddress!: string;
 }

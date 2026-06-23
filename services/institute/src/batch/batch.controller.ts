@@ -32,6 +32,12 @@ export class BatchController {
   }
 
   @Roles([Role.HOD])
+  @Post('re-allocate')
+  reallocated(@Body() data: { studentId: string; batchid: string }) {
+    return this.batchService.reAllocationBatch(data.studentId, data.batchid);
+  }
+
+  @Roles([Role.HOD])
   @Get('all/:courseid')
   findAllByCourse(
     @Param('courseid') courseid: string,
