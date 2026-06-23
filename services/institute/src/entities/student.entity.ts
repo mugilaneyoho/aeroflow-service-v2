@@ -35,7 +35,7 @@ export class StudentProfileEntity {
   @Column('uuid')
   admittedBy!: string;
 
-  @Column('uuid')
+  @Column({ type: 'varchar', nullable: false, default: '' })
   leadId!: string;
 
   @Column({ length: 191 })
