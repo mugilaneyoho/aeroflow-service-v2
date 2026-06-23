@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable, NotFoundException } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CreatePlacementDto } from "src/dto/create_placement.dto";
 import { InterviewStatusDto } from "src/dto/interview_status.dto";
@@ -19,6 +20,7 @@ export class PlacementService {
         @InjectRepository(PlacementInvite) private placementInviteRepo: Repository<PlacementInvite>,
         @InjectRepository(InterviewSchedule) private scheduleInterviewRepo: Repository<InterviewSchedule>,
         @InjectRepository(InterviewStatus) private interviewStatusRepo: Repository<InterviewStatus>,
+        @Inject('NOTIFICATION_SERVICE') private readonly notificationClient: ClientProxy,
     ) { }
 
     async createPlacement(req: any, dto: CreatePlacementDto) {
@@ -177,9 +179,18 @@ export class PlacementService {
 
             await this.placementInviteRepo.save(invite);
 
+            this.notificationClient.emit('placement.invited', {
+                userId: invite.student_id,
+                title: 'New Placement Invitation',
+                message: 'You have been invited to apply for a new placement opportunity.',
+                priority: 'HIGH',
+                type: 'INFO',
+                Role: 'STUDENT'
+            })
+
             return {
                 success: true,
-                message: 'Placement invite sent successfully'
+                message: 'Placement invitation sent successfully'
             }
         } catch (error: any) {
             throw new HttpException(

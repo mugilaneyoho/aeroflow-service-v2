@@ -30,7 +30,7 @@ export class Placements  {
     @Column()
     openings?: number;
 
-    @Column()
+    @Column({})
     eligibility_criteria?: string;
 
     @Column('date')
