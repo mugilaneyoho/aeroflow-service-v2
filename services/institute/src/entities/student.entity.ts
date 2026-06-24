@@ -35,7 +35,7 @@ export class StudentProfileEntity {
   @Column('uuid')
   admittedBy!: string;
 
-  @Column({ type: 'varchar', nullable: false, default: '' })
+  @Column({ type: 'uuid', nullable: true })
   leadId!: string;
 
   @Column({ length: 191 })
@@ -43,7 +43,7 @@ export class StudentProfileEntity {
 
   @Column({ length: 50 })
   student_id!: string;
-
+  
   @Column({ length: 191 })
   email!: string;
 
@@ -97,4 +97,10 @@ export class StudentProfileEntity {
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
+
+  @Column({type: 'text', array: true, nullable: true})
+  preferredLocations?: string[];
+
+  @Column({default: false})
+  is_no_due!: boolean;
 }

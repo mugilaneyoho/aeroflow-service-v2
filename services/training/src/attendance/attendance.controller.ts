@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Req, Res } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { Roles } from 'src/role/role.decorator';
 import { Role } from 'src/role/role.enum';
+import type { Response } from 'express';
 
 @Controller('attendance')
 export class AttendanceController {
@@ -36,6 +37,15 @@ export class AttendanceController {
     @Query('date') date: string,
   ) {
     return this.attendaceService.FindStudentAttendance(req, date);
+  }
+
+  @Get('report/export')
+  async exportReport(
+    @Res() res: Response,
+    @Query('studentId') studentId?: string,
+    @Query('batchId') batchId?: string,
+  ) {
+    await this.attendaceService.exportAttendanceReport(res, studentId, batchId);
   }
 
   @Get(':classId')

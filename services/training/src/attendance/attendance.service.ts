@@ -21,10 +21,13 @@ import { OnlineClassesEntity } from 'src/entities/OnlineClass.entity';
 import { OfflineClassesEntity } from 'src/entities/OfflineClass.entity';
 import { lastValueFrom, Observable } from 'rxjs';
 import * as microservices from '@nestjs/microservices';
+import * as ExcelJS from 'exceljs';
+import { Response } from 'express';
 
 interface batchgrpc {
   GetById(data: { batchid: string }): Observable<any>;
   GetByStudentId(data: { studentId: string }): Observable<any>;
+  GetcompleteBatch(data: {}): Observable<any>;
 }
 
 @Injectable()
@@ -352,6 +355,392 @@ export class AttendanceService implements OnModuleInit {
       throw new InternalServerErrorException({
         success: false,
         message: 'internal server error',
+      });
+    }
+  }
+
+  async exportAttendanceReport(
+    res: Response,
+    studentId?: string,
+    batchId?: string,
+  ) {
+    try {
+      // 1. Fetch batches and students list from Grpc service
+      const grpc_batches: { data: string } = await lastValueFrom(
+        this.batchService.GetcompleteBatch({}),
+      );
+      const batchesData: any[] = JSON.parse(grpc_batches.data || '[]');
+
+      // 2. Fetch all online and offline classes
+      const onlineClasses = await this.onlineRepo.find();
+      const offlineClasses = await this.offlineRepo.find();
+      
+      const classMap = new Map<string, { subject: string; class_mode: string; batch_id: string }>();
+      for (const c of onlineClasses) {
+        classMap.set(c.uuid, { subject: c.subject, class_mode: 'online', batch_id: c.batch_id });
+      }
+      for (const c of offlineClasses) {
+        classMap.set(c.uuid, { subject: c.subject, class_mode: 'offline', batch_id: c.batch_id });
+      }
+
+      const workbook = new ExcelJS.Workbook();
+
+      if (studentId) {
+        // --- SINGLE STUDENT EXPORT ---
+        let studentObj: any = null;
+        let foundBatchName = 'Unknown Batch';
+        for (const b of batchesData) {
+          const student = b.students?.find((s: any) => s.uuid === studentId);
+          if (student) {
+            studentObj = student;
+            foundBatchName = b.batchName;
+            break;
+          }
+        }
+
+        // Fetch all attendance status records for this student
+        const records = await this.statusRepo.find({
+          where: { studentId },
+          relations: ['attendance'],
+        });
+
+        // Sort records by class date
+        records.sort((a, b) => new Date(a.attendance.date).getTime() - new Date(b.attendance.date).getTime());
+
+        const studentName = studentObj ? (studentObj.student_name || studentObj.studentName) : (records[0]?.name || 'Student');
+        const roleNo = studentObj ? (studentObj.student_id || studentObj.studentId) : (records[0]?.roleNo || 'N/A');
+
+        const totalSessions = records.length;
+        const attended = records.filter(r => r.status === StatusRecordEnum.PRESENT).length;
+        const absent = totalSessions - attended;
+        const attendanceRate = totalSessions > 0 ? Math.round((attended / totalSessions) * 100) : 0;
+
+        const sheet = workbook.addWorksheet('Attendance Log');
+
+        sheet.mergeCells('A1:E1');
+        const titleCell = sheet.getCell('A1');
+        titleCell.value = 'AeroFlow - Student Attendance Detailed Report';
+        titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        sheet.getRow(1).height = 40;
+
+        sheet.addRow([]);
+
+        sheet.addRow(['Student Name:', studentName, '', 'Batch:', foundBatchName]);
+        sheet.addRow(['Student ID:', roleNo, '', 'Attendance Rate:', `${attendanceRate}%`]);
+        sheet.addRow(['Total Sessions:', totalSessions, '', 'Attended / Absent:', `${attended} / ${absent}`]);
+        
+        sheet.getRow(3).font = { bold: true };
+        sheet.getRow(4).font = { bold: true };
+        sheet.getRow(5).font = { bold: true };
+
+        sheet.addRow([]);
+
+        sheet.addRow(['Sl. No.', 'Date', 'Class Topic / Subject', 'Class Mode', 'Status']);
+        
+        const headerRow = sheet.getRow(8);
+        headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF374151' } };
+        headerRow.alignment = { horizontal: 'center' };
+
+        records.forEach((rec, idx) => {
+          const classInfo = classMap.get(rec.attendance.classId);
+          const subject = classInfo ? classInfo.subject : 'Curriculum Unit';
+          const mode = classInfo ? classInfo.class_mode.toUpperCase() : 'ONLINE';
+          const formattedDate = new Date(rec.attendance.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+          });
+
+          sheet.addRow([
+            idx + 1,
+            formattedDate,
+            subject,
+            mode,
+            rec.status
+          ]);
+
+          const rowNum = 9 + idx;
+          const statusCell = sheet.getCell(`E${rowNum}`);
+          if (rec.status === StatusRecordEnum.PRESENT) {
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+            statusCell.font = { color: { argb: 'FF065F46' }, bold: true };
+          } else {
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+            statusCell.font = { color: { argb: 'FF991B1B' }, bold: true };
+          }
+        });
+
+        sheet.eachRow((row, rowNum) => {
+          if (rowNum >= 8) {
+            row.eachCell(cell => {
+              cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+              };
+              if (cell.col !== 'C') {
+                cell.alignment = { horizontal: 'center' };
+              }
+            });
+          }
+        });
+
+        sheet.columns.forEach(column => {
+          let maxLen = 0;
+          column.eachCell!({ includeEmpty: true }, cell => {
+            const valLen = cell.value ? cell.value.toString().length : 0;
+            if (valLen > maxLen) maxLen = valLen;
+          });
+          column.width = Math.max(maxLen + 3, 12);
+        });
+
+      } else {
+        // --- MULTIPLE STUDENTS EXPORT ---
+        const allRecords = await this.statusRepo.find({
+          relations: ['attendance'],
+        });
+
+        allRecords.sort((a, b) => new Date(a.attendance.date).getTime() - new Date(b.attendance.date).getTime());
+
+        let targetStudents: any[] = [];
+        const studentToBatchName = new Map<string, string>();
+
+        batchesData.forEach(b => {
+          if (!batchId || b.uuid === batchId || b.batchName === batchId) {
+            b.students?.forEach((s: any) => {
+              targetStudents.push({
+                uuid: s.uuid,
+                studentName: s.student_name || s.studentName || 'Student',
+                studentId: s.student_id || s.studentId || 'N/A',
+                batchName: b.batchName,
+                batchId: b.uuid
+              });
+              studentToBatchName.set(s.uuid, b.batchName);
+            });
+          }
+        });
+
+        if (targetStudents.length === 0 && allRecords.length > 0) {
+          const uniqueStudentIds = new Set(allRecords.map(r => r.studentId));
+          uniqueStudentIds.forEach(id => {
+            const studentRec = allRecords.find(r => r.studentId === id);
+            if (studentRec) {
+              targetStudents.push({
+                uuid: id,
+                studentName: studentRec.name,
+                studentId: studentRec.roleNo,
+                batchName: 'Unknown Batch',
+                batchId: 'unknown'
+              });
+            }
+          });
+        }
+
+        const studentStats = targetStudents.map(student => {
+          const studentRecords = allRecords.filter(r => r.studentId === student.uuid);
+          const total = studentRecords.length;
+          const attended = studentRecords.filter(r => r.status === StatusRecordEnum.PRESENT).length;
+          const absent = total - attended;
+          const rate = total > 0 ? Math.round((attended / total) * 100) : 0;
+
+          return {
+            ...student,
+            total,
+            attended,
+            absent,
+            rate
+          };
+        });
+
+        studentStats.sort((a, b) => (a.studentName || '').localeCompare(b.studentName || ''));
+
+        const summarySheet = workbook.addWorksheet('Summary Dashboard');
+        
+        summarySheet.mergeCells('A1:H1');
+        const titleCell = summarySheet.getCell('A1');
+        titleCell.value = batchId 
+          ? `AeroFlow - Attendance Summary: ${batchId}` 
+          : 'AeroFlow - Overall Attendance Summary Report';
+        titleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+        titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        summarySheet.getRow(1).height = 40;
+
+        summarySheet.addRow([]);
+
+        const totalEnrolled = studentStats.length;
+        const avgAttendance = totalEnrolled > 0 
+          ? Math.round(studentStats.reduce((acc, s) => acc + s.rate, 0) / totalEnrolled) 
+          : 0;
+        const regularCount = studentStats.filter(s => s.rate >= 85).length;
+        const atRiskCount = studentStats.filter(s => s.rate < 75).length;
+
+        summarySheet.addRow(['Total Enrolled:', totalEnrolled, '', 'Average Attendance:', `${avgAttendance}%`]);
+        summarySheet.addRow(['Regular Students (>=85%):', regularCount, '', 'At-Risk Students (<75%):', atRiskCount]);
+        summarySheet.getRow(3).font = { bold: true };
+        summarySheet.getRow(4).font = { bold: true };
+
+        summarySheet.addRow([]);
+
+        summarySheet.addRow(['Sl. No.', 'Student ID', 'Student Name', 'Batch Name', 'Total Sessions', 'Attended', 'Absent', 'Attendance Rate (%)']);
+        const summaryHeaderRow = summarySheet.getRow(6);
+        summaryHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        summaryHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF374151' } };
+        summaryHeaderRow.alignment = { horizontal: 'center' };
+
+        studentStats.forEach((stat, idx) => {
+          summarySheet.addRow([
+            idx + 1,
+            stat.studentId,
+            stat.studentName,
+            stat.batchName,
+            stat.total,
+            stat.attended,
+            stat.absent,
+            `${stat.rate}%`
+          ]);
+
+          const rowNum = 7 + idx;
+          const rateCell = summarySheet.getCell(`H${rowNum}`);
+          if (stat.rate >= 85) {
+            rateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'D1FAE5' } };
+            rateCell.font = { color: { argb: '065F46' }, bold: true };
+          } else if (stat.rate < 75) {
+            rateCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FEE2E2' } };
+            rateCell.font = { color: { argb: '991B1B' }, bold: true };
+          }
+        });
+
+        summarySheet.eachRow((row, rowNum) => {
+          if (rowNum >= 6) {
+            row.eachCell(cell => {
+              cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+              };
+              if (cell.col !== 'C' && cell.col !== 'D') {
+                cell.alignment = { horizontal: 'center' };
+              }
+            });
+          }
+        });
+
+        summarySheet.columns.forEach(column => {
+          let maxLen = 0;
+          column.eachCell!({ includeEmpty: true }, cell => {
+            const valLen = cell.value ? cell.value.toString().length : 0;
+            if (valLen > maxLen) maxLen = valLen;
+          });
+          column.width = Math.max(maxLen + 3, 12);
+        });
+
+        const logsSheet = workbook.addWorksheet('Detailed Daily Logs');
+        
+        logsSheet.mergeCells('A1:H1');
+        const logsTitleCell = logsSheet.getCell('A1');
+        logsTitleCell.value = 'AeroFlow - Daily Attendance Status Logs';
+        logsTitleCell.font = { name: 'Arial', size: 16, bold: true, color: { argb: 'FFFFFFFF' } };
+        logsTitleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0EA5E9' } };
+        logsTitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+        logsSheet.getRow(1).height = 40;
+
+        logsSheet.addRow([]);
+
+        logsSheet.addRow(['Sl. No.', 'Date', 'Student ID', 'Student Name', 'Batch', 'Class Topic / Subject', 'Class Mode', 'Status']);
+        const logsHeaderRow = logsSheet.getRow(3);
+        logsHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        logsHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF374151' } };
+        logsHeaderRow.alignment = { horizontal: 'center' };
+
+        let rowIdx = 1;
+        allRecords.forEach(rec => {
+          const studentBatchName = studentToBatchName.get(rec.studentId);
+          if (batchId && !studentBatchName) return;
+
+          const classInfo = classMap.get(rec.attendance.classId);
+          const subject = classInfo ? classInfo.subject : 'Curriculum Unit';
+          const mode = classInfo ? classInfo.class_mode.toUpperCase() : 'ONLINE';
+          const formattedDate = new Date(rec.attendance.date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: '2-digit'
+          });
+
+          logsSheet.addRow([
+            rowIdx,
+            formattedDate,
+            rec.roleNo,
+            rec.name,
+            studentBatchName || 'Unknown Batch',
+            subject,
+            mode,
+            rec.status
+          ]);
+
+          const rowNum = 3 + rowIdx;
+          const statusCell = logsSheet.getCell(`H${rowNum}`);
+          if (rec.status === StatusRecordEnum.PRESENT) {
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD1FAE5' } };
+            statusCell.font = { color: { argb: 'FF065F46' }, bold: true };
+          } else {
+            statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFEE2E2' } };
+            statusCell.font = { color: { argb: 'FF991B1B' }, bold: true };
+          }
+
+          rowIdx++;
+        });
+
+        logsSheet.eachRow((row, rowNum) => {
+          if (rowNum >= 3) {
+            row.eachCell(cell => {
+              cell.border = {
+                top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+                right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+              };
+              if (cell.col !== 'D' && cell.col !== 'E' && cell.col !== 'F') {
+                cell.alignment = { horizontal: 'center' };
+              }
+            });
+          }
+        });
+
+        logsSheet.columns.forEach(column => {
+          let maxLen = 0;
+          column.eachCell!({ includeEmpty: true }, cell => {
+            const valLen = cell.value ? cell.value.toString().length : 0;
+            if (valLen > maxLen) maxLen = valLen;
+          });
+          column.width = Math.max(maxLen + 3, 12);
+        });
+      }
+
+      res.setHeader(
+        'Content-Type',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      );
+      const filename = studentId ? `attendance_report_${studentId}.xlsx` : 'attendance_summary_report.xlsx';
+      res.setHeader(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`,
+      );
+
+      await workbook.xlsx.write(res);
+      res.end();
+
+    } catch (error: any) {
+      console.error('Error generating Excel report:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Internal server error generating attendance report',
+        error: error.message
       });
     }
   }

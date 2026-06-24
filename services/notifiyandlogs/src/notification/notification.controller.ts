@@ -47,4 +47,9 @@ export class NotificationController {
   async remove(@Param('uuid') uuid: string) {
     return this.notificationService.remove(uuid);
   }
+
+  @EventPattern('placement.invited')
+  async handlePlacementInvite (@Payload() data: any,) {
+    return this.notificationService.create(data)
+  }
 }
