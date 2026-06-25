@@ -172,6 +172,7 @@ export class PlacementService {
             const [placements, total] = await this.placementInviteRepo.findAndCount({
                 skip: (page - 1) * limit,
                 take: limit,
+                relations: { placement: true }
             });
 
             return {

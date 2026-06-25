@@ -34,7 +34,7 @@ export class PlacementInvite {
     @Column({default: false})
     is_deleted!: boolean;
 
-    @ManyToOne(()=> Placements, (placement)=> placement.id)
+    @ManyToOne(()=> Placements, (placement)=> placement.invite)
     @JoinColumn({name: 'placement_id'})
     placement!: Placements
 
