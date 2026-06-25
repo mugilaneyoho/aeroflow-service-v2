@@ -354,13 +354,14 @@ export class PlacementService {
                     round_no: dto.roundNo,
                     round_name: dto.roundName,
                     interview_type: dto.interviewType,
-                    venue: dto.interviewType === 'ON-SITE' ? dto.venue : undefined,
-                    meeting_link: dto.interviewType === 'ON-SITE' ? undefined : dto.meetLink,
+                    venue: dto.interviewType === 'OFFLINE' ? dto.venue : undefined,
+                    meeting_link: dto.interviewType === 'OFFLINE' ? undefined : dto.meetLink,
                     interviewer_name: dto.interviewer,
                     scheduled_date: dto.scheduledDate,
                     start_time: dto.startTime,
                     end_time: dto.endTime,
-                    schedule_status: 'SCHEDULED'
+                    schedule_status: 'SCHEDULED',
+                    instructions: dto.instructions
                 })
 
                 await this.scheduleInterviewRepo.save(schedule);

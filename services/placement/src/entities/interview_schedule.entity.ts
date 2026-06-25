@@ -19,7 +19,7 @@ export class InterviewSchedule {
     round_name?: string;
 
     @Column()
-    interview_type!: 'VIRTUAL' | 'ON-SITE'
+    interview_type!: 'ONLINE' | 'OFFLINE'
 
     @Column()
     scheduled_date!: Date;
@@ -32,6 +32,9 @@ export class InterviewSchedule {
 
     @Column({nullable: true})
     venue?: string;
+
+    @Column({nullable: true})
+    instructions?: string;
 
     @Column({nullable: true})
     meeting_link?: string;
