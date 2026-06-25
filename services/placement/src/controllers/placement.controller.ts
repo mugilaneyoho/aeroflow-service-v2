@@ -94,4 +94,9 @@ export class PlacementController {
   ) {
     return this.placementService.updateInterviewStatus(id, dto);
   }
+
+  @Patch('student/eligible/:uuid')
+  markEligible(@Param('uuid') uuid: string) {
+    return this.placementService.markStudentEligible(uuid);
+  }
 }

@@ -87,11 +87,44 @@ export class AppService implements OnModuleInit {
         : 0,
     }));
 
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const todayCollectionResult = await this.paymentRepo
+      .createQueryBuilder('payment')
+      .select('SUM(payment.amount)', 'sum')
+      .where('payment.paymentDate >= :todayStart', { todayStart })
+      .andWhere('payment.status = :status', { status: PaymentStatus.SUCCEEDED })
+      .getRawOne();
+
+    const feesStatsResult = await this.feesRepo
+      .createQueryBuilder('fees')
+      .select('SUM(fees.totalFees)', 'totalFees')
+      .addSelect('SUM(fees.paidAmount)', 'paidAmount')
+      .getRawOne();
+
+    const overdueCount = await this.feesRepo
+      .createQueryBuilder('fees')
+      .where('fees.totalFees > fees.paidAmount')
+      .getCount();
+
+    const totalCollected = Number(feesStatsResult?.paidAmount || 0);
+    const totalFees = Number(feesStatsResult?.totalFees || 0);
+    const totalPending = totalFees - totalCollected;
+
+    const stats = {
+      todayCollection: Number(todayCollectionResult?.sum || 0),
+      totalCollected,
+      totalPending,
+      overdueStudents: overdueCount,
+    };
+
     return {
       success: true,
       message: 'payment data fetched',
       data: mappedData,
       paystatus,
+      stats,
       meta: {
         total,
       },
@@ -145,12 +178,111 @@ export class AppService implements OnModuleInit {
 
       await this.feesRepo.update(
         { uuid: feeList.uuid },
-        { admissionFeesId: fees.uuid },
+        { admissionFeesId: fees.uuid, totalFees: Number(data.totalFees) },
       );
     }
 
     return {
       data: fees,
+    };
+  }
+
+  async createManualPayment(data: {
+    studentId: string;
+    studentName: string;
+    amount: number;
+    paymentDate: Date | string;
+    paymentMode: string;
+    transactionId: string;
+    paymentPerpose: PaymentPerpose;
+    notes?: string;
+    phoneNumber?: string;
+    collectedBy?: string;
+  }) {
+    const nowDate = new Date();
+    const receiptNumber = genereateRecipetID();
+
+    let student_fee = await this.feesRepo.findOne({
+      where: { studentId: data.studentId },
+    });
+
+    if (!student_fee) {
+      // Fetch student details from StudentService via gRPC to get course fees
+      let totalFees = 0;
+      try {
+        const grpc_res: { data: string } = (await lastValueFrom(
+          this.studentService.GetStudent({ uuid: data.studentId }),
+        )) as { data: string };
+        const studentDetails = JSON.parse(grpc_res.data);
+        totalFees = Number(studentDetails.data?.course?.price || 0);
+      } catch (error) {
+        console.error('Failed to fetch student details via gRPC:', error);
+      }
+
+      student_fee = this.feesRepo.create({
+        studentId: data.studentId,
+        admissionFeesPay: data.paymentPerpose === PaymentPerpose.ADMISSIONFEE,
+        admissionFeesAmount:
+          data.paymentPerpose === PaymentPerpose.ADMISSIONFEE ? data.amount : 0,
+        totalFees: totalFees,
+        paidAmount: data.amount,
+        lastPaidDate: data.paymentDate ? new Date(data.paymentDate) : nowDate,
+      });
+      student_fee = await this.feesRepo.save(student_fee);
+    } else {
+      // update existing student fee record
+      const isAdmission = data.paymentPerpose === PaymentPerpose.ADMISSIONFEE;
+      const updatedPaidAmount =
+        Number(student_fee.paidAmount || 0) + Number(data.amount);
+
+      const updateData: Partial<StudentFeesEntity> = {
+        paidAmount: updatedPaidAmount,
+        lastPaidDate: data.paymentDate ? new Date(data.paymentDate) : nowDate,
+      };
+
+      if (isAdmission) {
+        updateData.admissionFeesPay = true;
+        updateData.admissionFeesAmount = Number(data.amount);
+      }
+
+      await this.feesRepo.update({ uuid: student_fee.uuid }, updateData);
+
+      // reload student fee to make sure we have the updated record for the payment relation
+      student_fee =
+        (await this.feesRepo.findOne({
+          where: { uuid: student_fee.uuid },
+        })) || student_fee;
+    }
+
+    const pay = this.paymentRepo.create({
+      studentFeesId: student_fee.uuid,
+      studentId: data.studentId,
+      studentName: data.studentName,
+      amount: Number(data.amount),
+      paymentDate: data.paymentDate ? new Date(data.paymentDate) : nowDate,
+      paymentMode: data.paymentMode || 'CASH',
+      transactionId: data.transactionId || receiptNumber,
+      receiptNumber: receiptNumber,
+      notes: data.notes || 'Manual payment entry',
+      phoneNumber: data.phoneNumber || '',
+      collectedBy: data.collectedBy || 'Admin',
+      status: PaymentStatus.SUCCEEDED,
+      paymentPerpose: data.paymentPerpose || PaymentPerpose.COURSEFEE,
+    });
+
+    const savedPayment = await this.paymentRepo.save(pay);
+
+    if (data.paymentPerpose === PaymentPerpose.ADMISSIONFEE) {
+      await this.feesRepo.update(
+        { uuid: student_fee.uuid },
+        { admissionFeesId: savedPayment.uuid },
+      );
+    }
+
+    return {
+      success: true,
+      message: 'Payment recorded successfully',
+      data: savedPayment,
     };
   }
 

@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package student;
+
+service StudentService {
+    rpc CreateStudent (create) returns (response);
+    rpc GetStudent (getparams) returns (getresponse);
+    rpc PlacementEligible (placementdata) returns (response);
+}
+
+message placementdata {
+    repeated string data = 1;               
+}
+
+message create {
+    string email = 1;
+    string password = 2;
+    string profileId = 3;
+}
+
+message response {
+    bool success = 1;
+    string message = 2;
+}
+
+message getparams {
+    string uuid = 1;
+}
+
+message getresponse {
+    string data = 1;
+}

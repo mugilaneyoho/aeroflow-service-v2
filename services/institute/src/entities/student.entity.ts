@@ -43,7 +43,7 @@ export class StudentProfileEntity {
 
   @Column({ length: 50 })
   student_id!: string;
-  
+
   @Column({ length: 191 })
   email!: string;
 

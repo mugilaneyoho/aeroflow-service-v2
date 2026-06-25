@@ -31,7 +31,7 @@ export class StudentController {
     return this.studentService.create(data);
   }
 
-  @Get('all')
+  @Get('all/:id')
   findAll(@Query() query: { page: string; limit: string; approved?: string }) {
     return this.studentService.findAll(query);
   }
@@ -59,6 +59,11 @@ export class StudentController {
     return this.studentService.studentCount();
   }
 
+  @Get('report-student')
+  getStudentReport() {
+    return this.studentService.getStudentReport();
+  }
+
   @Get('export-Report')
   async exportStudentReport(@Res() res: Response) {
     await this.studentService.generateStudentReportExcel(res);
@@ -72,11 +77,6 @@ export class StudentController {
   @Delete(':uuid')
   deleteOne(@Param('uuid') uuid: string) {
     return this.studentService.deleteOne(uuid);
-  }
-
-  @Get('report-student')
-  getStudentReport() {
-    return this.studentService.getStudentReport();
   }
 
   @Get('report/:uuid')

@@ -59,5 +59,5 @@ export class Placements {
     updated_at?: Date;
 
     @OneToMany(() => PlacementInvite, (invite) => invite.placement)
-    students!: PlacementInvite[];
+    invite!: PlacementInvite[];
 }

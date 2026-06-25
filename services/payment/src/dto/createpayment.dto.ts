@@ -1,4 +1,5 @@
 export class CreatePaymentDto {
+  [x: string]: any;
   amount!: number;
   paymentDate!: Date;
   paymentMode!: string;

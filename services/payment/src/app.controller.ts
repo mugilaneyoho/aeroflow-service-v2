@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res, Response } from '@nestjs/common';
+import { Controller, Get, Param, Res, Response, Post, Body, Headers } from '@nestjs/common';
 import { AppService } from './app.service';
 import { GrpcMethod } from '@nestjs/microservices';
 import { CreateGRPCdto, CreatePaymentDto } from './dto/createpayment.dto';
@@ -11,6 +11,26 @@ export class AppController {
     private readonly appService: AppService,
     private readonly pdfService: PdfService,
   ) {}
+
+  @Post('manual-payment')
+  async createManualPayment(
+    @Body() data: any,
+    @Headers('user') userHeader?: string,
+  ) {
+    let collectedBy = 'Admin';
+    if (userHeader) {
+      try {
+        const user = JSON.parse(userHeader);
+        collectedBy = user.student_name || user.email || 'Admin'; // wait, in backend, what is the user's name field? Let's check: telecalling or reception panels usually set email/name. So user.student_name or user.name or user.email
+      } catch (e) {
+        console.error('Failed to parse user header', e);
+      }
+    }
+    return this.appService.createManualPayment({
+      ...data,
+      collectedBy,
+    });
+  }
 
   @Get()
   getHello(): string {

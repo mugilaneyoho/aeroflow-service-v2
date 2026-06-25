@@ -426,6 +426,7 @@ export class StudentService implements OnModuleInit {
         message: string;
         data: any[];
         meta: any;
+        stats?: any;
       } = await lastValueFrom(this.PaymentService.GetAllPayment({}));
 
       console.log(response);
@@ -456,6 +457,7 @@ export class StudentService implements OnModuleInit {
         success: true,
         message: 'payment data fetched',
         data: combinedData,
+        stats: response.stats,
         meta: response.meta,
       };
     } catch (error) {
@@ -569,7 +571,7 @@ export class StudentService implements OnModuleInit {
       for (const student of data) {
         await this.studentRepo.update(
           { uuid: student },
-          { is_eligible_placement: true },
+          { is_eligible_placement: true, is_no_due: true },
         );
       }
 
