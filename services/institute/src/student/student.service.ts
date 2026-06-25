@@ -585,4 +585,29 @@ export class StudentService implements OnModuleInit {
       };
     }
   }
+
+  async getplacement(eligible: boolean) {
+    try {
+      const student = await this.studentRepo.find({
+        where: eligible
+          ? {
+              is_eligible_placement: eligible,
+              is_no_due: eligible,
+            }
+          : [{ is_eligible_placement: eligible }, { is_no_due: eligible }],
+        relations: ['course', 'batch'],
+      });
+      return {
+        success: true,
+        data: student,
+        message: 'student deleted successfully.',
+      };
+    } catch (error) {
+      console.error(error, 'delete staff error');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
 }

@@ -36,6 +36,12 @@ export class StudentController {
     return this.studentService.findAll(query);
   }
 
+  @Get('placement')
+  findplacement(@Query() query: { eligible: any }) {
+    const isEligible = String(query.eligible) === 'true';
+    return this.studentService.getplacement(isEligible);
+  }
+
   @Roles([Role.MASTER, Role.HOD, Role.SUBADMIN])
   @Patch(':uuid/approve')
   approveStudent(@Param('uuid') uuid: string) {
