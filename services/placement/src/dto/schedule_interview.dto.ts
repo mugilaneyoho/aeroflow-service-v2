@@ -14,7 +14,7 @@ export class ScheduleInterviewDto {
     roundName?: string;
 
     @IsString()
-    interviewType!: 'VIRTUAL' | 'ON-SITE';
+    interviewType!: 'ONLINE' | 'OFFLINE';
 
     @IsString()
     scheduledDate!: string;
@@ -33,4 +33,7 @@ export class ScheduleInterviewDto {
 
     @IsString()
     interviewer?: string;
+
+    @IsString()
+    instructions?: string;
 }

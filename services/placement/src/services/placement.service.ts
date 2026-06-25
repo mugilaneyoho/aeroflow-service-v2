@@ -363,33 +363,53 @@ export class PlacementService implements OnModuleInit {
   }
 
   async scheduleInterview(req: any, dto: ScheduleInterviewDto) {
-    console.log('DtooSche', dto);
     try {
-      const schedule = this.scheduleInterviewRepo.create({
-        placement_id: dto.placementId,
-        student_id: dto.studentId,
-        round_no: dto.roundNo,
-        round_name: dto.roundName,
-        interview_type: dto.interviewType,
-        venue: dto.interviewType === 'ON-SITE' ? dto.venue : undefined,
-        meeting_link:
-          dto.interviewType === 'ON-SITE' ? undefined : dto.meetLink,
-        interviewer_name: dto.interviewer,
-        scheduled_date: dto.scheduledDate,
-        start_time: dto.startTime,
-        end_time: dto.endTime,
-        schedule_status: 'SCHEDULED',
+      const placementDetails = await this.placementRepo.findOne({
+        where: {
+          id: dto.placementId,
+          is_deleted: false,
+        },
       });
 
-      await this.scheduleInterviewRepo.save(schedule);
+      const students = dto.studentId;
 
-      const status = this.interviewStatusRepo.create({
-        interview_schedule_id: schedule.id,
-        student_id: schedule.student_id,
-        status: 'PENDING',
-      });
+      for (const studentId of students) {
+        const schedule = this.scheduleInterviewRepo.create({
+          placement_id: dto.placementId,
+          student_id: studentId,
+          round_no: dto.roundNo,
+          round_name: dto.roundName,
+          interview_type: dto.interviewType,
+          venue: dto.interviewType === 'OFFLINE' ? dto.venue : undefined,
+          meeting_link:
+            dto.interviewType === 'OFFLINE' ? undefined : dto.meetLink,
+          interviewer_name: dto.interviewer,
+          scheduled_date: dto.scheduledDate,
+          start_time: dto.startTime,
+          end_time: dto.endTime,
+          schedule_status: 'SCHEDULED',
+          instructions: dto.instructions,
+        });
 
-      await this.interviewStatusRepo.save(status);
+        await this.scheduleInterviewRepo.save(schedule);
+
+        const status = this.interviewStatusRepo.create({
+          interview_schedule_id: schedule.id,
+          student_id: studentId,
+          status: 'PENDING',
+        });
+
+        await this.interviewStatusRepo.save(status);
+
+        this.notificationClient.emit('placement.invited', {
+          userId: studentId,
+          title: `Interview Scheduled for ${placementDetails?.placement_code}`,
+          message: `Your interview for the position of ${placementDetails?.job_title} has been scheduled. Please check the interview details and be prepared to attend.`,
+          priority: 'HIGH',
+          type: 'INFO',
+          Role: 'STUDENT',
+        });
+      }
 
       return {
         success: true,
