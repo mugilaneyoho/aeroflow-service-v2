@@ -128,4 +128,9 @@ export class StudentController {
     const res = await this.studentService.updatePlacementEligible(req.data);
     return res;
   }
+
+  @Patch(':uuid')
+  async studentLocationUpdate(@Param('uuid') uuid: string, @Body() data: any){
+    return this.studentService.studentLocationUpdate(uuid, data)
+  }
 }

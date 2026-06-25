@@ -612,4 +612,26 @@ export class StudentService implements OnModuleInit {
       });
     }
   }
+
+  async studentLocationUpdate(uuid: string, data: any) {
+    try {
+      if (!uuid) {
+        throw new NotFoundException('Student id is not found');
+      }
+      await this.studentRepo.update(
+        { uuid: uuid },
+        { preferredLocations: data.locations },
+      );
+      return {
+        success: true,
+        message: 'location updated',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'internal server error',
+      };
+    }
+  }
 }
