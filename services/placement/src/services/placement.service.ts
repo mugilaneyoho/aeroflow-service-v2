@@ -1,6 +1,7 @@
-import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
+import axios from "axios";
 import { CreatePlacementDto } from "src/dto/create_placement.dto";
 import { InterviewStatusDto } from "src/dto/interview_status.dto";
 import { PlacementInviteDto } from "src/dto/placement_invite.dto";
@@ -219,33 +220,89 @@ export class PlacementService {
 
     async invitePlacement(req: any, dto: PlacementInviteDto) {
         try {
-            const invite = this.placementInviteRepo.create({
-                placement_id: dto.placementId,
-                student_id: dto.studentId,
-                invited_by: dto.invitedBy,
-                invited_at: new Date()
-            })
+            const placementDetails = await this.placementRepo.findOne({
+                where: {
+                    id: dto.placementId,
+                    is_deleted: false,
+                },
+            });
 
-            await this.placementInviteRepo.save(invite);
+            if (!placementDetails) {
+                throw new BadRequestException('Placement not found');
+            }
 
-            this.notificationClient.emit('placement.invited', {
-                userId: invite.student_id,
-                title: 'New Placement Invitation',
-                message: 'You have been invited to apply for a new placement opportunity.',
-                priority: 'HIGH',
-                type: 'INFO',
-                Role: 'STUDENT'
-            })
+            const studentResponse = await axios.get(
+                'http://institute-service:3004/student/all'
+            );
+
+            const students = studentResponse?.data?.data || [];
+
+            const placementLocations = placementDetails.location
+
+            // Filter eligible students
+            const eligibleStudents = students.filter((student) => {
+                const preferredLocations = student.preferredLocations || [];
+
+                const locationMatched = preferredLocations.some((location) =>
+                    placementLocations.includes(location)
+                );
+
+                return (
+                    student.is_no_due === true &&
+                    student.is_eligible_placement === true &&
+                    locationMatched
+                );
+            });
+
+            const invites: PlacementInvite[] = [];
+
+            for (const student of eligibleStudents) {
+                const alreadyInvited = await this.placementInviteRepo.findOne({
+                    where: {
+                        student_id: student.id,
+                        placement_id: dto.placementId,
+                    },
+                });
+
+                if (alreadyInvited) {
+                    continue;
+                }
+
+                const invite = this.placementInviteRepo.create({
+                    placement_id: dto.placementId,
+                    student_id: student.id,
+                    invited_by: dto.invitedBy,
+                    invited_at: new Date(),
+                });
+
+                await this.placementInviteRepo.save(invite);
+
+                invites.push(invite);
+
+                // Send notification
+                this.notificationClient.emit('placement.invited', {
+                    userId: student.id,
+                    title: 'New Placement Invitation',
+                    message: `${placementDetails.job_title} has invited you for a placement opportunity.`,
+                    priority: 'HIGH',
+                    type: 'INFO',
+                    Role: 'STUDENT',
+                });
+            }
 
             return {
                 success: true,
-                message: 'Placement invitation sent successfully'
-            }
+                invitedCount: invites.length,
+                message: `${invites.length} eligible students invited successfully`,
+            };
         } catch (error: any) {
             throw new HttpException(
-                { success: false, message: error?.message },
-                HttpStatus.INTERNAL_SERVER_ERROR
-            )
+                {
+                    success: false,
+                    message: error?.message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 

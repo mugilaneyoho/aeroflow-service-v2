@@ -1,12 +1,13 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { PlacementInvite } from "./placement_invite.entity";
 
 @Entity('placements')
 
-export class Placements  {
+export class Placements {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column({unique: true})
+    @Column({ unique: true })
     placement_code!: string;
 
     @Column()
@@ -21,7 +22,7 @@ export class Placements  {
     @Column()
     job_type!: 'Full-Time' | 'Contract' | 'Part-Time';
 
-    @Column({type: 'text', array: true})
+    @Column({ type: 'text', array: true })
     location!: string[];
 
     @Column()
@@ -39,21 +40,24 @@ export class Placements  {
     @Column('date')
     application_end_date?: Date;
 
-    @Column({default: 'DRAFT'})
+    @Column({ default: 'DRAFT' })
     placement_status!: 'DRAFT' | 'OPEN' | 'CLOSED' | 'COMPLETED';
 
-    @Column({type: 'uuid', nullable: true})
+    @Column({ type: 'uuid', nullable: true })
     created_by?: string;
 
-    @Column({default: true})
+    @Column({ default: true })
     is_active!: boolean;
 
-    @Column({default: false})
+    @Column({ default: false })
     is_deleted!: boolean;
 
-    @CreateDateColumn({type: 'timestamptz'})
+    @CreateDateColumn({ type: 'timestamptz' })
     created_at?: Date;
 
-    @UpdateDateColumn({type: 'timestamptz', nullable: true})
+    @UpdateDateColumn({ type: 'timestamptz', nullable: true })
     updated_at?: Date;
+
+    @OneToMany(() => PlacementInvite, (invite) => invite.placement)
+    students!: PlacementInvite[];
 }

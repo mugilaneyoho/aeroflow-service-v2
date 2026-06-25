@@ -5,7 +5,7 @@ export class PlacementInviteDto {
     placementId!: string;
 
     @IsString()
-    studentId!: string;
+    studentId?: string;
 
     @IsString()
     invitedBy?: string;
