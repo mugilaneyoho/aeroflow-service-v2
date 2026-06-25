@@ -1,6 +1,7 @@
-import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Inject, Injectable, NotFoundException } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { InjectRepository } from "@nestjs/typeorm";
+import axios from "axios";
 import { CreatePlacementDto } from "src/dto/create_placement.dto";
 import { InterviewStatusDto } from "src/dto/interview_status.dto";
 import { PlacementInviteDto } from "src/dto/placement_invite.dto";
@@ -217,6 +218,11 @@ export class PlacementService {
 
     async invitePlacement(req: any, dto: PlacementInviteDto) {
         try {
+            const existInvited = await this.placementInviteRepo.findOne({ where: {student_id: dto.studentId, placement_id: dto.placementId}});
+
+            // if(existInvited) {
+            //     throw new BadRequestException('Already invited this placement')
+            // }
             const invite = this.placementInviteRepo.create({
                 placement_id: dto.placementId,
                 student_id: dto.studentId,
@@ -225,6 +231,12 @@ export class PlacementService {
             })
 
             await this.placementInviteRepo.save(invite);
+
+            const studentDetails = await axios.get('http://institute-service:3004/student/all')
+            const student = studentDetails?.data?.data;
+            console.log("Student", student)
+
+            student.filter(())
 
             this.notificationClient.emit('placement.invited', {
                 userId: invite.student_id,
