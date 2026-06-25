@@ -199,6 +199,44 @@ export class PlacementService implements OnModuleInit {
     }
   }
 
+  async getInviteStatusWithquery(
+    status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED',
+  ) {
+    try {
+      const getStudentStatus = await this.placementInviteRepo.find({
+        where: {
+          response_status: status,
+        },
+      });
+
+      const studentIds = getStudentStatus.map((invite) => invite.student_id);
+
+      const studentResponse = await axios.get(
+        'http://institute-service:3004/student/all',
+      );
+
+      const students = studentResponse.data.data;
+
+      const matchedStudents = students.filter((student: any) =>
+        studentIds.includes(student.uuid),
+      );
+
+      return {
+        success: true,
+        count: matchedStudents.length,
+        data: matchedStudents,
+      };
+    } catch (error: any) {
+      throw new HttpException(
+        {
+          success: false,
+          message: error?.message,
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   async getAllInvitePlacements(page = 1, limit = 10) {
     try {
       const [placements, total] = await this.placementInviteRepo.findAndCount({
