@@ -43,6 +43,8 @@ export class PlacementService {
 
             await this.placementRepo.save(placement);
 
+            await this.invitePlacement({placementId: placement.id})
+
             return {
                 success: true,
                 message: 'Placement created successfully'
@@ -120,7 +122,8 @@ export class PlacementService {
     async getInvitePlacementById(id: string) {
         try {
             const placement = await this.placementInviteRepo.findOne({
-                where: { id }
+                where: { id },
+                relations: { placement: true }
             });
 
             if (!placement) {
@@ -146,7 +149,7 @@ export class PlacementService {
                 take: limit,
                 order: {
                     created_at: 'DESC'
-                }
+                },
             });
 
             return {
@@ -217,7 +220,7 @@ export class PlacementService {
         }
     }
 
-    async invitePlacement(req: any, dto: PlacementInviteDto) {
+    async invitePlacement(dto: PlacementInviteDto) {
         try {
             const placementDetails = await this.placementRepo.findOne({
                 where: {
@@ -238,7 +241,6 @@ export class PlacementService {
 
             const placementLocations = placementDetails.location
 
-            // Filter eligible students
             const eligibleStudents = students.filter((student) => {
                 const preferredLocations = student.preferredLocations || [];
 
@@ -258,7 +260,7 @@ export class PlacementService {
             for (const student of eligibleStudents) {
                 const alreadyInvited = await this.placementInviteRepo.findOne({
                     where: {
-                        student_id: student.id,
+                        student_id: student.uuid,
                         placement_id: dto.placementId,
                     },
                 });
@@ -269,7 +271,7 @@ export class PlacementService {
 
                 const invite = this.placementInviteRepo.create({
                     placement_id: dto.placementId,
-                    student_id: student.id,
+                    student_id: student.uuid,
                     invited_by: dto.invitedBy,
                     invited_at: new Date(),
                 });
@@ -278,9 +280,8 @@ export class PlacementService {
 
                 invites.push(invite);
 
-                // Send notification
                 this.notificationClient.emit('placement.invited', {
-                    userId: student.id,
+                    userId: student.uuid,
                     title: 'New Placement Invitation',
                     message: `${placementDetails.job_title} has invited you for a placement opportunity.`,
                     priority: 'HIGH',

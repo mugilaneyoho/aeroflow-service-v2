@@ -1,6 +1,7 @@
 import { IsString } from "class-validator";
 
-export class PlacementInviteDto {
+export class 
+PlacementInviteDto {
     @IsString()
     placementId!: string;
 

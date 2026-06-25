@@ -21,8 +21,8 @@ export class PlacementController {
     }
 
     @Post('invite')
-    invitePlacement(@Req() req: any, @Body() dto: PlacementInviteDto) {
-        return this.placementService.invitePlacement(req, dto)
+    invitePlacement(@Body() dto: PlacementInviteDto) {
+        return this.placementService.invitePlacement(dto)
     }
 
     @Get('invite/:id')
