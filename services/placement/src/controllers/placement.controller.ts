@@ -28,10 +28,10 @@ export class PlacementController {
     return this.placementService.createPlacement(req, dto);
   }
 
-  @Post('invite')
-  invitePlacement(@Req() req: any, @Body() dto: PlacementInviteDto) {
-    return this.placementService.invitePlacement(req, dto);
-  }
+    @Post('invite')
+    invitePlacement(@Body() dto: PlacementInviteDto) {
+        return this.placementService.invitePlacement(dto)
+    }
 
   @Get('invite/:id')
   getPlacementInviteById(@Param('id') id: string) {
