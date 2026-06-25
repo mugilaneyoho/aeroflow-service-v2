@@ -62,7 +62,7 @@ export class StudentService implements OnModuleInit {
     private paymentFeeClient: microservices.ClientGrpc,
     @Inject('payment_record')
     private paymentRecordClient: microservices.ClientGrpc,
-  ) {}
+  ) { }
 
   onModuleInit() {
     this.AuthService = this.client.getService('StudentService');
@@ -311,7 +311,7 @@ export class StudentService implements OnModuleInit {
       html = html.replace(
         '{{batchTiming}}',
         studentDetails?.batch.classStartTime +
-          studentDetails.batch.classEndTime,
+        studentDetails.batch.classEndTime,
       );
       html = html.replace('{{gender}}', studentDetails.gender);
       html = html.replace('{{phoneNumber}}', studentDetails.phone_number);
@@ -576,6 +576,25 @@ export class StudentService implements OnModuleInit {
       return {
         success: true,
         message: 'status updated',
+      };
+    } catch (error) {
+      console.log(error);
+      return {
+        success: false,
+        message: 'internal server error',
+      };
+    }
+  }
+
+  async studentLocationUpdate(uuid: string, data: any) {
+    try {
+      if (!uuid) {
+        throw new NotFoundException('Student id is not found');
+      }
+      await this.studentRepo.update({ uuid: uuid }, { preferredLocations: data.locations });
+      return {
+        success: true,
+        message: 'location updated',
       };
     } catch (error) {
       console.log(error);
