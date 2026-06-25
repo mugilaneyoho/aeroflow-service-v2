@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Placements } from "./placement.entity";
 
 @Entity('placement_invite')
 
@@ -32,4 +33,9 @@ export class PlacementInvite {
 
     @Column({default: false})
     is_deleted!: boolean;
+
+    @ManyToOne(()=> Placements, (placement)=> placement.id)
+    @JoinColumn({name: 'placement_id'})
+    placement!: Placements
+
 }

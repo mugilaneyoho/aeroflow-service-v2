@@ -218,44 +218,89 @@ export class PlacementService {
 
     async invitePlacement(req: any, dto: PlacementInviteDto) {
         try {
-            const existInvited = await this.placementInviteRepo.findOne({ where: {student_id: dto.studentId, placement_id: dto.placementId}});
+            const placementDetails = await this.placementRepo.findOne({
+                where: {
+                    id: dto.placementId,
+                    is_deleted: false,
+                },
+            });
 
-            // if(existInvited) {
-            //     throw new BadRequestException('Already invited this placement')
-            // }
-            const invite = this.placementInviteRepo.create({
-                placement_id: dto.placementId,
-                student_id: dto.studentId,
-                invited_by: dto.invitedBy,
-                invited_at: new Date()
-            })
+            if (!placementDetails) {
+                throw new BadRequestException('Placement not found');
+            }
 
-            await this.placementInviteRepo.save(invite);
+            const studentResponse = await axios.get(
+                'http://institute-service:3004/student/all'
+            );
 
-            const studentDetails = await axios.get('http://institute-service:3004/student/all')
-            const student = studentDetails?.data?.data;
-            console.log("Student", student)
+            const students = studentResponse?.data?.data || [];
 
-            student.filter(())
+            const placementLocations = placementDetails.location
 
-            this.notificationClient.emit('placement.invited', {
-                userId: invite.student_id,
-                title: 'New Placement Invitation',
-                message: 'You have been invited to apply for a new placement opportunity.',
-                priority: 'HIGH',
-                type: 'INFO',
-                Role: 'STUDENT'
-            })
+            // Filter eligible students
+            const eligibleStudents = students.filter((student) => {
+                const preferredLocations = student.preferredLocations || [];
+
+                const locationMatched = preferredLocations.some((location) =>
+                    placementLocations.includes(location)
+                );
+
+                return (
+                    student.is_no_due === true &&
+                    student.is_eligible_placement === true &&
+                    locationMatched
+                );
+            });
+
+            const invites: PlacementInvite[] = [];
+
+            for (const student of eligibleStudents) {
+                const alreadyInvited = await this.placementInviteRepo.findOne({
+                    where: {
+                        student_id: student.id,
+                        placement_id: dto.placementId,
+                    },
+                });
+
+                if (alreadyInvited) {
+                    continue;
+                }
+
+                const invite = this.placementInviteRepo.create({
+                    placement_id: dto.placementId,
+                    student_id: student.id,
+                    invited_by: dto.invitedBy,
+                    invited_at: new Date(),
+                });
+
+                await this.placementInviteRepo.save(invite);
+
+                invites.push(invite);
+
+                // Send notification
+                this.notificationClient.emit('placement.invited', {
+                    userId: student.id,
+                    title: 'New Placement Invitation',
+                    message: `${placementDetails.job_title} has invited you for a placement opportunity.`,
+                    priority: 'HIGH',
+                    type: 'INFO',
+                    Role: 'STUDENT',
+                });
+            }
 
             return {
                 success: true,
-                message: 'Placement invitation sent successfully'
-            }
+                invitedCount: invites.length,
+                message: `${invites.length} eligible students invited successfully`,
+            };
         } catch (error: any) {
             throw new HttpException(
-                { success: false, message: error?.message },
-                HttpStatus.INTERNAL_SERVER_ERROR
-            )
+                {
+                    success: false,
+                    message: error?.message,
+                },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
         }
     }
 
