@@ -80,9 +80,14 @@ export class StudentsService implements OnModuleInit {
         });
       }
 
-      this.MailService.emit('mailservice,welcomesstudent', {
+      this.MailService.emit('mailservice.welcomesstudent', {
         email: user.email,
         password: hashpass,
+      });
+
+      this.MailService.emit('whatsapp', {
+        to: '9360096656',
+        message: 'testing message',
       });
 
       return { success: true, message: 'new user created' };

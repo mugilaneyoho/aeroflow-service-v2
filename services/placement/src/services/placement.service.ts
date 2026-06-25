@@ -150,6 +150,9 @@ export class PlacementService implements OnModuleInit {
     try {
       const placement = await this.placementInviteRepo.findOne({
         where: { id },
+        relations: {
+          placement: true,
+        },
       });
 
       if (!placement) {
@@ -201,6 +204,9 @@ export class PlacementService implements OnModuleInit {
       const [placements, total] = await this.placementInviteRepo.findAndCount({
         skip: (page - 1) * limit,
         take: limit,
+        relations: {
+          placement: true,
+        },
       });
 
       return {
@@ -245,7 +251,7 @@ export class PlacementService implements OnModuleInit {
     }
   }
 
-  async invitePlacement(req: any, dto: PlacementInviteDto) {
+  async invitePlacement(dto: PlacementInviteDto) {
     try {
       const placementDetails = await this.placementRepo.findOne({
         where: {
