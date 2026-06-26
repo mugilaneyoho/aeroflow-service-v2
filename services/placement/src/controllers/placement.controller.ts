@@ -28,6 +28,14 @@ export class PlacementController {
         return this.placementService.getInviteStatusWithquery(status)
     }
 
+    @Get('invite-student')
+    getStudentInvite(@Req() req: { headers: { user: string } }) {
+        const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+            profile_id: string;
+        };
+        return this.placementService.getStudentInvitation(user)
+    }
+
     @Post('create')
     createPlacement(@Req() req: any, @Body() dto: CreatePlacementDto) {
         return this.placementService.createPlacement(req, dto);

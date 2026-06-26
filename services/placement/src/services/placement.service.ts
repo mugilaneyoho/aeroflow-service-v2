@@ -242,6 +242,7 @@ export class PlacementService implements OnModuleInit {
             const [placements, total] = await this.placementInviteRepo.findAndCount({
                 skip: (page - 1) * limit,
                 take: limit,
+                relations: {placement: true}
             });
 
             return {
@@ -348,7 +349,7 @@ export class PlacementService implements OnModuleInit {
 
                 // Send notification
                 this.notificationClient.emit('placement.invited', {
-                    userId: student.id,
+                    userId: student.uuid,
                     title: 'New Placement Invitation',
                     message: `${placementDetails.job_title} has invited you for a placement opportunity.`,
                     priority: 'HIGH',
@@ -781,6 +782,26 @@ export class PlacementService implements OnModuleInit {
                     success: false,
                     message: error?.message || 'Failed to update student eligibility',
                 },
+                HttpStatus.INTERNAL_SERVER_ERROR,
+            );
+        }
+    }
+
+    async getStudentInvitation(user : {profile_id: string}) {
+        console.log('Userr', user)
+        try {
+            const placements = await this.placementInviteRepo.find({
+                where: {student_id: user.profile_id},
+                relations: {placement: true}
+            });
+
+            return {    
+                success: true,
+                data: placements,
+            };
+        } catch (error: any) {
+            throw new HttpException(
+                { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
             );
         }
