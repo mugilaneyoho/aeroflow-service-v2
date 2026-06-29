@@ -446,31 +446,6 @@ export class AppService implements OnModuleInit {
         studentDetails: studentDetails?.data,
         paymentDetails,
       };
-
-      // console.log(studentDetails);
-
-      // let html = fs.readFileSync('src/template/admission.html', 'utf-8');
-
-      // html = html.replace('{{studentName}}', studentDetails.data.student_name);
-      // html = html.replace('{{studentMail}}', studentDetails.data.email);
-      // html = html.replace('{{studentPhone}}', studentDetails.data.phone_number);
-
-      // html = html.replace(
-      //   '{{courseName}}',
-      //   studentDetails.data.course?.course_name || '',
-      // );
-
-      // html = html.replace(
-      //   '{{courseFees}}',
-      //   String(studentDetails.data.course?.price || ''),
-      // );
-
-      // html = html.replace('{{paidFees}}', String(paymentDetails.amount));
-      // html = html.replace('{{gstAmount}}', '0');
-      // html = html.replace('{{totalPaid}}', String(paymentDetails?.amount));
-
-      // const pdfBuffer = await this.pdfService.generatePdf(html);
-      // return pdfBuffer;
     } catch (error) {
       console.log(error);
       return new InternalServerErrorException();

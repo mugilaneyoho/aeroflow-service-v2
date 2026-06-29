@@ -124,29 +124,41 @@ export class AppController {
       currentAddress: details?.studentDetails?.currentAddress,
       permanentAddress: details?.studentDetails?.permantAddress,
       courseSelected: details?.studentDetails?.course?.course_name,
-      modeOfTraining: details?.studentDetails?.batch?.mode,
+      modeOfTraining: details?.studentDetails?.course_mode,
       modeOfPayment: details?.paymentDetails?.paymentMode,
 
-      totalCourseFees: 95000,
-      registrationFees: 5000,
-      trainingFees: 90000,
-      totalFeesPaid: 5000,
-      pendingFees: 90000,
+      totalCourseFees: details?.paymentDetails?.studentFees?.totalFees,
+      registrationFees: details?.paymentDetails?.amount,
+      trainingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
+      totalFeesPaid: details?.paymentDetails?.amount,
+      pendingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
       remarks:
         'Registration fee collected. Balance training fee due before batch commencement.',
 
       items: [
-        { slNo: 1, description: 'Registration Fee', amount: 5000 },
+        {
+          slNo: 1,
+          description: 'Registration Fee',
+          amount: details?.paymentDetails?.amount,
+        },
         {
           slNo: 2,
           description:
             'Certified Professional in Airport Ground Services – Training Fee',
-          amount: 90000,
+          amount:
+            details?.paymentDetails?.studentFees?.totalFees -
+            details?.paymentDetails?.amount,
         },
       ],
 
       note: 'The Registration ID will be issued upon full payment of the Registration Fee. The Registration fee is Non-refundable.',
-      totalAmount: 95000,
+      totalAmount:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
 
       terms: [
         'Payment of this invoice constitutes acceptance of the terms and conditions outlined in the Placement Guarantee Agreement.',
@@ -194,29 +206,41 @@ export class AppController {
       currentAddress: details?.studentDetails?.currentAddress,
       permanentAddress: details?.studentDetails?.permantAddress,
       courseSelected: details?.studentDetails?.course?.course_name,
-      modeOfTraining: details?.studentDetails?.batch?.mode,
+      modeOfTraining: details?.studentDetails?.course_mode,
       modeOfPayment: details?.paymentDetails?.paymentMode,
 
-      totalCourseFees: 95000,
-      registrationFees: 5000,
-      trainingFees: 90000,
-      totalFeesPaid: 5000,
-      pendingFees: 90000,
+      totalCourseFees: details?.paymentDetails?.studentFees?.totalFees,
+      registrationFees: details?.paymentDetails?.amount,
+      trainingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
+      totalFeesPaid: details?.paymentDetails?.amount,
+      pendingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
       remarks:
         'Registration fee collected. Balance training fee due before batch commencement.',
 
       items: [
-        { slNo: 1, description: 'Registration Fee', amount: 5000 },
+        {
+          slNo: 1,
+          description: 'Registration Fee',
+          amount: details?.paymentDetails?.amount,
+        },
         {
           slNo: 2,
           description:
             'Certified Professional in Airport Ground Services – Training Fee',
-          amount: 90000,
+          amount:
+            details?.paymentDetails?.studentFees?.totalFees -
+            details?.paymentDetails?.amount,
         },
       ],
 
       note: 'The Registration ID will be issued upon full payment of the Registration Fee. The Registration fee is Non-refundable.',
-      totalAmount: 95000,
+      totalAmount:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.amount,
 
       terms: [
         'Payment of this invoice constitutes acceptance of the terms and conditions outlined in the Placement Guarantee Agreement.',
