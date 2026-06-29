@@ -79,7 +79,7 @@ export class StudentService implements OnModuleInit {
       });
 
       if (exist) {
-        return new ConflictException({
+        throw new ConflictException({
           success: false,
           message: 'user already exist this email.',
         });

@@ -25,6 +25,9 @@ export class PlacementInvite {
     @Column({nullable: true})
     response_date?: Date;
 
+    @Column({default: false})
+    scheduled?: boolean;
+
     @Column({nullable: true})
     reason?: string;
 

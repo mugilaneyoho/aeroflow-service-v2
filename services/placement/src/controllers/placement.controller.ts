@@ -1,14 +1,14 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-  Req,
-  UseGuards,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Req,
+    UseGuards,
 } from '@nestjs/common';
 import { CreatePlacementDto } from 'src/dto/create_placement.dto';
 import { InterviewStatusDto } from 'src/dto/interview_status.dto';
@@ -21,12 +21,25 @@ import { PlacementService } from 'src/services/placement.service';
 
 @Controller('placement')
 export class PlacementController {
-  constructor(private placementService: PlacementService) {}
+    constructor(private placementService: PlacementService) { }
 
-  @Post('create')
-  createPlacement(@Req() req: any, @Body() dto: CreatePlacementDto) {
-    return this.placementService.createPlacement(req, dto);
-  }
+    @Get('invite-status')
+    getStatusWithPlacement(@Query('status') status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED') {
+        return this.placementService.getInviteStatusWithquery(status)
+    }
+
+    @Get('invite-student')
+    getStudentInvite(@Req() req: { headers: { user: string } }) {
+        const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+            profile_id: string;
+        };
+        return this.placementService.getStudentInvitation(user)
+    }
+
+    @Post('create')
+    createPlacement(@Req() req: any, @Body() dto: CreatePlacementDto) {
+        return this.placementService.createPlacement(req, dto);
+    }
 
   @Get('invite-status')
   getStatusWithPlacement(
@@ -40,70 +53,75 @@ export class PlacementController {
     return this.placementService.invitePlacement(dto);
   }
 
-  @Get('invite/:id')
-  getPlacementInviteById(@Param('id') id: string) {
-    return this.placementService.getInvitePlacementById(id);
-  }
+    @Get('invite/:id')
+    getPlacementInviteById(@Param('id') id: string) {
+        return this.placementService.getInvitePlacementById(id);
+    }
 
-  @Get('invite')
-  getAllInvitePlacements(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.placementService.getAllInvitePlacements(
-      Number(page),
-      Number(limit),
-    );
-  }
+    @Get('invite')
+    getAllInvitePlacements(@Query('page') page = 1, @Query('limit') limit = 10) {
+        return this.placementService.getAllInvitePlacements(
+            Number(page),
+            Number(limit),
+        );
+    }
 
-  @Get('report/students')
-  getStudentsReport() {
-    return this.placementService.getStudentsReport();
-  }
+    @Get('report/students')
+    getStudentsReport() {
+        return this.placementService.getStudentsReport();
+    }
 
-  @Get('report/drives')
-  getDrivesReport() {
-    return this.placementService.getDrivesReport();
-  }
+    @Get('report/drives')
+    getDrivesReport() {
+        return this.placementService.getDrivesReport();
+    }
 
-  @Get(':id')
-  getPlacementById(@Param('id') id: string) {
-    return this.placementService.getPlacementById(id);
-  }
+    @Get(':id')
+    getPlacementById(@Param('id') id: string) {
+        return this.placementService.getPlacementById(id);
+    }
 
-  @Get()
-  getAllPlacements(@Query('page') page = 1, @Query('limit') limit = 10) {
-    return this.placementService.getAllPlacements(Number(page), Number(limit));
-  }
+    @Get()
+    getAllPlacements(@Query('page') page = 1, @Query('limit') limit = 10) {
+        return this.placementService.getAllPlacements(Number(page), Number(limit));
+    }
 
-  @Patch(':id')
-  updatePlacement(@Param('id') id: string, @Body() dto: CreatePlacementDto) {
-    return this.placementService.updatePlacement(id, dto);
-  }
+    @Patch(':id')
+    updatePlacement(@Param('id') id: string, @Body() dto: CreatePlacementDto) {
+        return this.placementService.updatePlacement(id, dto);
+    }
 
-  @Delete(':id')
-  deletePlacement(@Param('id') id: string) {
-    return this.placementService.deletePlacement(id);
-  }
+    @Delete(':id')
+    deletePlacement(@Param('id') id: string) {
+        return this.placementService.deletePlacement(id);
+    }
 
-  @Post('interview/schedule')
-  scheduleInterview(@Req() req: any, @Body() dto: ScheduleInterviewDto) {
-    return this.placementService.scheduleInterview(req, dto);
-  }
+    @Post('interview/schedule')
+    scheduleInterview(@Req() req: any, @Body() dto: ScheduleInterviewDto) {
+        return this.placementService.scheduleInterview(req, dto);
+    }
 
-  @Roles([Role.STUDENT])
-  @Patch('invite/:id')
-  updateInvite(@Param('id') id: string, @Body() dto: updatePlacementInviteDto) {
-    return this.placementService.updatePlacementInvite(id, dto);
-  }
+    @Roles([Role.STUDENT])
+    @Patch('invite/:id')
+    updateInvite(@Param('id') id: string, @Body() dto: updatePlacementInviteDto) {
+        return this.placementService.updatePlacementInvite(id, dto);
+    }
 
-  @Patch('interview/status/:id')
-  updateInterviewStatus(
-    @Param('id') id: string,
-    @Body() dto: InterviewStatusDto,
-  ) {
-    return this.placementService.updateInterviewStatus(id, dto);
-  }
+    @Patch('interview/status/:id')
+    updateInterviewStatus(
+        @Param('id') id: string,
+        @Body() dto: InterviewStatusDto,
+    ) {
+        return this.placementService.updateInterviewStatus(id, dto);
+    }
 
-  @Patch('student/eligible/:uuid')
-  markEligible(@Param('uuid') uuid: string) {
-    return this.placementService.markStudentEligible(uuid);
-  }
+    @Patch('student/eligible/:uuid')
+    markEligible(@Param('uuid') uuid: string) {
+        return this.placementService.markStudentEligible(uuid);
+    }
+
+    @Get('invite/accept/:id')
+    getResponseStatusPlacement(@Param('id') id: string) {
+        return this.placementService.getResponseStatusStudent(id)
+    }
 }

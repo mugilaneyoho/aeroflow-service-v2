@@ -92,15 +92,18 @@ export class StudentProfileEntity {
   @Column({ default: false })
   is_batch_assign!: boolean;
 
+  @Column({ default: 'offline' })
+  course_mode!: string;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 
   @UpdateDateColumn({ type: 'timestamp' })
   updatedAt!: Date;
 
-  @Column({type: 'text', array: true, nullable: true})
+  @Column({ type: 'text', array: true, nullable: true })
   preferredLocations?: string[];
 
-  @Column({default: false})
+  @Column({ default: false })
   is_no_due!: boolean;
 }

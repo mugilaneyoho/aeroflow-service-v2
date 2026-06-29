@@ -30,6 +30,14 @@ export class NotificationController {
     return this.notificationService.findAll(user);
   }
 
+  @Get('user')
+  async getUserNotifyById (@Req() req: { headers: { user: string } }) {
+    const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+      profile_id: string;
+    };
+    return this.notificationService.getNotificationWithUserId(user)
+  }
+
   @Get(':uuid')
   async findOne(@Param('uuid') id: string) {
     return this.notificationService.findOne(id);
@@ -52,4 +60,6 @@ export class NotificationController {
   async handlePlacementInvite (@Payload() data: any,) {
     return this.notificationService.create(data)
   }
+
+  
 }

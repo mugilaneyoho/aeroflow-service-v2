@@ -11,6 +11,7 @@ import { join } from 'path';
 import { RazorpayModule } from './razorpay/razorpay.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './role/role.guard';
+import { IncoiveService } from './template/export.service';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { RolesGuard } from './role/role.guard';
   providers: [
     AppService,
     PdfService,
+    IncoiveService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,

@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as microservices from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateNotifyDto } from 'src/dto/CreateNotifyDto';
@@ -13,7 +13,7 @@ export class NotificationService {
     private notifyRepo: Repository<NotificationEntity>,
     @Inject('notify')
     private readonly kafkaClient: microservices.ClientKafka,
-  ) {}
+  ) { }
 
   async create(dto: CreateNotifyDto) {
     try {
@@ -91,5 +91,25 @@ export class NotificationService {
       success: true,
       message: 'Notification deleted successfully',
     };
+  }
+
+  async getNotificationWithUserId(user : {profile_id: string}) {
+    try {
+    console.log('UserId', user)
+      const notification = await this.notifyRepo.find({
+        where: { userId: user.profile_id },
+      });
+
+      if (!notification || notification.length === 0) {
+        throw new NotFoundException('No notifications found for this user');
+      }
+
+      return {
+        success: true,
+        data: notification
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 }

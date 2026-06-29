@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import {
   Inject,
   Injectable,
@@ -440,30 +440,36 @@ export class AppService implements OnModuleInit {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const studentDetails = JSON.parse(grpc_res.data as unknown as string);
 
-      console.log(studentDetails);
+      return {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        studentDetails: studentDetails?.data,
+        paymentDetails,
+      };
 
-      let html = fs.readFileSync('src/template/admission.html', 'utf-8');
+      // console.log(studentDetails);
 
-      html = html.replace('{{studentName}}', studentDetails.data.student_name);
-      html = html.replace('{{studentMail}}', studentDetails.data.email);
-      html = html.replace('{{studentPhone}}', studentDetails.data.phone_number);
+      // let html = fs.readFileSync('src/template/admission.html', 'utf-8');
 
-      html = html.replace(
-        '{{courseName}}',
-        studentDetails.data.course?.course_name || '',
-      );
+      // html = html.replace('{{studentName}}', studentDetails.data.student_name);
+      // html = html.replace('{{studentMail}}', studentDetails.data.email);
+      // html = html.replace('{{studentPhone}}', studentDetails.data.phone_number);
 
-      html = html.replace(
-        '{{courseFees}}',
-        String(studentDetails.data.course?.price || ''),
-      );
+      // html = html.replace(
+      //   '{{courseName}}',
+      //   studentDetails.data.course?.course_name || '',
+      // );
 
-      html = html.replace('{{paidFees}}', String(paymentDetails.amount));
-      html = html.replace('{{gstAmount}}', '0');
-      html = html.replace('{{totalPaid}}', String(paymentDetails?.amount));
+      // html = html.replace(
+      //   '{{courseFees}}',
+      //   String(studentDetails.data.course?.price || ''),
+      // );
 
-      const pdfBuffer = await this.pdfService.generatePdf(html);
-      return pdfBuffer;
+      // html = html.replace('{{paidFees}}', String(paymentDetails.amount));
+      // html = html.replace('{{gstAmount}}', '0');
+      // html = html.replace('{{totalPaid}}', String(paymentDetails?.amount));
+
+      // const pdfBuffer = await this.pdfService.generatePdf(html);
+      // return pdfBuffer;
     } catch (error) {
       console.log(error);
       return new InternalServerErrorException();

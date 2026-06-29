@@ -86,5 +86,8 @@ export class CreateStudentDto {
   preferredLocations?: string[];
 
   @IsString()
+  course_mode!: string;
+
+  @IsString()
   leadId?: string;
 }
