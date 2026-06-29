@@ -162,6 +162,7 @@ export class AppService implements OnModuleInit {
         admissionFeesPay: true,
         admissionFeesAmount: data.amount,
         lastPaidDate: nowDate,
+        totalFees: Number(data.totalFees),
       });
 
       const feeList = await this.feesRepo.save(studentfee);
@@ -178,7 +179,7 @@ export class AppService implements OnModuleInit {
 
       await this.feesRepo.update(
         { uuid: feeList.uuid },
-        { admissionFeesId: fees.uuid, totalFees: Number(data.totalFees) },
+        { admissionFeesId: fees.uuid },
       );
     }
 
