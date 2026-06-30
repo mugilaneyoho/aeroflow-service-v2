@@ -24,8 +24,11 @@ export class PlacementController {
     constructor(private placementService: PlacementService) { }
 
     @Get('invite-status')
-    getStatusWithPlacement(@Query('status') status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED') {
-        return this.placementService.getInviteStatusWithquery(status)
+    getStatusWithPlacement(
+        @Query('status') status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED',
+        @Query('placementId') placementId?: string,
+    ) {
+        return this.placementService.getInviteStatusWithquery(status, placementId)
     }
 
     @Get('invite-student')
