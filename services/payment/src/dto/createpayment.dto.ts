@@ -21,4 +21,5 @@ export class CreateGRPCdto {
   studentName!: string;
   remarks!: string;
   phoneNumber!: string;
+  totalFees: any;
 }

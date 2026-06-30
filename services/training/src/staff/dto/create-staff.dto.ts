@@ -32,6 +32,10 @@ export class CreateStaffDto {
   @IsNotEmpty()
   staff_name!: string;
 
+  @IsNotEmpty()
+  @IsString()
+  image_url!: string;
+
   @ApiProperty({ example: '9360096656' })
   @IsPhoneNumber('IN') // change country code if needed
   @IsNotEmpty()

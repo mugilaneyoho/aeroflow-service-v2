@@ -34,6 +34,9 @@ export class StaffProfileEntity {
   @Column()
   email!: string;
 
+  @Column({ type: 'text', default: '' })
+  image_url!: string;
+
   @Column()
   experience!: string;
 
@@ -42,9 +45,6 @@ export class StaffProfileEntity {
 
   @Column()
   qualification!: string;
-
-  @Column()
-  expertise!: string;
 
   @Column({ type: 'boolean', default: true })
   is_active: boolean = false;

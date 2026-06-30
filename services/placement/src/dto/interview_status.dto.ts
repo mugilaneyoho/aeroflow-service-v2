@@ -1,4 +1,4 @@
-import { IsNumber, IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 
 export class InterviewStatusDto {
     @IsString()
@@ -9,4 +9,8 @@ export class InterviewStatusDto {
 
     @IsString()
     updatedBy?: string;
+
+    @IsString()
+    @IsOptional()
+    placementId?: string;
 }

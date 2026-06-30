@@ -21,7 +21,7 @@ import { InterviewStatus } from 'src/entities/interview_status.entity';
 import { Placements } from 'src/entities/placement.entity';
 import { PlacementInvite } from 'src/entities/placement_invite.entity';
 import { PlacementStatus } from 'src/entities/placement_status.entity';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
 
 interface StudentGrpcService {
     PlacementEligible(data: { data: string[] }): Observable<any>;
@@ -378,12 +378,17 @@ export class PlacementService implements OnModuleInit {
 
     async getInviteStatusWithquery(
         status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED',
+        placementId?: string,
     ) {
         try {
+            const whereClause: any = {
+                response_status: status,
+            };
+            if (placementId) {
+                whereClause.placement_id = placementId;
+            }
             const getStudentStatus = await this.placementInviteRepo.find({
-                where: {
-                    response_status: status,
-                },
+                where: whereClause,
             });
 
             const studentIds = getStudentStatus.map(
@@ -400,10 +405,55 @@ export class PlacementService implements OnModuleInit {
                 studentIds.includes(student.uuid),
             );
 
+            // Fetch InterviewStatus records for these students in this placement
+            let interviewStatuses: InterviewStatus[] = [];
+            if (placementId && studentIds.length > 0) {
+                const schedules = await this.scheduleInterviewRepo.find({
+                    where: {
+                        placement_id: placementId,
+                        is_deleted: false,
+                    },
+                    select: { id: true },
+                });
+                const scheduleIds = schedules.map(s => s.id);
+                
+                if (scheduleIds.length > 0) {
+                    interviewStatuses = await this.interviewStatusRepo.find({
+                        where: {
+                            interview_schedule_id: In(scheduleIds),
+                            student_id: In(studentIds),
+                            is_deleted: false,
+                        },
+                    });
+                }
+            } else if (studentIds.length > 0) {
+                interviewStatuses = await this.interviewStatusRepo.find({
+                    where: {
+                        student_id: In(studentIds),
+                        is_deleted: false,
+                    },
+                });
+            }
+
+            const data = matchedStudents.map((student: any) => {
+                const invite = getStudentStatus.find(i => i.student_id === student.uuid);
+                const interviewStatus = interviewStatuses.find(is => is.student_id === student.uuid);
+                
+                return {
+                    ...student,
+                    invite_id: invite?.id,
+                    invite_status: invite?.response_status,
+                    invite_reason: invite?.reason,
+                    interview_status_id: interviewStatus?.id || null,
+                    interview_status: interviewStatus?.status || 'PENDING',
+                    remarks: interviewStatus?.remarks || '',
+                };
+            });
+
             return {
                 success: true,
-                count: matchedStudents.length,
-                data: matchedStudents,
+                count: data.length,
+                data: data,
             };
         } catch (error: any) {
             throw new HttpException(
@@ -537,24 +587,69 @@ export class PlacementService implements OnModuleInit {
 
     async updateInterviewStatus(id: string, dto: InterviewStatusDto) {
         try {
-            const interviewStatusId = id;
-
-            if (!interviewStatusId) {
-                throw new NotFoundException('Interview Status Id is not found');
+            if (!id) {
+                throw new NotFoundException('ID is not found');
             }
 
-            const updateStatus = await this.interviewStatusRepo.update(
-                { id: interviewStatusId },
-                {
+            // 1. Try to find by InterviewStatus primary key (UUID)
+            let statusRecord = await this.interviewStatusRepo.findOne({
+                where: { id, is_deleted: false }
+            });
+
+            // 2. If not found, try to find by student_id
+            if (!statusRecord) {
+                const schedules = await this.scheduleInterviewRepo.find({
+                    where: { student_id: id, is_deleted: false },
+                    order: { scheduled_date: 'DESC' }
+                });
+                
+                if (schedules.length > 0) {
+                    for (const schedule of schedules) {
+                        statusRecord = await this.interviewStatusRepo.findOne({
+                            where: { student_id: id, interview_schedule_id: schedule.id, is_deleted: false }
+                        });
+                        if (statusRecord) break;
+                    }
+                }
+            }
+
+            // 3. If still not found, create a default schedule and status record
+            if (!statusRecord) {
+                const studentId = id;
+                const placementId = dto.placementId;
+                
+                if (!placementId) {
+                    throw new BadRequestException('Placement ID is required to create a status record for this student');
+                }
+                
+                const defaultSchedule = this.scheduleInterviewRepo.create({
+                    placement_id: placementId,
+                    student_id: studentId,
+                    interview_type: 'ONLINE',
+                    scheduled_date: new Date(),
+                    schedule_status: 'SCHEDULED',
+                });
+                const savedSchedule = await this.scheduleInterviewRepo.save(defaultSchedule);
+                
+                statusRecord = this.interviewStatusRepo.create({
+                    interview_schedule_id: savedSchedule.id,
+                    student_id: studentId,
                     status: dto.status,
                     remarks: dto.remarks,
-                    updated_at: new Date(),
-                },
-            );
+                });
+                await this.interviewStatusRepo.save(statusRecord);
+            } else {
+                // Update existing record
+                statusRecord.status = dto.status;
+                statusRecord.remarks = dto.remarks;
+                statusRecord.updated_at = new Date();
+                await this.interviewStatusRepo.save(statusRecord);
+            }
 
             return {
                 success: true,
                 message: 'Interview status updated successfully',
+                data: statusRecord,
             };
         } catch (error: any) {
             throw new HttpException(
@@ -777,6 +872,7 @@ export class PlacementService implements OnModuleInit {
             );
             return response;
         } catch (error: any) {
+            console.log(error)
             throw new HttpException(
                 {
                     success: false,

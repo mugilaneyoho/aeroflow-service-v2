@@ -17,6 +17,7 @@ message CreatePaymentRequest {
     string remarks = 7;
     string telecallerId = 8;
     string phoneNumber = 9;
+    string totalFees = 10;
 }
 
 message Empty {}

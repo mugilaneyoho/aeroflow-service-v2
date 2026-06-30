@@ -31,7 +31,7 @@ export class StudentController {
     return this.studentService.create(data);
   }
 
-  @Get('all/:id')
+  @Get('all')
   findAll(@Query() query: { page: string; limit: string; approved?: string }) {
     return this.studentService.findAll(query);
   }
