@@ -143,7 +143,9 @@ export class ClassesService implements OnModuleInit {
       );
 
       if (hasConflict) {
-        throw new BadRequestException('staff already has a class during this time.');
+        throw new BadRequestException(
+          'staff already has a class during this time.',
+        );
       }
 
       const grpc_batch: {
@@ -330,7 +332,9 @@ export class ClassesService implements OnModuleInit {
       );
 
       if (hasConflict) {
-        throw new BadRequestException('staff already has a class during this time.');
+        throw new BadRequestException(
+          'staff already has a class during this time.',
+        );
       }
 
       const classRepo = this.selectMode(mode);
@@ -347,6 +351,11 @@ export class ClassesService implements OnModuleInit {
       Object.assign(classes, data);
 
       await classRepo.save(classes);
+
+      return {
+        success: true,
+        message: 'classes updated successfully.',
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

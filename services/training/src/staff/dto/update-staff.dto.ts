@@ -37,6 +37,10 @@ export class UpdateStaffDto {
   @IsNotEmpty()
   phone_number!: string;
 
+  @IsNotEmpty()
+  @IsString()
+  image_url!: string;
+
   @ApiProperty({ example: 'keelkattalai, chennai, tamilnadu' })
   @IsString()
   @IsNotEmpty()

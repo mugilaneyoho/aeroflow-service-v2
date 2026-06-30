@@ -25,6 +25,7 @@ message PaymentRecord {
   string date = 2;
   double amount = 3;
   string paymentpurpose = 4;
+  string uuid = 5;
 }
 
 message StudentFeesResponse {

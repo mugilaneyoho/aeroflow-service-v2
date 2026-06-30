@@ -330,6 +330,7 @@ export class AppService implements OnModuleInit {
         : new Date().toISOString(),
       amount: Number(pay.amount),
       purpose: pay.paymentPerpose,
+      uuid: pay.uuid,
     }));
 
     return { records };
@@ -403,6 +404,7 @@ export class AppService implements OnModuleInit {
         : new Date().toISOString(),
       amount: Number(pay.amount),
       paymentpurpose: pay.paymentPerpose,
+      uuid: pay.uuid,
     }));
 
     return {
