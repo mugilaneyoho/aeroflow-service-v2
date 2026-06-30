@@ -41,12 +41,12 @@ export class PlacementController {
         return this.placementService.createPlacement(req, dto);
     }
 
-  @Get('invite-status')
-  getStatusWithPlacement(
-    @Query('status') status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED',
-  ) {
-    return this.placementService.getInviteStatusWithquery(status);
-  }
+//   @Get('invite-status')
+//   getStatusWithPlacement(
+//     @Query('status') status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'EXPIRED',
+//   ) {
+//     return this.placementService.getInviteStatusWithquery(status);
+//   }
 
   @Post('invite')
   invitePlacement(@Body() dto: PlacementInviteDto) {

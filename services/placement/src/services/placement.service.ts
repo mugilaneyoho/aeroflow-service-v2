@@ -242,7 +242,7 @@ export class PlacementService implements OnModuleInit {
             const [placements, total] = await this.placementInviteRepo.findAndCount({
                 skip: (page - 1) * limit,
                 take: limit,
-                relations: {placement: true}
+                relations: { placement: true }
             });
 
             return {
@@ -787,15 +787,15 @@ export class PlacementService implements OnModuleInit {
         }
     }
 
-    async getStudentInvitation(user : {profile_id: string}) {
+    async getStudentInvitation(user: { profile_id: string }) {
         console.log('Userr', user)
         try {
             const placements = await this.placementInviteRepo.find({
-                where: {student_id: user.profile_id},
-                relations: {placement: true}
+                where: { student_id: user.profile_id },
+                relations: { placement: true }
             });
 
-            return {    
+            return {
                 success: true,
                 data: placements,
             };
