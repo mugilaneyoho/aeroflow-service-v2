@@ -57,6 +57,15 @@ export class ClassesController {
     return this.classService.update(param.uuid, data, param.mode);
   }
 
+  @Roles([Role.STAFF, Role.HOD])
+  @Put('upload-materials/:uuid/:mode')
+  uploadMaterials(
+    @Param() param: { uuid: string; mode: string },
+    @Body() data: { notes: string[] },
+  ) {
+    return this.classService.updateMaterials(param.uuid, param.mode, data.notes);
+  }
+
   @Get(':uuid/:mode')
   findOne(@Param() param: { uuid: string; mode: string }) {
     return this.classService.findOne(param.uuid, param.mode);
