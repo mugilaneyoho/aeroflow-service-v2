@@ -10,7 +10,7 @@ import { join } from 'path';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env'
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -19,9 +19,9 @@ import { join } from 'path';
         rejectUnauthorized: false,
       },
       entities: [join(__dirname, '**', '*.entity.{ts,js}')],
-      synchronize: true
+      synchronize: true,
     }),
-    PlacementModule
+    PlacementModule,
   ],
   controllers: [AppController],
   providers: [AppService],

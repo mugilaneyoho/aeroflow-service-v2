@@ -33,7 +33,7 @@ import { PlacementService } from "src/services/placement.service";
                 options: {
                     package: 'student',
                     protoPath: join(__dirname, '../proto/student.proto'),
-                    url: process.env.INSTITUTE_GRPC || 'localhost:3003',
+                    url: 'institute-service:3003',
                 }
             }
         ])

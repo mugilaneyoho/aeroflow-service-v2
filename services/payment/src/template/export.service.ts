@@ -61,7 +61,7 @@ export class IncoiveService {
         // ══════════════════════════════════════════════════════════════════════
         // 1. RENDER BACKGROUND TEMPLATE
         // ══════════════════════════════════════════════════════════════════════
-        const bgPath = path.join(process.cwd(), 'public', 'letterhead.jpg');
+        const bgPath = path.join(process.cwd(), 'public', 'letterhead.jpeg');
 
         if (fs.existsSync(bgPath)) {
           doc.image(bgPath, 0, 0, { width: this.PW, height: this.PH });
@@ -86,7 +86,7 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtDate(data.invoiceDate),
-          383.4,
+          397.1,
           105.3,
           {},
           '#1A6E82',
@@ -100,7 +100,7 @@ export class IncoiveService {
         this.printValue(
           doc,
           data.studentName || '',
-          126.5,
+          119.5,
           152.95,
           {},
           '#000000',
@@ -111,7 +111,7 @@ export class IncoiveService {
         this.printValue(
           doc,
           data.registrationNo || '',
-          123.15,
+          123.25,
           175.5,
           {},
           '#000000',
@@ -121,19 +121,19 @@ export class IncoiveService {
           doc,
           data.mobileNo || '',
           381.1,
-          175.5,
+          174.2,
           {},
           '#000000',
           12,
         );
 
         // Row 3
-        this.printValue(doc, data.emailId || '', 81, 196.3, {}, '#000000', 12);
+        this.printValue(doc, data.emailId || '', 81, 196, {}, '#000000', 12);
         this.printValue(
           doc,
           data.qualifications || '',
           402.85,
-          196.4,
+          196.2,
           {},
           '#000000',
           12,
@@ -149,7 +149,7 @@ export class IncoiveService {
           '#000000',
           12,
         );
-        this.printValue(doc, data.gender || '', 371, 217.55, {}, '#000000', 12);
+        this.printValue(doc, data.gender || '', 371, 217.2, {}, '#000000', 12);
 
         // Row 5
         this.printValue(
@@ -186,10 +186,10 @@ export class IncoiveService {
         this.printValue(
           doc,
           data.currentAddress || '',
-          128,
-          283.9,
+          28.95,
+          296.9,
           {
-            width: 150,
+            width: 300,
           },
           '#000000',
           12,
@@ -197,10 +197,10 @@ export class IncoiveService {
         this.printValue(
           doc,
           data.permanentAddress || '',
-          413.5,
-          283.9,
+          302.3,
+          296.45,
           {
-            width: 180,
+            width: 300,
           },
           '#000000',
           12,
@@ -244,8 +244,8 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.totalCourseFees),
-          170.95,
-          422.95,
+          158.5,
+          422.75,
           {},
           this.TEXT_WHITE,
           12,
@@ -254,7 +254,7 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.registrationFees),
-          167.3,
+          152.95,
           448,
           {},
           this.TEXT_WHITE,
@@ -263,7 +263,7 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.trainingFees),
-          422.95,
+          416,
           448,
           {},
           this.TEXT_WHITE,
@@ -273,8 +273,8 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.totalFeesPaid),
-          152.95,
-          474,
+          143.35,
+          475,
           {},
           this.TEXT_WHITE,
           12,
@@ -282,8 +282,8 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.pendingFees),
-          422.95,
-          474,
+          413.95,
+          474.5,
           {},
           this.TEXT_WHITE,
           12,
@@ -303,7 +303,7 @@ export class IncoiveService {
         // 5. LINE ITEMS TABLE
         // ══════════════════════════════════════════════════════════════════════
         const items = data.items || [];
-        let itemY = 591.85; // Starting Y position for the first line item
+        let itemY = 590; // Starting Y position for the first line item
         const rowHeight = 27; // Spacing between each row
 
         // Only iterate up to 3 items to fit the template structure
@@ -352,8 +352,8 @@ export class IncoiveService {
           this.printValue(
             doc,
             data.note,
-            50,
-            682,
+            46.5,
+            676.5,
             { width: 200, lineGap: 6 },
             '#1A6E82',
             10,
@@ -364,8 +364,8 @@ export class IncoiveService {
         this.printValue(
           doc,
           this.fmtAmount(data.totalAmount),
-          404,
-          671,
+          408.95,
+          666,
           { width: 100, align: 'center' },
           this.TEXT_WHITE,
           18,
