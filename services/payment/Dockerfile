@@ -1,36 +1,18 @@
-FROM node:20
-
-RUN apt-get update && apt-get install -y \
-    wget \
-    ca-certificates \
-    fonts-liberation \
-    libasound2 \
-    libatk1.0-0 \
-    libcups2 \
-    libdbus-1-3 \
-    libdrm2 \
-    libxkbcommon0 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libgbm1 \
-    libgtk-3-0 \
-    libnspr4 \
-    libnss3 \
-    libxss1 \
-    libxtst6 \
-    xdg-utils \
-    --no-install-recommends \
-    && rm -rf /var/lib/apt/lists/*
-
-
-WORKDIR /
-
+# Stage 1: Build
+FROM node:20 AS builder
+WORKDIR /app
 COPY package*.json ./
-
-RUN npm i
-
+RUN npm install --no-audit --no-fund
 COPY . .
+RUN npm run build
+RUN npm prune --production
+RUN touch .env
 
-
-CMD [ "npm","start" ]
+# Stage 2: Runtime
+FROM node:20-slim
+WORKDIR /app
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/.env ./
+CMD ["node", "dist/main"]

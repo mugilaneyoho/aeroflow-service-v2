@@ -62,12 +62,15 @@ export class StudentService implements OnModuleInit {
     private paymentFeeClient: microservices.ClientGrpc,
     @Inject('payment_record')
     private paymentRecordClient: microservices.ClientGrpc,
+    @Inject('whatsapp')
+    private readonly whatsApp: microservices.ClientProxy,
   ) {}
 
-  onModuleInit() {
+  async onModuleInit() {
     this.AuthService = this.client.getService('StudentService');
     this.FeeService = this.paymentFeeClient.getService('FeeManagement');
     this.PaymentService = this.paymentRecordClient.getService('PaymentService');
+    await this.whatsApp.connect();
   }
 
   async create(data: CreateStudentDto) {
@@ -211,7 +214,10 @@ export class StudentService implements OnModuleInit {
 
   async approveStudent(uuid: string) {
     try {
-      const student = await this.studentRepo.findOne({ where: { uuid } });
+      const student = await this.studentRepo.findOne({
+        where: { uuid },
+        relations: ['course'],
+      });
 
       if (!student) {
         throw new NotFoundException({
@@ -228,6 +234,13 @@ export class StudentService implements OnModuleInit {
       }
 
       await this.studentRepo.update({ uuid }, { is_approved: true });
+
+      this.whatsApp.emit('whatsapp-student-welcome', {
+        student_name: student.student_name,
+        course_name: student.course.course_name,
+        student_id: student.student_id,
+        to: student.phone_number,
+      });
 
       return {
         success: true,

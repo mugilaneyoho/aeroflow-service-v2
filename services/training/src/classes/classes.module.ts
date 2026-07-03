@@ -38,14 +38,12 @@ import { ConfigModule } from '@nestjs/config';
     ClientsModule.register([
       {
         name: 'notifyandlogs',
-        transport: Transport.KAFKA,
+        transport: Transport.RMQ,
         options: {
-          client: {
-            clientId: 'notifyandlog',
-            brokers: ['kafka:9092'],
-          },
-          consumer: {
-            groupId: 'notifyandlog-consumer',
+          urls: ['amqp://guest:guest@rabbitmq:5672'],
+          queue: 'notifications',
+          queueOptions: {
+            durable: true,
           },
         },
       },

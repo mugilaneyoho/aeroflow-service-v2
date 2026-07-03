@@ -13,13 +13,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ClientsModule.register([
       {
         name: 'notify',
-        transport: Transport.KAFKA,
+        transport: Transport.RMQ,
         options: {
-          client: {
-            brokers: ['kafka:9092'],
-          },
-          consumer: {
-            groupId: 'notification-consumer',
+          urls: ['amqp://guest:guest@rabbitmq:5672'],
+          queue: 'notifications',
+          queueOptions: {
+            durable: true,
           },
         },
       },

@@ -17,14 +17,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ClientsModule.register([
       {
         name: 'mailservice',
-        transport: Transport.KAFKA,
+        transport: Transport.RMQ,
         options: {
-          client: {
-            clientId: 'mailservice',
-            brokers: ['kafka:9092'],
-          },
-          consumer: {
-            groupId: 'mailservice-consumer',
+          urls: ['amqp://guest:guest@rabbitmq:5672'],
+          queue: 'mail_queue',
+          queueOptions: {
+            durable: true,
           },
         },
       },

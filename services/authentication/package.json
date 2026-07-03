@@ -31,6 +31,8 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.6",
     "@nestjs/typeorm": "^11.0.0",
+    "amqp-connection-manager": "^5.0.0",
+    "amqplib": "^2.0.1",
     "argon2": "^0.44.0",
     "bcrypt": "^6.0.0",
     "class-validator": "^0.14.3",

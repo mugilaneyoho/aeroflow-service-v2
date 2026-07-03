@@ -35,7 +35,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - kafka
       - patron
       - api-gateway
     networks:
@@ -80,7 +79,6 @@ services:
       KAFKA_BROKER: kafka:9092
     depends_on:
       - redis
-      - kafka
       - patron
       - api-gateway
     networks:
@@ -104,7 +102,6 @@ services:
       KAFKA_BROKER: kafka:9092
     depends_on:
       - redis
-      - kafka
       - patron
       - api-gateway
       - institute-service
@@ -117,6 +114,8 @@ services:
     ports:
       - "3011:3011"
       - "3021:3021"
+    env_file:
+      - ./services/payment/.env
     environment:
       GRPC_PORT: 3011
       DB_HOST: patron
@@ -153,12 +152,13 @@ services:
     build: ./services/mailservice
     ports:
       - "3012:3012"
+    env_file:
+      - ./services/mailservice/.env
     environment:
       sender_mail: mugilane.yoho@gmail.com
       sender_password: rgbx bvuw mxqj rqll
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - kafka
       - patron
     networks:
       - app-network
@@ -177,7 +177,6 @@ services:
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - kafka
       - patron
       - api-gateway
       - rabbitmq
@@ -189,6 +188,8 @@ services:
     build: ./services/openvidu
     ports:
       - "3017:3017"
+    env_file:
+      - ./services/openvidu/.env
     environment:
       PORT: 3017
       OPENVIDU_URL: http://videoconfrence:4443
@@ -200,7 +201,6 @@ services:
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - videoconfrence
       - patron
       - api-gateway
     networks:
@@ -230,7 +230,7 @@ services:
     ports:
       - "3018:3018"
     environment:
-      PORT: 3010
+      PORT: 3018
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: ticket
@@ -255,7 +255,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - kafka
       - patron
       - api-gateway
     networks:
@@ -286,28 +285,28 @@ services:
       - app-network
 
   # ---------------- INFRA ---------------- #
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    container_name: kafka
-    # restart: unless-stopped
-    ports:
-      - "9092:9092"
-    environment:
-      # KRaft mode
-      KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_NODE_ID: 1
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
-      # Listeners
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-      # Logs
-      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-    networks:
-      - app-network
+#  kafka:
+#    image: confluentinc/cp-kafka:latest
+#    container_name: kafka
+#    # restart: unless-stopped
+#    ports:
+#      - "9092:9092"
+#    environment:
+#      # KRaft mode
+#      KAFKA_PROCESS_ROLES: broker,controller
+#      KAFKA_NODE_ID: 1
+#      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+#      # Listeners
+#      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+#      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+#      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+#      # Logs
+#      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+#      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#    networks:
+#      - app-network
 
   redis:
     image: redis:latest
@@ -328,19 +327,19 @@ services:
     networks:
       - app-network
 
-  videoconfrence:
-    image: openvidu/openvidu-server-kms:latest
-    ports:
-      - "4443:4443"
-    container_name: videoconfrence
-    environment:
-      - OPENVIDU_SECRET=MY_SECRET
-      - CERTIFICATE_TYPE=selfsigned
-      - OPENVIDU_PUBLICURL=http://localhost:4443
-      - SERVER_PORT=4443
-      - DOMAIN_OR_PUBLIC_IP=localhost
-    networks:
-      - app-network
+  # videoconfrence:
+  #   image: openvidu/openvidu-server-kms:latest
+  #   ports:
+  #     - "4443:4443"
+  #   container_name: videoconfrence
+  #   environment:
+  #     - OPENVIDU_SECRET=MY_SECRET
+  #     - CERTIFICATE_TYPE=selfsigned
+  #     - OPENVIDU_PUBLICURL=http://localhost:4443
+  #     - SERVER_PORT=4443
+  #     - DOMAIN_OR_PUBLIC_IP=localhost
+  #   networks:
+  #     - app-network
 
 # ---------------- NETWORK ---------------- #
 networks:

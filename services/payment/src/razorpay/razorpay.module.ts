@@ -6,9 +6,14 @@ import { PaymentEntiry } from 'src/entities/payment.entity';
 import { StudentFeesEntity } from 'src/entities/studentfees.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forFeature([PaymentEntiry, StudentFeesEntity]),
     ClientsModule.register([
       {

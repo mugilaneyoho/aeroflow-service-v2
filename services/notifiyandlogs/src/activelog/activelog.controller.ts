@@ -21,22 +21,18 @@ import {
 } from '@nestjs/common';
 import { ActivelogService } from './activelog.service';
 import {ActivityLogEntity} from '../entity/activitylog'
-import { Ctx, EventPattern, KafkaContext, MessagePattern, Payload } from '@nestjs/microservices';
+import { Ctx, EventPattern, RmqContext, MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller('activelog')
 export class ActivelogController {
   constructor(private readonly activeLogService: ActivelogService) {}
   
   @EventPattern('activelog.created')
-    async handleActivityCreated(@Payload() payload: any,@Ctx() context: KafkaContext,) {
-    const message = context.getMessage();
-    const rawValue = message.value;
-
-    const data = rawValue? JSON.parse(rawValue.toString()): payload;
+  async handleActivityCreated(@Payload() payload: any, @Ctx() context: RmqContext) {
+    const data = payload;
   
-    console.log('ACTIVITY EVENT RECEIVED');
-    console.log('Topic:', context.getTopic());
-    console.log('Partition:', context.getPartition());
+    console.log('ACTIVITY EVENT RECEIVED OVER RabbitMQ');
+    console.log('Pattern:', context.getPattern());
     console.log('Data:', data);
     console.log('Status:', data?.status);
     console.log('ReferenceId:', data?.referenceId);

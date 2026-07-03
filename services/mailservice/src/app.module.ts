@@ -5,6 +5,8 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
+import { WhatsAppService } from './whatsapp/whatsapp.service';
+import { WhatsAppController } from './whatsapp/whatsapp.controls';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { ConfigModule } from '@nestjs/config';
       },
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [AppController, WhatsAppController],
+  providers: [AppService, WhatsAppService],
 })
 export class AppModule {}

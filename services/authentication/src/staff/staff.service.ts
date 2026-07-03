@@ -18,7 +18,7 @@ import {
   PasswordUtils,
 } from 'src/utils/password.utils';
 import { UpdateStaffDto } from './dto/update-staff.dto';
-import { ClientKafka } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class StaffService implements OnModuleInit {
@@ -29,11 +29,10 @@ export class StaffService implements OnModuleInit {
     private roleRepo: Repository<rolesEntity>,
     private JwtService: JwtService,
     @Inject('mailservice')
-    private readonly MailService: ClientKafka,
+    private readonly MailService: ClientProxy,
   ) {}
 
   async onModuleInit() {
-    this.MailService.subscribeToResponseOf('mailservice');
     await this.MailService.connect();
   }
 

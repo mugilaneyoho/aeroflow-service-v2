@@ -14,7 +14,7 @@ import { StudentBody } from '../types';
 import { JwtService } from '@nestjs/jwt';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { roles, rolesEntity } from 'src/entities/role.entity';
-import { ClientKafka } from '@nestjs/microservices';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class StudentsService implements OnModuleInit {
@@ -25,11 +25,10 @@ export class StudentsService implements OnModuleInit {
     private rolesRepo: Repository<rolesEntity>,
     private JwtService: JwtService,
     @Inject('mailservice')
-    private readonly MailService: ClientKafka,
+    private readonly MailService: ClientProxy,
   ) {}
 
   async onModuleInit() {
-    this.MailService.subscribeToResponseOf('mailservice');
     await this.MailService.connect();
   }
 
@@ -80,7 +79,7 @@ export class StudentsService implements OnModuleInit {
         });
       }
 
-      this.MailService.emit('mailservice.welcomesstudent', {
+      this.MailService.emit('mailservice.welcomestudent', {
         email: user.email,
         password: hashpass,
       });

@@ -45,7 +45,7 @@ export class ClassesService implements OnModuleInit {
     private clientBatch: microservices.ClientGrpc,
 
     @Inject('notifyandlogs')
-    private readonly kafkaclient: microservices.ClientKafka,
+    private readonly kafkaclient: microservices.ClientProxy,
     private readonly logger: Logger,
   ) {}
 

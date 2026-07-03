@@ -14,7 +14,7 @@ server.use('/',routes)
 
 const PORT = process.env.PORT
 
-server.listen(PORT,(error)=>{
+server.listen(PORT, "0.0.0.0", (error)=>{
     if (error) {
        return console.error("api gateway running error:",error)
     }

@@ -12,7 +12,7 @@ export class NotificationService {
     @InjectRepository(NotificationEntity)
     private notifyRepo: Repository<NotificationEntity>,
     @Inject('notify')
-    private readonly kafkaClient: microservices.ClientKafka,
+    private readonly kafkaClient: microservices.ClientProxy,
   ) { }
 
   async create(dto: CreateNotifyDto) {
