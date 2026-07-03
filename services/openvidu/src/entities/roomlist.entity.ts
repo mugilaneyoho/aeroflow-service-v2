@@ -19,11 +19,23 @@ export class RoomlistEntity {
   @Column()
   classId!: string;
 
-  @Column()
+  @Column({ default: '' })
   staffId!: string;
 
-  @Column()
+  @Column({ default: '' })
   roomName!: string;
+
+  @Column({ default: '' })
+  meetingID!: string;
+
+  @Column({ default: '' })
+  password!: string;
+
+  @Column({ default: '' })
+  startURL!: string;
+
+  @Column({ default: '' })
+  joinURL!: string;
 
   @Column({ type: 'boolean', default: false })
   isStarted!: boolean;

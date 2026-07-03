@@ -16,6 +16,7 @@ import { InterviewStatusDto } from 'src/dto/interview_status.dto';
 import { PlacementInviteDto } from 'src/dto/placement_invite.dto';
 import { ScheduleInterviewDto } from 'src/dto/schedule_interview.dto';
 import { updatePlacementInviteDto } from 'src/dto/update_placement_invite.,dto';
+import { InterviewFeedback } from 'src/entities/interview_feedback.entity';
 import { InterviewSchedule } from 'src/entities/interview_schedule.entity';
 import { InterviewStatus } from 'src/entities/interview_status.entity';
 import { Placements } from 'src/entities/placement.entity';
@@ -41,6 +42,8 @@ export class PlacementService implements OnModuleInit {
         private scheduleInterviewRepo: Repository<InterviewSchedule>,
         @InjectRepository(InterviewStatus)
         private interviewStatusRepo: Repository<InterviewStatus>,
+        @InjectRepository(InterviewFeedback)
+        private interviewFeedbackRepo: Repository<InterviewFeedback>,
         @Inject('NOTIFICATION_SERVICE')
         private readonly notificationClient: ClientProxy,
         @Inject('STUDENT_GRPC_SERVICE')
@@ -150,17 +153,63 @@ export class PlacementService implements OnModuleInit {
 
     async getInvitePlacementById(id: string) {
         try {
-            const placement = await this.placementInviteRepo.findOne({
+            const invite = await this.placementInviteRepo.findOne({
                 where: { id },
+                relations: { placement: true },
             });
 
-            if (!placement) {
-                throw new NotFoundException('Placement not found');
+            if (!invite) {
+                throw new NotFoundException('Placement invite not found');
+            }
+
+            // Fetch interview schedule for this student and placement
+            const interview = await this.scheduleInterviewRepo.findOne({
+                where: {
+                    placement_id: invite.placement_id,
+                    student_id: invite.student_id,
+                    is_deleted: false,
+                },
+                order: { scheduled_date: 'DESC' },
+            });
+
+            // Fetch interview status/remarks if available
+            let interviewStatus: InterviewStatus | null = null;
+            if (interview) {
+                interviewStatus = await this.interviewStatusRepo.findOne({
+                    where: {
+                        interview_schedule_id: interview.id,
+                        student_id: invite.student_id,
+                        is_deleted: false,
+                    },
+                });
+            }
+
+            // Fetch interview feedback if available
+            let feedback: InterviewFeedback | null = null;
+            if (interview) {
+                feedback = await this.interviewFeedbackRepo.findOne({
+                    where: {
+                        interview_schedule_id: interview.id,
+                        student_id: invite.student_id,
+                        is_deleted: false,
+                    },
+                });
             }
 
             return {
                 success: true,
-                data: placement,
+                data: {
+                    ...invite,
+                    interview: interview ? {
+                        ...interview,
+                        status: interviewStatus?.status || 'PENDING',
+                        remarks: interviewStatus?.remarks || '',
+                        feedback: feedback ? {
+                            ratings: feedback.ratings,
+                            comments: feedback.comments,
+                        } : null,
+                    } : null,
+                },
             };
         } catch (error: any) {
             throw new HttpException(
@@ -242,7 +291,7 @@ export class PlacementService implements OnModuleInit {
             const [placements, total] = await this.placementInviteRepo.findAndCount({
                 skip: (page - 1) * limit,
                 take: limit,
-                relations: {placement: true}
+                relations: { placement: true }
             });
 
             return {
@@ -883,15 +932,15 @@ export class PlacementService implements OnModuleInit {
         }
     }
 
-    async getStudentInvitation(user : {profile_id: string}) {
+    async getStudentInvitation(user: { profile_id: string }) {
         console.log('Userr', user)
         try {
             const placements = await this.placementInviteRepo.find({
-                where: {student_id: user.profile_id},
-                relations: {placement: true}
+                where: { student_id: user.profile_id },
+                relations: { placement: true }
             });
 
-            return {    
+            return {
                 success: true,
                 data: placements,
             };

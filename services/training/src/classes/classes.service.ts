@@ -87,9 +87,10 @@ export class ClassesService implements OnModuleInit {
   }
 
   selectMode(mode: string) {
-    if (mode === 'ONLINE') {
+    const upperMode = mode?.toUpperCase();
+    if (upperMode === 'ONLINE') {
       return this.onlineRepo;
-    } else if (mode === 'OFFLINE') {
+    } else if (upperMode === 'OFFLINE') {
       return this.offlineRepo;
     } else {
       throw new NotFoundException('pass right class mode');
@@ -430,6 +431,32 @@ export class ClassesService implements OnModuleInit {
       };
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  async updateMaterials(uuid: string, mode: string, notes: string[]) {
+    try {
+      const classRepo = this.selectMode(mode);
+      const classItem = await classRepo.findOne({ where: { uuid } });
+      if (!classItem) {
+        throw new NotFoundException({
+          success: false,
+          message: 'Class not found',
+        });
+      }
+      classItem.notes = [...(classItem.notes || []), ...notes];
+      const updated = await classRepo.save(classItem);
+      return {
+        success: true,
+        message: 'Class study materials updated successfully',
+        data: updated,
+      };
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException({
+        success: false,
+        message: error.message || 'failed to update class materials',
+      });
     }
   }
 }

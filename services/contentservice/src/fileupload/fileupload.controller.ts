@@ -15,7 +15,7 @@ export class FileuploadController {
   @Post()
   @UseInterceptors(
     FileInterceptor('file', {
-      limits: { fileSize: 1 * 1024 * 1024 },
+      limits: { fileSize: 20 * 1024 * 1024 },
     }),
   )
   async uploadImage(@UploadedFile() file: Express.Multer.File) {
@@ -28,6 +28,10 @@ export class FileuploadController {
       'image/png',
       'image/webp',
       'application/pdf',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     ];
 
     if (!allowedTypes.includes(file.mimetype)) {

@@ -102,7 +102,6 @@ export class PlacementController {
     updateInvite(@Param('id') id: string, @Body() dto: updatePlacementInviteDto) {
         return this.placementService.updatePlacementInvite(id, dto);
     }
-
     @Patch('interview/status/:id')
     updateInterviewStatus(
         @Param('id') id: string,

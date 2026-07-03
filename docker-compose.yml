@@ -107,6 +107,7 @@ services:
       - kafka
       - patron
       - api-gateway
+      - institute-service
     networks:
       - app-network
 
@@ -182,7 +183,7 @@ services:
       - rabbitmq
     networks:
       - app-network
-    
+
   # ---------------- OPENVIDU API SERVICE ---------------- #
   openvidu-service:
     build: ./services/openvidu
@@ -264,12 +265,11 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-    - "5672:5672"
-    - "15672:15672"
+      - "5672:5672"
+      - "15672:15672"
     networks:
-    - app-network
+      - app-network
 
-  
   # ---------------- DATABASES ---------------- #
   patron:
     image: mysql:8.0
@@ -290,8 +290,8 @@ services:
     image: confluentinc/cp-kafka:latest
     container_name: kafka
     # restart: unless-stopped
-    ports:    
-    - "9092:9092"   
+    ports:
+      - "9092:9092"
     environment:
       # KRaft mode
       KAFKA_PROCESS_ROLES: broker,controller
@@ -308,18 +308,18 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - app-network
-      
+
   redis:
     image: redis:latest
     container_name: redis
     restart: unless-stopped
     ports:
       - "6379:6379"
-    
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     ports:
-     - "8080:80"
+      - "8080:80"
     environment:
       PMA_HOST: patron
       PMA_PORT: 3306
