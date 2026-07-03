@@ -10,7 +10,7 @@ import { NotificationService } from '../notification.service';
 @WebSocketGateway({ cors: { origin: 'http://localhost:3010' } })
 export class NotificationGateway {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   handleConnection(user: Socket) {
     user.emit('connection', { message: 'user connected' });
