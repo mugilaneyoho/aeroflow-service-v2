@@ -8,11 +8,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { RoomlistEntity } from './entities/roomlist.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './role/role.guard';
+import { ZoomModule } from './zoom/zoom.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: '.env',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -30,6 +32,7 @@ import { RolesGuard } from './role/role.guard';
     }),
     OpenviduModule,
     TypeOrmModule.forFeature([RoomlistEntity]),
+    ZoomModule,
   ],
   controllers: [AppController],
   providers: [

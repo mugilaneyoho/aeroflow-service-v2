@@ -1,0 +1,48 @@
+
+services:
+  api-gateway:
+    build: ./node-api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - name=value
+    networks:
+      - patron
+  
+  auth-service:
+    build: ./services/authentication
+    ports:
+      - "3002:3002"
+      - "3001:3001"
+    environment:
+      - name=value
+    networks:
+      - patron
+  
+  institute-service:
+    build: ./services/institute
+    ports:
+      - "3004:3004"
+      - "3003:3003"
+    environment:
+      - name=value
+    networks:
+      - patron
+  
+  telecalling-service:
+    build: ./services/telecalling
+    ports:
+      - "3006:3006"
+    environment:
+      - name=value
+    networks:
+      - patron
+  
+  training-service:
+    build: ./services/training
+    ports:
+      - "3008:3008"
+    environment:
+      - name=value
+    networks:
+      - patron
