@@ -4,8 +4,10 @@ services:
     build: ./node-api-gateway
     ports:
       - "3000:3000"
+    restart: unless-stopped
     environment:
       PORT: 3000
+      NODE_OPTIONS: "--max-old-space-size=384"
       auth: http://authentication-service:3002
       institute: http://institute-service:3004
       telecalling: http://telecalling-service:3006
@@ -26,9 +28,11 @@ services:
     ports:
       - "3002:3002"
       - "3001:3001"
+    restart: unless-stopped
     environment:
       PORT: 3002
       PORT_GRPC: 3001
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: auth
@@ -46,10 +50,12 @@ services:
     ports:
       - "3004:3004"
       - "3003:3003"
+    restart: unless-stopped
     environment:
       PORT: 3004
       PORT_GRPC: 3003
       AUTH_GRPC: authentication-service:3001
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: institute
@@ -66,10 +72,12 @@ services:
     build: ./services/telecalling
     ports:
       - "3006:3006"
+    restart: unless-stopped
     environment:
       PORT: 3006
       AUTH_GRPC: authentication-service:3001
       PAY_GRPC: payment-service:3011
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: telecalling
@@ -89,10 +97,12 @@ services:
     build: ./services/training
     ports:
       - "3008:3008"
+    restart: unless-stopped
     environment:
       PORT: 3008
       AUTH_GRPC: authentication-service:3001
       INSTITUTE_GRPC: institute-service:3003
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: training
@@ -114,10 +124,12 @@ services:
     ports:
       - "3011:3011"
       - "3021:3021"
+    restart: unless-stopped
     env_file:
       - ./services/payment/.env
     environment:
       GRPC_PORT: 3011
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: payment
@@ -134,8 +146,10 @@ services:
     build: ./services/reception
     ports:
       - "3013:3013"
+    restart: unless-stopped
     environment:
       PORT: 3013
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: reception
@@ -152,11 +166,13 @@ services:
     build: ./services/mailservice
     ports:
       - "3012:3012"
+    restart: unless-stopped
     env_file:
       - ./services/mailservice/.env
     environment:
       sender_mail: mugilane.yoho@gmail.com
       sender_password: rgbx bvuw mxqj rqll
+      NODE_OPTIONS: "--max-old-space-size=384"
       KAFKA_BROKER: kafka:9092
     depends_on:
       - patron
@@ -168,8 +184,10 @@ services:
     build: ./services/notifiyandlogs
     ports:
       - "3010:3010"
+    restart: unless-stopped
     environment:
       PORT: 3010
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: notifyandlog
@@ -188,12 +206,14 @@ services:
     build: ./services/openvidu
     ports:
       - "3017:3017"
+    restart: unless-stopped
     env_file:
       - ./services/openvidu/.env
     environment:
       PORT: 3017
       OPENVIDU_URL: http://videoconfrence:4443
       OPENVIDU_SECRET: MY_SECRET
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: openvidu
@@ -211,8 +231,10 @@ services:
     build: ./services/contentservice
     ports:
       - "3016:3016"
+    restart: unless-stopped
     environment:
       PORT: 3016
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: content
@@ -229,8 +251,10 @@ services:
     build: ./services/ticket-system
     ports:
       - "3018:3018"
+    restart: unless-stopped
     environment:
       PORT: 3018
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: ticket
@@ -246,9 +270,11 @@ services:
     build: ./services/placement
     ports:
       - "3020:3020"
+    restart: unless-stopped
     environment:
       PORT: 3020
       PORT_GRPC: 3001
+      NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
       DB_PORT: 3306
       DB_NAME: auth
@@ -263,6 +289,7 @@ services:
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
+    restart: unless-stopped
     ports:
       - "5672:5672"
       - "15672:15672"
@@ -317,6 +344,7 @@ services:
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
+    restart: unless-stopped
     ports:
       - "8080:80"
     environment:
