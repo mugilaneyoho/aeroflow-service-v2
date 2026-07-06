@@ -6,9 +6,9 @@ import { Message } from "src/entity/chat/message.entity";
 import { MessageRead } from "src/entity/chat/message_read.entity";
 import { NotificationPriority, NotificationRole, NotificationType } from "src/entity/notify";
 import { NotificationService } from "src/notification/notification.service";
-import { Repository } from "typeorm";
+import { Repository, In } from "typeorm";
 import { CreatePrivateConversationDto } from "src/dto/Chat/create_private_conversation.dto";
-import { Conversation, ConversationType } from "src/entity/chat/conversation.entity";
+import { Conversation, ConversationType, ConversationStatus } from "src/entity/chat/conversation.entity";
 import { ConversationMember } from "src/entity/chat/conversation_member.entity";
 import { CreateGroupConversationDto } from "src/dto/Chat/create_group_conversation.dto";
 
@@ -20,82 +20,115 @@ export class ChatService {
         @InjectRepository(Message) private messageRepo: Repository<Message>,
         @InjectRepository(Conversation) private conversationRepo: Repository<Conversation>,
         @InjectRepository(ConversationMember) private memberRepo: Repository<ConversationMember>,
-        // private notificationService: NotificationService,
     ) { }
 
     async markAsRead(dto: ReadMessageDto) {
-
         await this.messageReadRepo.save({
-
             messageId: dto.messageId,
-
             userId: dto.userId
-
         });
-
     }
 
     async sendMessage(dto: SendMessageDto) {
-
         const message = this.messageRepo.create(dto);
-
         await this.messageRepo.save(message);
 
-        // await this.notificationService.create({
-        //     title: 'New Message',
-        //     message: dto.message,
-        //     userId: user.profile_id,
-        //     type: NotificationType.INFO,
-        //     priority: NotificationPriority.HIGH,
-        //     Role: NotificationRole.ADMIN
-        // })
+        // Update the conversation with the last message info
+        await this.conversationRepo.update(dto.conversationId, {
+            lastMessageId: message.id,
+            lastMessageAt: message.createdAt
+        });
 
         return message;
     }
 
     async getConversationChats(conversationId: string) {
+        return this.messageRepo.find({
+            where: { conversationId },
+            order: { createdAt: 'ASC' },
+            relations: ['attachments']
+        });
+    }
+
+    async getUserConversations(userId: string) {
+        const memberConversations = await this.memberRepo.find({
+            where: { userId },
+            select: ['conversationId']
+        });
+
+        if (memberConversations.length === 0) {
+            return [];
+        }
+
+        const conversationIds = memberConversations.map(mc => mc.conversationId);
+
+        return this.conversationRepo.find({
+            where: { id: In(conversationIds) },
+            relations: ['members'],
+            order: { lastMessageAt: 'DESC' }
+        });
     }
 
     async createPrivateConversation(dto: CreatePrivateConversationDto) {
-        const conversation = await this.conversationRepo.createQueryBuilder('conversation').leftJoinAndSelect('conversation.members', 'member').where('conversation.type = :type', { type: 'private' }).andWhere('members.userId IN (:...ids)', { ids: [dto.userId1, dto.userId2], }).getOne();
+        // Query to find an existing ONE_TO_ONE conversation between the two users
+        const conversation = await this.conversationRepo.createQueryBuilder('conversation')
+            .innerJoin('conversation.members', 'm1')
+            .innerJoin('conversation.members', 'm2')
+            .where('conversation.type = :type', { type: ConversationType.ONE_TO_ONE })
+            .andWhere('m1.userId = :userId1', { userId1: dto.userId1 })
+            .andWhere('m2.userId = :userId2', { userId2: dto.userId2 })
+            .leftJoinAndSelect('conversation.members', 'member')
+            .getOne();
 
         if (conversation) {
             return conversation;
         }
 
         const newConversation = await this.conversationRepo.save({
-            type: ConversationType.ONE_TO_ONE
+            type: ConversationType.ONE_TO_ONE,
+            name: `Private_${dto.userId1}_${dto.userId2}`,
+            createdBy: dto.userId1,
+            status: ConversationStatus.ACTIVE
         });
 
         await this.memberRepo.save([
             {
                 conversation: newConversation,
                 userId: dto.userId1,
-                role: dto.role
+                role: dto.role1
             },
             {
                 conversation: newConversation,
                 userId: dto.userId2,
-                role: dto.role
+                role: dto.role2
             }
         ]);
 
-        return newConversation
+        return this.conversationRepo.findOne({
+            where: { id: newConversation.id },
+            relations: ['members']
+        });
     }
 
     async createGroupConversation(dto: CreateGroupConversationDto) {
         const conversation = await this.conversationRepo.save({
             type: ConversationType.GROUP,
-            name: dto.name
-        })
+            name: dto.name,
+            createdBy: dto.members[0] || 'system',
+            status: ConversationStatus.ACTIVE
+        });
 
         await this.memberRepo.save(
             dto?.members?.map(userId => ({
                 conversation,
-                userId
+                userId,
+                role: 'STUDENT' as any // Default role inside group members
             }))
-        )
+        );
 
-        return conversation;
+        return this.conversationRepo.findOne({
+            where: { id: conversation.id },
+            relations: ['members']
+        });
     }
 }

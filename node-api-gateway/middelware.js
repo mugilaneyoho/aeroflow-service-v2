@@ -5,6 +5,9 @@ dotenv.config()
 
 
 export const AuthVerify = async(req,res,next)=>{
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
     try {
         const token = req.headers['authorization'];
 

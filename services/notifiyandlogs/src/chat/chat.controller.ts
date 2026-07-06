@@ -15,6 +15,11 @@ export class ChatController {
         return this.chatService.getConversationChats(conversationId)
     }
 
+    @Get('user/:userId')
+    async getUserConversations (@Param('userId') userId: string) {
+        return this.chatService.getUserConversations(userId)
+    }
+
     @Post('create-group')
     async createGroupConversation (@Body() dto: CreateGroupConversationDto) {
         return this.chatService.createGroupConversation(dto)

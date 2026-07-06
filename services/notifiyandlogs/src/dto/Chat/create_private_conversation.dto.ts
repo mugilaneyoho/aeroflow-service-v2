@@ -5,9 +5,12 @@ export class CreatePrivateConversationDto {
     @IsString()
     userId1!: string;
 
+    @IsEnum(ConversationRole)
+    role1!: ConversationRole;
+
     @IsString()
     userId2!: string;
 
     @IsEnum(ConversationRole)
-    role!: ConversationRole
+    role2!: ConversationRole;
 }
