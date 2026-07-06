@@ -7,7 +7,10 @@ import { MessageRead } from "src/entity/chat/message_read.entity";
 import { NotificationPriority, NotificationRole, NotificationType } from "src/entity/notify";
 import { NotificationService } from "src/notification/notification.service";
 import { Repository } from "typeorm";
-import { ChatGateway } from "./socket/chatsocket";
+import { CreatePrivateConversationDto } from "src/dto/Chat/create_private_conversation.dto";
+import { Conversation, ConversationType } from "src/entity/chat/conversation.entity";
+import { ConversationMember } from "src/entity/chat/conversation_member.entity";
+import { CreateGroupConversationDto } from "src/dto/Chat/create_group_conversation.dto";
 
 @Injectable()
 
@@ -15,8 +18,9 @@ export class ChatService {
     constructor(
         @InjectRepository(MessageRead) private messageReadRepo: Repository<MessageRead>,
         @InjectRepository(Message) private messageRepo: Repository<Message>,
-        private notificationService: NotificationService,
-        private socketService: ChatGateway
+        @InjectRepository(Conversation) private conversationRepo: Repository<Conversation>,
+        @InjectRepository(ConversationMember) private memberRepo: Repository<ConversationMember>,
+        // private notificationService: NotificationService,
     ) { }
 
     async markAsRead(dto: ReadMessageDto) {
@@ -50,8 +54,48 @@ export class ChatService {
     }
 
     async getConversationChats(conversationId: string) {
-        
     }
 
+    async createPrivateConversation(dto: CreatePrivateConversationDto) {
+        const conversation = await this.conversationRepo.createQueryBuilder('conversation').leftJoinAndSelect('conversation.members', 'member').where('conversation.type = :type', { type: 'private' }).andWhere('members.userId IN (:...ids)', { ids: [dto.userId1, dto.userId2], }).getOne();
 
+        if (conversation) {
+            return conversation;
+        }
+
+        const newConversation = await this.conversationRepo.save({
+            type: ConversationType.ONE_TO_ONE
+        });
+
+        await this.memberRepo.save([
+            {
+                conversation: newConversation,
+                userId: dto.userId1,
+                role: dto.role
+            },
+            {
+                conversation: newConversation,
+                userId: dto.userId2,
+                role: dto.role
+            }
+        ]);
+
+        return newConversation
+    }
+
+    async createGroupConversation(dto: CreateGroupConversationDto) {
+        const conversation = await this.conversationRepo.save({
+            type: ConversationType.GROUP,
+            name: dto.name
+        })
+
+        await this.memberRepo.save(
+            dto?.members?.map(userId => ({
+                conversation,
+                userId
+            }))
+        )
+
+        return conversation;
+    }
 }

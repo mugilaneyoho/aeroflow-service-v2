@@ -16,7 +16,7 @@ export enum ConversationType {
   GROUP = 'GROUP',
 }
 
-export enum ConversationRole {
+export enum  ConversationRole {
   ADMIN = 'ADMIN',
   STAFF = 'STAFF',
   STUDENT = 'STUDENT',

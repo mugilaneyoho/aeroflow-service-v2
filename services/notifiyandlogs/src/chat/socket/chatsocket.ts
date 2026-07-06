@@ -1,7 +1,7 @@
 import { ConnectedSocket, MessageBody, SubscribeMessage, WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
 import { Server, Socket } from 'socket.io';
-import { ChatService } from "../chat.service";
 import { SendMessageDto } from "src/dto/Chat/send_message.dto";
+import { ChatService } from "../chat.service";
 
 @WebSocketGateway({
     cors: true,
@@ -51,6 +51,6 @@ export class ChatGateway {
         }
     ) {
         client.to(body.conversationId)
-            .emit('typing', body);
+        .emit('typing', body);
     }
 }
