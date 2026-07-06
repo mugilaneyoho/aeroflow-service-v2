@@ -647,4 +647,41 @@ export class StudentService implements OnModuleInit {
       };
     }
   }
+
+  async update(uuid: string, data: any) {
+    try {
+      const student = await this.studentRepo.findOne({
+        where: { uuid },
+      });
+
+      if (!student) {
+        throw new NotFoundException({
+          success: false,
+          message: 'student not found',
+        });
+      }
+
+      // Update fields if provided
+      if (data.student_name !== undefined) student.student_name = data.student_name;
+      if (data.email !== undefined) student.email = data.email;
+      if (data.phone_number !== undefined) student.phone_number = data.phone_number;
+      if (data.qualification !== undefined) student.qualification = data.qualification;
+      if (data.currentAddress !== undefined) student.currentAddress = data.currentAddress;
+      if (data.permantAddress !== undefined) student.permantAddress = data.permantAddress;
+
+      await this.studentRepo.save(student);
+
+      return {
+        success: true,
+        message: 'student updated successfully',
+        data: student,
+      };
+    } catch (error) {
+      console.error(error, 'update student error');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
 }

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -130,7 +131,12 @@ export class StudentController {
   }
 
   @Patch(':uuid')
-  async studentLocationUpdate(@Param('uuid') uuid: string, @Body() data: any){
+  async studentLocationUpdate(@Param('uuid') uuid: string, @Body() data: any) {
     return this.studentService.studentLocationUpdate(uuid, data)
+  }
+
+  @Put(':uuid')
+  async update(@Param('uuid') uuid: string, @Body() data: any) {
+    return this.studentService.update(uuid, data);
   }
 }
