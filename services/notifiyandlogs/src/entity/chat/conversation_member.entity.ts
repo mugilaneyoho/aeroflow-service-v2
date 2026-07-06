@@ -34,6 +34,7 @@ export class ConversationMember {
   @Column({
     type: 'enum',
     enum: ConversationRole,
+    enumName: 'conversationRole'
   })
   role!: ConversationRole;
 
