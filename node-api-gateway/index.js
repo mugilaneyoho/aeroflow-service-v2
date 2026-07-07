@@ -10,7 +10,7 @@ const server = express()
 
 server.use(cors())
 
-server.use('/',routes)
+server.use('/', routes)
 
 const PORT = process.env.PORT
 
