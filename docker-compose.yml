@@ -353,7 +353,7 @@ services:
       PMA_HOST: patron
       PMA_PORT: 3306
       REDIS_HOST: redis
-       REDIS_PORT: 6379
+      REDIS_PORT: 6379
     depends_on:
       - patron
     networks:
