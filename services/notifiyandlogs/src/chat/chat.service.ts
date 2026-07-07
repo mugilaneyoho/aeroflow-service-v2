@@ -8,9 +8,10 @@ import { NotificationPriority, NotificationRole, NotificationType } from "src/en
 import { NotificationService } from "src/notification/notification.service";
 import { Repository } from "typeorm";
 import { CreatePrivateConversationDto } from "src/dto/Chat/create_private_conversation.dto";
-import { Conversation, ConversationType } from "src/entity/chat/conversation.entity";
+import { Conversation } from "src/entity/chat/conversation.entity";
 import { ConversationMember } from "src/entity/chat/conversation_member.entity";
 import { CreateGroupConversationDto } from "src/dto/Chat/create_group_conversation.dto";
+import { ConversationType } from "src/entity/chat/chat_enum";
 
 @Injectable()
 

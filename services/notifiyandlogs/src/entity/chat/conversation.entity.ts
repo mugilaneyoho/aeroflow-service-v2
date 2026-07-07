@@ -10,22 +10,8 @@ import {
 } from 'typeorm';
 import { ConversationMember } from './conversation_member.entity';
 import { Message } from './message.entity';
+import { ConversationStatus, ConversationType } from './chat_enum';
 
-export enum ConversationType {
-  ONE_TO_ONE = 'ONE_TO_ONE',
-  GROUP = 'GROUP',
-}
-
-export enum  ConversationRole {
-  ADMIN = 'ADMIN',
-  STAFF = 'STAFF',
-  STUDENT = 'STUDENT',
-}
-
-export enum ConversationStatus {
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-}
 
 @Entity('chat_conversations')
 @Index(['batchId'])

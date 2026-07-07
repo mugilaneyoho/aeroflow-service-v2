@@ -31,6 +31,7 @@ async function bootstrap() {
     },
   )
 
+  app.enableCors({origin: true})
   await app.startAllMicroservices();
 
   await app.listen(3010);

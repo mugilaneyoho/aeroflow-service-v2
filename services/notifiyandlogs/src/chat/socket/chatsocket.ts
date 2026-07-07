@@ -4,7 +4,10 @@ import { SendMessageDto } from "src/dto/Chat/send_message.dto";
 import { ChatService } from "../chat.service";
 
 @WebSocketGateway({
-    cors: true,
+    cors: {
+    origin: true,
+    credentials: true,
+  },
 })
 export class ChatGateway {
     @WebSocketServer()

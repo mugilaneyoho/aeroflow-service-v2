@@ -134,3 +134,4 @@ export class StudentController {
     return this.studentService.studentLocationUpdate(uuid, data)
   }
 }
+             

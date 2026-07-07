@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from "class-validator";
-import { ConversationRole } from "src/entity/chat/conversation.entity";
+import { ConversationRole } from "src/entity/chat/chat_enum";
 
 export class CreatePrivateConversationDto {
     @IsString()
