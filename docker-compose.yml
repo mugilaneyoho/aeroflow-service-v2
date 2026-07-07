@@ -170,8 +170,8 @@ services:
     env_file:
       - ./services/mailservice/.env
     environment:
-      sender_mail: mugilane.yoho@gmail.com
-      sender_password: rgbx bvuw mxqj rqll
+      sender_mail: "mugilane.yoho@gmail.com"
+      sender_password: "rgbx bvuw mxqj rqll"
       NODE_OPTIONS: "--max-old-space-size=384"
       KAFKA_BROKER: kafka:9092
     depends_on:
@@ -336,11 +336,13 @@ services:
 #      - app-network
 
   redis:
-    image: redis:latest
-    container_name: redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
+   image: redis:latest
+   container_name: redis
+   restart: unless-stopped
+   ports:
+     - "6379:6379"
+   networks:
+     - app-network
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -350,6 +352,8 @@ services:
     environment:
       PMA_HOST: patron
       PMA_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       - patron
     networks:

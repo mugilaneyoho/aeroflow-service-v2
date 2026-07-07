@@ -83,7 +83,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ]),
     BullModule.forRoot({
       redis: {
-        host: 'host.docker.internal',
+        host: 'redis',
         port: 6379,
       },
     }),

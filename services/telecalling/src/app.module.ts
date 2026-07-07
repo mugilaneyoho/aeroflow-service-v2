@@ -37,7 +37,7 @@ import { RolesGuard } from './role/role.guard';
     TypeOrmModule.forFeature([LeadsEntity, EmployeEntity]),
     BullModule.forRoot({
       redis: {
-        host: 'host.docker.internal',
+        host: 'redis',
         port: 6379,
         maxRetriesPerRequest: null,
       },
