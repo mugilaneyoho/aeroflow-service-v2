@@ -136,15 +136,24 @@ export class StudentService implements OnModuleInit {
     }
   }
 
-  async findAll(query: { page: string; limit: string; approved?: string }) {
+  async findAll(query: {
+    page: string;
+    limit: string;
+    approved?: string;
+    isbatch?: string;
+  }) {
     try {
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 10;
       const whereClause: any = { is_delete: false };
 
-      // filter: ?approved=false → pending students, ?approved=true → approved students
       if (query.approved !== undefined) {
         whereClause.is_approved = query.approved === 'true';
+      }
+
+      if (query.isbatch !== undefined) {
+        whereClause.is_approved = true;
+        whereClause.is_batch_assign = !(query.isbatch === 'true');
       }
 
       const [students, total] = await this.studentRepo.findAndCount({
@@ -662,12 +671,17 @@ export class StudentService implements OnModuleInit {
       }
 
       // Update fields if provided
-      if (data.student_name !== undefined) student.student_name = data.student_name;
+      if (data.student_name !== undefined)
+        student.student_name = data.student_name;
       if (data.email !== undefined) student.email = data.email;
-      if (data.phone_number !== undefined) student.phone_number = data.phone_number;
-      if (data.qualification !== undefined) student.qualification = data.qualification;
-      if (data.currentAddress !== undefined) student.currentAddress = data.currentAddress;
-      if (data.permantAddress !== undefined) student.permantAddress = data.permantAddress;
+      if (data.phone_number !== undefined)
+        student.phone_number = data.phone_number;
+      if (data.qualification !== undefined)
+        student.qualification = data.qualification;
+      if (data.currentAddress !== undefined)
+        student.currentAddress = data.currentAddress;
+      if (data.permantAddress !== undefined)
+        student.permantAddress = data.permantAddress;
 
       await this.studentRepo.save(student);
 

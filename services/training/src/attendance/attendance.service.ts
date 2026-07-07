@@ -744,4 +744,193 @@ export class AttendanceService implements OnModuleInit {
       });
     }
   }
+
+  async getRates() {
+    try {
+      // 1. Fetch all online and offline classes that are not deleted
+      const onlineClasses = await this.onlineRepo.find({ where: { is_delete: false } });
+      const offlineClasses = await this.offlineRepo.find({ where: { is_delete: false } });
+
+      const batchClassCounts: { [batchId: string]: number } = {};
+      for (const c of onlineClasses) {
+        if (!c.batch_id) continue;
+        if (!batchClassCounts[c.batch_id]) {
+          batchClassCounts[c.batch_id] = 0;
+        }
+        batchClassCounts[c.batch_id] += 1;
+      }
+      for (const c of offlineClasses) {
+        if (!c.batch_id) continue;
+        if (!batchClassCounts[c.batch_id]) {
+          batchClassCounts[c.batch_id] = 0;
+        }
+        batchClassCounts[c.batch_id] += 1;
+      }
+
+      // 2. Fetch all status records to count attended classes (status = PRESENT) per student
+      const statusRecords = await this.statusRepo.find();
+      const studentAttendedCounts: { [studentId: string]: number } = {};
+      for (const rec of statusRecords) {
+        if (!rec.studentId) continue;
+        if (rec.status === StatusRecordEnum.PRESENT) {
+          if (!studentAttendedCounts[rec.studentId]) {
+            studentAttendedCounts[rec.studentId] = 0;
+          }
+          studentAttendedCounts[rec.studentId] += 1;
+        }
+      }
+
+      // 3. Fetch all batches and students list from Grpc service
+      let batchesData: any[] = [];
+      try {
+        const grpc_batches: { data: string } = await lastValueFrom(
+          this.batchService.GetcompleteBatch({}),
+        );
+        batchesData = JSON.parse(grpc_batches.data || '[]');
+      } catch (grpcErr) {
+        console.error('Error fetching batches from gRPC in getRates:', grpcErr);
+      }
+
+      const data: any[] = [];
+      const processedStudentIds = new Set<string>();
+
+      // 4. Map students who are assigned to batches
+      for (const batch of batchesData) {
+        const batchId = batch.uuid;
+        const totalClasses = batchClassCounts[batchId] || 0;
+
+        if (batch.students && Array.isArray(batch.students)) {
+          for (const student of batch.students) {
+            if (!student.uuid) continue;
+            const studentId = student.uuid;
+            processedStudentIds.add(studentId);
+
+            const attendedClasses = studentAttendedCounts[studentId] || 0;
+            const absentClasses = totalClasses > attendedClasses ? totalClasses - attendedClasses : 0;
+            const attendanceRate = totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 100;
+
+            data.push({
+              studentId,
+              totalClasses,
+              attendedClasses,
+              absentClasses,
+              attendanceRate,
+            });
+          }
+        }
+      }
+
+      // 5. Fallback for any other students who have status records but were not in the Grpc batch student lists
+      const fallbackSummaryMap: { [studentId: string]: { total: number; attended: number } } = {};
+      for (const rec of statusRecords) {
+        if (!rec.studentId || processedStudentIds.has(rec.studentId)) continue;
+        if (!fallbackSummaryMap[rec.studentId]) {
+          fallbackSummaryMap[rec.studentId] = { total: 0, attended: 0 };
+        }
+        fallbackSummaryMap[rec.studentId].total += 1;
+        if (rec.status === StatusRecordEnum.PRESENT) {
+          fallbackSummaryMap[rec.studentId].attended += 1;
+        }
+      }
+
+      for (const studentId of Object.keys(fallbackSummaryMap)) {
+        const { total, attended } = fallbackSummaryMap[studentId];
+        data.push({
+          studentId,
+          totalClasses: total,
+          attendedClasses: attended,
+          absentClasses: total - attended,
+          attendanceRate: total > 0 ? Math.round((attended / total) * 100) : 100,
+        });
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      console.error('Error in getRates:', error);
+      throw new InternalServerErrorException('Failed to fetch attendance rates');
+    }
+  }
+
+  async getStudentLog(studentId: string) {
+    try {
+      // 1. Fetch batches to find the student's batch
+      let batchesData: any[] = [];
+      try {
+        const grpc_batches: { data: string } = await lastValueFrom(
+          this.batchService.GetcompleteBatch({}),
+        );
+        batchesData = JSON.parse(grpc_batches.data || '[]');
+      } catch (grpcErr) {
+        console.error('Error fetching batches from gRPC in getStudentLog:', grpcErr);
+      }
+
+      let studentBatchId: string | null = null;
+      for (const b of batchesData) {
+        const student = b.students?.find((s: any) => s.uuid === studentId);
+        if (student) {
+          studentBatchId = b.uuid;
+          break;
+        }
+      }
+
+      // 2. Fetch all status records for this student
+      const records = await this.statusRepo.find({
+        where: { studentId },
+        relations: ['attendance'],
+      });
+      const recordMap = new Map<string, StatusRecordEnum>();
+      for (const rec of records) {
+        if (rec.attendance?.classId) {
+          recordMap.set(rec.attendance.classId, rec.status);
+        }
+      }
+
+      let logs: any[] = [];
+
+      if (studentBatchId) {
+        // 3. Fetch all classes for this batch
+        const onlineClasses = await this.onlineRepo.find({
+          where: { batch_id: studentBatchId, is_delete: false },
+        });
+        const offlineClasses = await this.offlineRepo.find({
+          where: { batch_id: studentBatchId, is_delete: false },
+        });
+
+        const allClasses = [...onlineClasses, ...offlineClasses];
+        logs = allClasses.map(c => {
+          const status = recordMap.get(c.uuid);
+          return {
+            date: c.start_date ? c.start_date.toISOString() : c.createdAt.toISOString(),
+            sessionTopic: c.subject || 'Curriculum Unit',
+            classMode: c.class_mode || 'online',
+            status: status === StatusRecordEnum.PRESENT ? 'Present' : 'Absent',
+          };
+        });
+      } else {
+        // Fallback: If student has no assigned batch, use status records only
+        logs = records.map(rec => {
+          return {
+            date: rec.attendance?.date ? rec.attendance.date.toISOString() : rec.createdAt.toISOString(),
+            sessionTopic: 'Curriculum Unit',
+            classMode: 'online',
+            status: rec.status === StatusRecordEnum.PRESENT ? 'Present' : 'Absent',
+          };
+        });
+      }
+
+      // Sort by date descending
+      logs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+      return {
+        success: true,
+        data: logs,
+      };
+    } catch (error) {
+      console.error('Error in getStudentLog:', error);
+      throw new InternalServerErrorException('Failed to fetch student log');
+    }
+  }
 }
