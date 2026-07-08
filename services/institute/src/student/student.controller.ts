@@ -20,7 +20,7 @@ import { GrpcMethod } from '@nestjs/microservices';
 
 @Controller('student')
 export class StudentController {
-  constructor(private readonly studentService: StudentService) { }
+  constructor(private readonly studentService: StudentService) {}
 
   @Get('/feesgetall')
   feesgetall() {
@@ -33,7 +33,15 @@ export class StudentController {
   }
 
   @Get('all')
-  findAll(@Query() query: { page: string; limit: string; approved?: string }) {
+  findAll(
+    @Query()
+    query: {
+      page: string;
+      limit: string;
+      approved?: string;
+      isbatch?: string;
+    },
+  ) {
     return this.studentService.findAll(query);
   }
 
@@ -137,7 +145,7 @@ export class StudentController {
 
   @Patch(':uuid')
   async studentLocationUpdate(@Param('uuid') uuid: string, @Body() data: any) {
-    return this.studentService.studentLocationUpdate(uuid, data)
+    return this.studentService.studentLocationUpdate(uuid, data);
   }
 
 }

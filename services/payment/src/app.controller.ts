@@ -91,6 +91,17 @@ export class AppController {
     return this.appService.getStudentFees(data);
   }
 
+  @Get('student/:studentId/fees')
+  async getStudentFeesHttp(@Param('studentId') studentId: string) {
+    const res = await this.appService.getStudentFees({ studentId });
+    const data = JSON.parse(res.data);
+    return {
+      success: true,
+      message: 'Student fees fetched',
+      data: data,
+    };
+  }
+
   @Get('downloadByuser/:uuid')
   async downloadByuser(@Res() res: any, @Param('uuid') uuid: string) {
     const student: { admissionFeesId: string } | null =

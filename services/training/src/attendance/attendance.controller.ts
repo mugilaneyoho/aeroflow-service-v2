@@ -48,6 +48,16 @@ export class AttendanceController {
     await this.attendaceService.exportAttendanceReport(res, studentId, batchId);
   }
 
+  @Get('rates')
+  getRates() {
+    return this.attendaceService.getRates();
+  }
+
+  @Get('student/:studentId/log')
+  getStudentLog(@Param('studentId') studentId: string) {
+    return this.attendaceService.getStudentLog(studentId);
+  }
+
   @Get(':classId')
   find(@Param('classId') classId: string) {
     return this.attendaceService.findAll(classId);
