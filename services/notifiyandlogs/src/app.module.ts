@@ -13,10 +13,12 @@ import { MessageRead } from './entity/chat/message_read.entity';
 import { Conversation } from './entity/chat/conversation.entity';
 import { ConversationMember } from './entity/chat/conversation_member.entity';
 import { Attachment } from './entity/chat/attachment.entity';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

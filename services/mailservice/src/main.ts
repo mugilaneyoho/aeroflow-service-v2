@@ -1,3 +1,6 @@
+// ⚠️ instrument.ts MUST be the very first import — Sentry needs to load before NestJS
+import './instrument';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

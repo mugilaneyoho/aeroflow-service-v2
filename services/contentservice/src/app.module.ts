@@ -1,12 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { ResourcesModule } from './resources/resources.module';
 import { Note } from './resources/entities/resource.entity';
 import { FileuploadModule } from './fileupload/fileupload.module';
 
 @Module({
   imports: [
+    // ⚠️ SentryModule MUST be first so it hooks in before other modules
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

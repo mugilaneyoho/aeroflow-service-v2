@@ -17,9 +17,11 @@ import { RolesGuard } from './role/role.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -30,11 +32,6 @@ import { join } from 'path';
       ssl: {
         rejectUnauthorized: false,
       },
-      // host: process.env.DB_HOST,
-      // port: 3306,
-      // username: process.env.DB_USER,
-      // password: process.env.DB_PASS,
-      // database: process.env.DB_NAME,
       entities: [
         InstituteEntity,
         BranchEntity,

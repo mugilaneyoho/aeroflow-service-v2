@@ -12,9 +12,11 @@ import { RazorpayModule } from './razorpay/razorpay.module';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from './role/role.guard';
 import { IncoiveService } from './template/export.service';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -25,11 +27,6 @@ import { IncoiveService } from './template/export.service';
       ssl: {
         rejectUnauthorized: false,
       },
-      // host: process.env.DB_HOST,
-      // port: 3306,
-      // username: process.env.DB_USER,
-      // database: process.env.DB_NAME,
-      // password: process.env.DB_PASS, 
       entities: [StudentFeesEntity, PaymentEntiry],
       synchronize: true,
     }),

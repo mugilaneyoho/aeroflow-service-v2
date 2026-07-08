@@ -28,6 +28,7 @@
     "@nestjs/microservices": "^11.1.13",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "@sentry/nestjs": "^10.64.0",
     "crypto": "^1.0.1",
     "docxtemplater": "^3.69.0",
     "mammoth": "^1.12.0",

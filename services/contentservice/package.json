@@ -28,6 +28,7 @@
     "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.1.19",
     "@nestjs/typeorm": "^11.0.1",
+    "@sentry/nestjs": "^10.64.0",
     "@types/multer": "^2.0.0",
     "cloudinary": "^2.9.0",
     "multer": "^2.1.1",

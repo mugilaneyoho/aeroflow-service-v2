@@ -7,9 +7,13 @@ import { join } from 'path';
 import { ConfigModule } from '@nestjs/config';
 import { WhatsAppService } from './whatsapp/whatsapp.service';
 import { WhatsAppController } from './whatsapp/whatsapp.controls';
+import { SentryModule } from '@sentry/nestjs/setup';
+import { APP_FILTER } from '@nestjs/core';
+import { SentryGlobalFilter } from './sentry-exception.filter';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -37,6 +41,10 @@ import { WhatsAppController } from './whatsapp/whatsapp.controls';
     }),
   ],
   controllers: [AppController, WhatsAppController],
-  providers: [AppService, WhatsAppService],
+  providers: [
+    AppService,
+    WhatsAppService,
+    { provide: APP_FILTER, useClass: SentryGlobalFilter },
+  ],
 })
 export class AppModule {}

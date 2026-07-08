@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -21,6 +22,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    // ⚠️ SentryModule MUST be first so it hooks in before other modules
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',

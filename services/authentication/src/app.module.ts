@@ -14,9 +14,11 @@ import { AdminEntity } from './entities/admins.entity';
 import { RolesModule } from './roles/roles.module';
 import { ConfigModule } from '@nestjs/config';
 import { SeedingService } from './seeding/seeding.service';
+import { SentryModule } from '@sentry/nestjs/setup';
 
 @Module({
   imports: [
+    SentryModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -27,11 +29,6 @@ import { SeedingService } from './seeding/seeding.service';
       ssl: {
         rejectUnauthorized: false,
       },
-      // host: process.env.DB_HOST,
-      // port: 3306,
-      // username: process.env.DB_USER,
-      // password: process.env.DB_PASS,
-      // database: process.env.DB_NAME,
       entities: [
         StudentEntity,
         TelecallingEntity,
