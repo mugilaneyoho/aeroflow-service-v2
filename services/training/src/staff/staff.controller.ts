@@ -20,7 +20,12 @@ import type { Request } from 'express';
 @ApiTags('Staff')
 @Controller('staff')
 export class StaffController {
-  constructor(private readonly staffService: StaffService) {}
+  constructor(private readonly staffService: StaffService) { }
+
+  @Get('staffs-get')
+  async getStaffsForChat() {
+    return this.staffService.getStaffsforChat();
+  }
 
   // @Roles([Role.HOD])
   @Post('create')

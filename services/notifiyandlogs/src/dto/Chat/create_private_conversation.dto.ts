@@ -13,4 +13,10 @@ export class CreatePrivateConversationDto {
 
     @IsEnum(ConversationRole)
     role2!: ConversationRole;
+
+    @IsString()
+    userName1?: string;
+
+    @IsString()
+    userName2!: string;
 }

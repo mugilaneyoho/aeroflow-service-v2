@@ -47,10 +47,10 @@ export class Message {
     @PrimaryGeneratedColumn('uuid')
     id!: string;
 
-    @Column()
+    @Column({type: 'uuid'})
     conversationId!: string;
 
-    @Column()
+    @Column({type: 'uuid'})
     senderId!: string;
 
     @Column({
@@ -81,6 +81,7 @@ export class Message {
     visibility!: MessageVisibility;
 
     @Column({
+        type: 'uuid',
         nullable: true,
     })
     replyMessageId?: string;

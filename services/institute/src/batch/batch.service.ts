@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -7,12 +8,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BatchEntity } from 'src/entities/batch.entity';
-import { LessThan, Repository } from 'typeorm';
+import { In, LessThan, Repository } from 'typeorm';
 import { CreateBatchDto } from './dto/create-batch.dto';
 import { UpdateBatchDto } from './dto/update-batch.dto';
 import { StudentProfileEntity } from 'src/entities/student.entity';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
+import { ClientProxy } from '@nestjs/microservices';
+import axios from "axios";
 
 @Injectable()
 export class BatchService implements OnModuleInit {
@@ -23,7 +26,9 @@ export class BatchService implements OnModuleInit {
     private studentRepo: Repository<StudentProfileEntity>,
     @InjectQueue('batch-assign')
     private queue: Queue,
-  ) {}
+    @Inject('CHAT_SERVICE')
+    private chatClient: ClientProxy,
+  ) { }
 
   onModuleInit() {
     this.queue.on('error', (err) => {
@@ -37,6 +42,7 @@ export class BatchService implements OnModuleInit {
       const exist = await this.batchRepo.findOne({
         where: { batchName: data.batchName },
       });
+
 
       if (exist) {
         return new ConflictException({
@@ -63,7 +69,39 @@ export class BatchService implements OnModuleInit {
 
       await this.batchRepo.save(batch);
 
-      console.log(data?.studentIds);
+      const { data: staffs } = await axios.get(
+        'http://training-service:3008/staff/staffs-get',
+      );
+
+      const staffMembers = staffs.map((staff: any) => ({
+        userId: staff.uuid,
+        name: staff.staff_name,
+        role: 'STAFF',
+      }));
+
+      const students = await this.studentRepo.find({
+        where: {
+          uuid: In(data.studentIds),
+        },
+      });
+
+      const studentMembers = students.map(student => ({
+        userId: student.uuid,
+        name: student.student_name,
+        role: 'STUDENT',
+      }));
+
+      const members = [...staffMembers, ...studentMembers];
+
+
+      console.log('Unique Members', members)
+
+      this.chatClient.emit('group.created', {
+        name: batch.batchName,
+        members: members
+      })
+
+      console.log("Studemnt Ids Batch creation", data?.studentIds);
 
       // eslint-disable-next-line no-unsafe-optional-chaining
       for (const user of data?.studentIds) {
