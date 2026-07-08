@@ -8,6 +8,6 @@ import { Observable } from 'rxjs';
 export class SentryGlobalFilter extends BaseRpcExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): Observable<never> {
     Sentry.captureException(exception);
-    return super.catch(exception, host);
+    return super.catch(exception, host) as never;
   }
 }

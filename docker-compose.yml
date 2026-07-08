@@ -39,7 +39,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -62,7 +61,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -87,7 +85,6 @@ services:
       KAFKA_BROKER: kafka:9092
     depends_on:
       - redis
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -112,7 +109,6 @@ services:
       KAFKA_BROKER: kafka:9092
     depends_on:
       - redis
-      - patron
       - api-gateway
       - institute-service
     networks:
@@ -136,7 +132,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -157,7 +152,6 @@ services:
       DB_PASS: root
     depends_on:
       - api-gateway
-      - patron
     networks:
       - app-network
 
@@ -174,8 +168,6 @@ services:
       sender_password: "rgbx bvuw mxqj rqll"
       NODE_OPTIONS: "--max-old-space-size=384"
       KAFKA_BROKER: kafka:9092
-    depends_on:
-      - patron
     networks:
       - app-network
 
@@ -195,7 +187,6 @@ services:
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - patron
       - api-gateway
       - rabbitmq
     networks:
@@ -221,7 +212,6 @@ services:
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
     depends_on:
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -242,7 +232,6 @@ services:
       DB_PASS: root
     depends_on:
       - api-gateway
-      - patron
     networks:
       - app-network
 
@@ -262,7 +251,6 @@ services:
       DB_PASS: root
     depends_on:
       - api-gateway
-      - patron
     networks:
       - app-network
 
@@ -281,7 +269,6 @@ services:
       DB_USER: root
       DB_PASS: root
     depends_on:
-      - patron
       - api-gateway
     networks:
       - app-network
@@ -297,19 +284,19 @@ services:
       - app-network
 
   # ---------------- DATABASES ---------------- #
-  patron:
-    image: mysql:8.0
-    restart: always
-    container_name: patron
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-    volumes:
-      - patron_data:/var/lib/mysql
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-    networks:
-      - app-network
+  # patron:
+  #   image: mysql:8.0
+  #   restart: always
+  #   container_name: patron
+  #   ports:
+  #     - "3306:3306"
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: root
+  #   volumes:
+  #     - patron_data:/var/lib/mysql
+  #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  #   networks:
+  #     - app-network
 
   # ---------------- INFRA ---------------- #
 #  kafka:
@@ -344,20 +331,20 @@ services:
    networks:
      - app-network
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    restart: unless-stopped
-    ports:
-      - "8080:80"
-    environment:
-      PMA_HOST: patron
-      PMA_PORT: 3306
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-    depends_on:
-      - patron
-    networks:
-      - app-network
+  # phpmyadmin:
+  #   image: phpmyadmin/phpmyadmin
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:80"
+  #   environment:
+  #     PMA_HOST: patron
+  #     PMA_PORT: 3306
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #   depends_on:
+  #     - patron
+  #   networks:
+  #     - app-network
 
   # videoconfrence:
   #   image: openvidu/openvidu-server-kms:latest
