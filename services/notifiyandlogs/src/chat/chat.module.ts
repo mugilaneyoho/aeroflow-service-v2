@@ -8,12 +8,28 @@ import { MessageRead } from "src/entity/chat/message_read.entity";
 import { ChatGateway } from "./socket/chatsocket";
 import { ChatController } from "./chat.controller";
 import { ChatService } from "./chat.service";
+import { ClientsModule, Transport } from "@nestjs/microservices";
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Message, Conversation, ConversationMember, MessageRead, Attachment])],
+    imports: [
+        TypeOrmModule.forFeature([Message, Conversation, ConversationMember, MessageRead, Attachment]),
+        ClientsModule.register([
+            {
+                name: 'CHAT_SERVICE',
+                transport: Transport.RMQ,
+                options: {
+                    urls: ['amqp://guest:guest@rabbitmq:5672'],
+                    queue: 'chats',
+                    queueOptions: {
+                        durable: true,
+                    },
+                },
+            },
+        ]),
+    ],
     providers: [ChatGateway, ChatService],
     controllers: [ChatController],
     exports: [ChatService]
 })
 
-export class ChatModule {}
+export class ChatModule { }

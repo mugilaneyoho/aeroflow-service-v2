@@ -25,10 +25,10 @@ export class ConversationMember {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column()
+  @Column({type: 'uuid'})
   conversationId!: string;
 
-  @Column()
+  @Column({type: 'uuid'})
   userId!: string;
 
   @Column({
@@ -80,4 +80,7 @@ export class ConversationMember {
 
   @DeleteDateColumn()
   deletedAt?: Date;
+
+  @Column({nullable: true})
+  userName?: string;
 }

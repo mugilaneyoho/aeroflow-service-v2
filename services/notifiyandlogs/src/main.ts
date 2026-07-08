@@ -32,6 +32,19 @@ async function bootstrap() {
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new SentryGlobalFilter(httpAdapter));
 
+  app.connectMicroservice<MicroserviceOptions>(
+    {
+      transport: Transport.RMQ,
+      options: {
+        urls: ['amqp://guest:guest@rabbitmq:5672'],
+        queue: 'chats',
+        queueOptions: {
+          durable: true,
+        },
+      },
+    },
+  )
+
   await app.startAllMicroservices();
 
   await app.listen(3010);

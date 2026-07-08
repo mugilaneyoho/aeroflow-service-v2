@@ -7,6 +7,7 @@ import { StudentProfileEntity } from 'src/entities/student.entity';
 import { BullModule } from '@nestjs/bull';
 import { QueueModule } from 'src/queue/queue.module';
 import { BatchProcessor } from './batch.processor';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
@@ -19,8 +20,21 @@ import { BatchProcessor } from './batch.processor';
       },
     }),
     QueueModule,
+    ClientsModule.register([
+      {
+        name: 'CHAT_SERVICE',
+        transport: Transport.RMQ,
+        options: {
+          urls: ['amqp://guest:guest@rabbitmq:5672'],
+          queue: 'chats',
+          queueOptions: {
+            durable: true
+          }
+        }
+      },
+    ])
   ],
   controllers: [BatchController],
   providers: [BatchService, BatchProcessor],
 })
-export class BatchModule {}
+export class BatchModule { }

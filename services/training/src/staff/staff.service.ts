@@ -237,4 +237,8 @@ export class StaffService implements OnModuleInit {
 
     return staff;
   }
+
+  async getStaffsforChat () {
+    return this.staffRepo.find({where: {is_delete: false}});
+  }
 }

@@ -25,7 +25,7 @@ async function bootstrap() {
         join(__dirname, './proto/common.proto'),
         join(__dirname, './proto/student.proto'),
       ],
-      url: `0.0.0.0:${process.env.PORT_GRPC}`,
+      url: `0.0.0.0:${process.env.PORT_GRPC || 3003}`,
     },
   });
 
