@@ -75,6 +75,11 @@ export class StudentController {
     return this.studentService.findOne(uuid);
   }
 
+  @Put(':uuid')
+  async update(@Param('uuid') uuid: string, @Body() data: any) {
+    return this.studentService.update(uuid, data);
+  }
+
   @Delete(':uuid')
   deleteOne(@Param('uuid') uuid: string) {
     return this.studentService.deleteOne(uuid);
@@ -135,8 +140,4 @@ export class StudentController {
     return this.studentService.studentLocationUpdate(uuid, data)
   }
 
-  @Put(':uuid')
-  async update(@Param('uuid') uuid: string, @Body() data: any) {
-    return this.studentService.update(uuid, data);
-  }
 }
