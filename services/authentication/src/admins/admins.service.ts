@@ -12,6 +12,7 @@ import { CreateAdminDto } from './dto/create-admin.dto';
 import { UpdateAdminDto } from './dto/update-admin.dto';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { JwtService } from '@nestjs/jwt';
+import { PassDecrypted } from 'src/utils/helpers';
 
 @Injectable()
 export class AdminsService {
@@ -141,8 +142,10 @@ export class AdminsService {
     }
   }
 
-  async login(email: string, password: string) {
+  async login(payload: string) {
     try {
+      const { email, password } = PassDecrypted(payload);
+
       const user = await this.adminRepo.findOne({ where: { email } });
 
       if (!user) {
@@ -185,7 +188,7 @@ export class AdminsService {
     }
   }
 
-  async getAdminsForChat () {
-    return this.adminRepo.find({where: {is_delete: false}})
+  async getAdminsForChat() {
+    return this.adminRepo.find({ where: { is_delete: false } });
   }
 }

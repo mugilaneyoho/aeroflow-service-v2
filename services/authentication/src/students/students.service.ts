@@ -15,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { roles, rolesEntity } from 'src/entities/role.entity';
 import { ClientProxy } from '@nestjs/microservices';
+import { PassDecrypted } from 'src/utils/helpers';
 
 @Injectable()
 export class StudentsService implements OnModuleInit {
@@ -99,8 +100,10 @@ export class StudentsService implements OnModuleInit {
     }
   }
 
-  async login(data: StudentBody) {
+  async login(body: { payload: string }) {
     try {
+      const data = PassDecrypted(body.payload);
+
       const user = await this.StudentRepo.findOne({
         where: { email: data.email },
       });

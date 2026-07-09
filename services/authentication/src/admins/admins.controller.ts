@@ -17,8 +17,8 @@ export class AdminsController {
   constructor(private readonly adminService: AdminsService) { }
 
   @Post('login')
-  login(@Body() data: { email: string; password: string }) {
-    return this.adminService.login(data.email, data.password);
+  login(@Body() data: { payload: string }) {
+    return this.adminService.login(data.payload);
   }
 
   @Post('create')

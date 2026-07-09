@@ -12,8 +12,8 @@ export class StaffController {
   ) {}
 
   @Post('login')
-  login(@Body() data: { email: string; password: string }) {
-    return this.staffService.login(data.email, data.password);
+  login(@Body() data: { payload: string }) {
+    return this.staffService.login(data.payload);
   }
 
   @Put('reset-pass')

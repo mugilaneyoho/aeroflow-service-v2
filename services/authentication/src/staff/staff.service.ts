@@ -19,6 +19,7 @@ import {
 } from 'src/utils/password.utils';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ClientProxy } from '@nestjs/microservices';
+import { PassDecrypted } from 'src/utils/helpers';
 
 @Injectable()
 export class StaffService implements OnModuleInit {
@@ -113,8 +114,10 @@ export class StaffService implements OnModuleInit {
     }
   }
 
-  async login(email: string, password: string) {
+  async login(payload: string) {
     try {
+      const { email, password } = PassDecrypted(payload);
+
       const user = await this.staffRepo.findOne({ where: { email } });
 
       if (!user) {

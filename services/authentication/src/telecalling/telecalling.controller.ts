@@ -11,8 +11,8 @@ export class TelecallingController {
   ) {}
 
   @Post('login')
-  login(@Body() data: { email: string; password: string }) {
-    return this.telecallerService.login(data.email, data.password);
+  login(@Body() data: { payload: string }) {
+    return this.telecallerService.login(data.payload);
   }
 
   @Put('reset-pass')

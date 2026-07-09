@@ -11,6 +11,7 @@ import { GrpcMethod } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { roles, rolesEntity } from 'src/entities/role.entity';
 import { TelecallingEntity } from 'src/entities/telecalling.entity';
+import { PassDecrypted } from 'src/utils/helpers';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { Repository } from 'typeorm';
 
@@ -41,8 +42,10 @@ export class TelecallingService {
     return { success: true, message: 'user data fetched', data: user };
   }
 
-  async login(email: string, password: string) {
+  async login(payload: string) {
     try {
+      const { email, password } = PassDecrypted(payload);
+
       const user = await this.TelecallerRepo.findOne({ where: { email } });
 
       if (!user) {

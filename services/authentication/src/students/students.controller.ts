@@ -12,7 +12,7 @@ export class StudentsController {
   ) {}
 
   @Post('login')
-  login(@Body() body: StudentBody) {
+  login(@Body() body: { payload: string }) {
     return this.studentSerivce.login(body);
   }
 
