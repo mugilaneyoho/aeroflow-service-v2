@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ActivityLogEntity } from '../entity/activitylog';
@@ -25,6 +26,7 @@ export class ActivelogService {
       const res = this.logRepo.create(data);
       return await this.logRepo.save(res);
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -33,6 +35,7 @@ export class ActivelogService {
     try {
       return await this.logRepo.find();
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }

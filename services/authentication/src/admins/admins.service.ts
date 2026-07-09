@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   Injectable,
   InternalServerErrorException,
@@ -54,6 +55,7 @@ export class AdminsService {
         data: admin,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin create error');
       throw new InternalServerErrorException({
         success: false,
@@ -87,6 +89,7 @@ export class AdminsService {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin create error');
       throw new InternalServerErrorException({
         success: false,
@@ -116,6 +119,7 @@ export class AdminsService {
         data: admin,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin create error');
       throw new InternalServerErrorException({
         success: false,
@@ -133,6 +137,7 @@ export class AdminsService {
         message: 'admin deleted successfully',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin create error');
       throw new InternalServerErrorException({
         success: false,
@@ -177,6 +182,7 @@ export class AdminsService {
         role: role?.role,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin login failed');
       throw new InternalServerErrorException({
         success: false,

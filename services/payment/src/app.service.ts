@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 import {
@@ -217,6 +218,7 @@ export class AppService implements OnModuleInit {
         const studentDetails = JSON.parse(grpc_res.data);
         totalFees = Number(studentDetails.data?.course?.price || 0);
       } catch (error) {
+      Sentry.captureException(error);
         console.error('Failed to fetch student details via gRPC:', error);
       }
 
@@ -365,6 +367,7 @@ export class AppService implements OnModuleInit {
 
       return { success: true };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('InitStudentFees error:', error);
       return { success: false };
     }
@@ -449,6 +452,7 @@ export class AppService implements OnModuleInit {
         paymentDetails,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }
@@ -460,6 +464,7 @@ export class AppService implements OnModuleInit {
 
       return student;
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return null;
     }

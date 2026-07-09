@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import * as Sentry from '@sentry/nestjs';
 
 // This file MUST be the very first import in main.ts
@@ -9,3 +12,7 @@ Sentry.init({
   tracesSampleRate: 1.0,
   profilesSampleRate: 1.0,
 });
+
+
+Sentry.setTag('service', 'mailservice');
+

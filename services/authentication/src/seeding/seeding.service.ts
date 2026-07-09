@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AdminEntity } from 'src/entities/admins.entity';
@@ -45,6 +46,7 @@ export class SeedingService implements OnApplicationBootstrap {
         }
       }
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'role db seeding');
     }
   }
@@ -80,6 +82,7 @@ export class SeedingService implements OnApplicationBootstrap {
         }
       }
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'admin db seeding');
     }
   }

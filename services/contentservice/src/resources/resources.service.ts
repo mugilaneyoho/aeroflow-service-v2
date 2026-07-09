@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   Injectable,
   Logger,
@@ -72,6 +73,7 @@ export class ResourcesService {
         data: res,
       };
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('Error updating note', error);
 
       throw new InternalServerErrorException(error?.message);
@@ -121,6 +123,7 @@ export class ResourcesService {
 
       return { key, url, etag: (result as any).ETag };
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('Error uploading file to S3', error);
       throw new InternalServerErrorException('Failed to upload file to S3');
     }
@@ -147,6 +150,7 @@ export class ResourcesService {
       this.logger.log('Objects listed successfully');
       return result;
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('Error listing objects in S3', error);
       throw new InternalServerErrorException('Failed to list S3 objects');
     }
@@ -175,6 +179,7 @@ export class ResourcesService {
       this.logger.log('Signed URL generated');
       return url;
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('Error generating signed URL', error);
       throw new InternalServerErrorException('Failed to generate signed URL');
     }

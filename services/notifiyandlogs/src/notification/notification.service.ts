@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { HttpException, HttpStatus, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import * as microservices from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,6 +28,7 @@ export class NotificationService {
         data: res,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -44,6 +46,7 @@ export class NotificationService {
         data: res,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -57,6 +60,7 @@ export class NotificationService {
         throw new HttpException('Notification not found', HttpStatus.NOT_FOUND);
       return notification;
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -77,6 +81,7 @@ export class NotificationService {
         data: res,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -109,6 +114,7 @@ export class NotificationService {
         data: notification
       }
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }

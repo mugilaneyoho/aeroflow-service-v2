@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Inject,
@@ -74,6 +75,7 @@ export class ClassesService implements OnModuleInit {
       await this.kafkaclient.connect();
       this.logger.log('kafka producer connected successfully');
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('kafka producer connection faild', error);
     }
   }
@@ -82,6 +84,7 @@ export class ClassesService implements OnModuleInit {
     try {
       await this.kafkaclient.close();
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error('kafka producer disconnect', error);
     }
   }
@@ -188,6 +191,7 @@ export class ClassesService implements OnModuleInit {
         data: final,
       };
     } catch (error) {
+      Sentry.captureException(error);
       if (error instanceof HttpException) {
         throw error;
       }
@@ -223,6 +227,7 @@ export class ClassesService implements OnModuleInit {
         data,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find class error');
       throw new InternalServerErrorException({
         success: false,
@@ -296,6 +301,7 @@ export class ClassesService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create class error');
       throw new InternalServerErrorException({
         success: false,
@@ -315,6 +321,7 @@ export class ClassesService implements OnModuleInit {
         message: 'class deleted successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find class error');
       throw new InternalServerErrorException({
         success: false,
@@ -358,6 +365,7 @@ export class ClassesService implements OnModuleInit {
         message: 'classes updated successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       if (error instanceof HttpException) {
         throw error;
       }
@@ -430,6 +438,7 @@ export class ClassesService implements OnModuleInit {
         success: true,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
     }
   }
@@ -452,6 +461,7 @@ export class ClassesService implements OnModuleInit {
         data: updated,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error);
       throw new InternalServerErrorException({
         success: false,

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -373,6 +374,7 @@ export class IncoiveService {
 
         doc.end();
       } catch (err) {
+      Sentry.captureException(err);
         reject(err);
       }
     });

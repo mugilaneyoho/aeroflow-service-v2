@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CourseEntity } from './entities/course.entity';
@@ -44,6 +45,7 @@ export class AppService {
         BatchList,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'dashboard grpc error.');
       throw new InternalServerErrorException('grpc server error');
     }
@@ -61,6 +63,7 @@ export class AppService {
         totalbatch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'dashboard master.');
       throw new InternalServerErrorException('grpc server error');
     }

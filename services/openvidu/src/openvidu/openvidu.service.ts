@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 // src/openvidu/openvidu.service.ts
 import {
@@ -69,7 +70,8 @@ export class OpenViduService implements OnModuleDestroy {
         timeout: 10000, // 10 seconds timeout for interactive sessions
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       const axiosError = error as AxiosError;
       const status = axiosError.response?.status;
       const responseData = axiosError.response?.data;
@@ -102,7 +104,8 @@ export class OpenViduService implements OnModuleDestroy {
       this.logger.log(`Interactive session ${sessionId} found on server`);
       this.sessions.set(sessionId, session);
       return session;
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       // If session not found, create it with ROUTED media mode for better scalability
       if (error.response?.status === 404) {
         try {
@@ -220,7 +223,8 @@ export class OpenViduService implements OnModuleDestroy {
       );
 
       return { token, sessionId, participantName };
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       console.log(error)
       this.logger.error(`Failed to generate token: ${error}`);
       console.log(error);
@@ -239,7 +243,8 @@ export class OpenViduService implements OnModuleDestroy {
       );
       this.sessions.delete(sessionId);
       this.logger.log(`Interactive session ${sessionId} closed successfully`);
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       if (error.response?.status === 404) {
         this.logger.warn(`Interactive session ${sessionId} not found`);
         this.sessions.delete(sessionId);
@@ -259,7 +264,8 @@ export class OpenViduService implements OnModuleDestroy {
         'get',
         `${this.openViduUrl}/openvidu/api/sessions/${sessionId}`,
       );
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       if (error.response?.status === 404) return null;
       throw error;
     }
@@ -272,7 +278,8 @@ export class OpenViduService implements OnModuleDestroy {
         `${this.openViduUrl}/openvidu/api/sessions/${sessionId}/connection/${connectionId}/publisher`,
       );
       this.logger.log(`Forced unpublish for connection ${connectionId}`);
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       this.logger.error(`Failed to force unpublish: ${error.message}`);
     }
   }

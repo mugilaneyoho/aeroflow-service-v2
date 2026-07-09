@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { InjectQueue } from '@nestjs/bull';
@@ -126,6 +127,7 @@ export class LeadsService implements OnModuleInit {
 
       return { success: true, message: 'leads are uploaded' };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'upload csv file error!');
       throw new InternalServerErrorException({
         success: false,
@@ -147,6 +149,7 @@ export class LeadsService implements OnModuleInit {
 
       return { success: true, message: 'leads assigned few minitues' };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads assign error!');
       throw new InternalServerErrorException({
         success: false,
@@ -187,6 +190,7 @@ export class LeadsService implements OnModuleInit {
         data: lead,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'manual lead allocation error');
       throw new InternalServerErrorException({
         success: false,
@@ -230,6 +234,7 @@ export class LeadsService implements OnModuleInit {
         message: 'leads updated successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads updated error');
       throw new InternalServerErrorException({
         success: false,
@@ -263,6 +268,7 @@ export class LeadsService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
       throw new InternalServerErrorException({
         success: false,
@@ -298,6 +304,7 @@ export class LeadsService implements OnModuleInit {
 
       return leads;
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
       throw new InternalServerErrorException({
         success: false,
@@ -317,6 +324,7 @@ export class LeadsService implements OnModuleInit {
 
       return leads;
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
       throw new InternalServerErrorException({
         success: false,
@@ -363,6 +371,7 @@ export class LeadsService implements OnModuleInit {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return leadStats;
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
       throw new InternalServerErrorException({
         success: false,

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -47,6 +48,7 @@ export class AppService {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'telecalling dashboad error!');
       throw new InternalServerErrorException({
         success: false,
@@ -91,6 +93,7 @@ export class AppService {
         data: empStatus,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'telecalling dashboad error!');
       throw new InternalServerErrorException({
         success: false,

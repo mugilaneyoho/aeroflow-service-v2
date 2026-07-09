@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 // src/openvidu/openvidu.controller.ts
 import {
   Controller,
@@ -52,6 +53,7 @@ export class OpenViduController {
         mode: 'interactive',
       };
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error(`Join failed: ${error.message}`);
       throw new BadRequestException({
         success: false,
@@ -72,6 +74,7 @@ export class OpenViduController {
         message: `Interactive classroom ${closeDto.sessionId} closed successfully`,
       };
     } catch (error) {
+      Sentry.captureException(error);
       this.logger.error(`Close failed: ${error.message}`);
       throw new BadRequestException({
         success: false,
