@@ -23,6 +23,7 @@ import * as microservices from '@nestjs/microservices';
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { OfflineClassesEntity } from 'src/entities/OfflineClass.entity';
 import { OnlineClassesEntity } from 'src/entities/OnlineClass.entity';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 interface staffgrpc {
   CreateStaff(data: {
@@ -45,6 +46,7 @@ export class StaffService implements OnModuleInit {
 
     @Inject('staff')
     private client: microservices.ClientGrpc,
+    private readonly redisCache: RedisUserCache,
   ) {}
 
   onModuleInit() {
@@ -134,9 +136,25 @@ export class StaffService implements OnModuleInit {
 
   async findOne(uuid: string) {
     try {
+      const cache = await this.redisCache.getUser(uuid);
+
+      if (cache) {
+        return {
+          success: true,
+          message: 'staff fetched',
+          data: cache,
+        };
+      }
+
       const staff = await this.staffRepo.findOne({
         where: { uuid },
       });
+
+      if (!staff) {
+        throw new NotFoundException();
+      }
+
+      await this.redisCache.setUser(staff.uuid, staff)
 
       return {
         success: true,
@@ -181,7 +199,11 @@ export class StaffService implements OnModuleInit {
 
       Object.assign(exist, data);
 
+      await this.redisCache.deleteUser(exist.uuid);
+
       const staff = await this.staffRepo.save(exist);
+
+      await this.redisCache.setUser(staff.uuid, staff);
 
       return {
         staff,
@@ -238,7 +260,7 @@ export class StaffService implements OnModuleInit {
     return staff;
   }
 
-  async getStaffsforChat () {
-    return this.staffRepo.find({where: {is_delete: false}});
+  async getStaffsforChat() {
+    return this.staffRepo.find({ where: { is_delete: false } });
   }
 }

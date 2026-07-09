@@ -13,6 +13,7 @@ import { CreateEmployeeDto } from './dto/create-employee.dto';
 import { UpdateEmployeeDto } from './dto/update-employee.dto';
 import { lastValueFrom, Observable } from 'rxjs';
 import * as microservices from '@nestjs/microservices';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 interface TelecallerService {
   GetUserById(data: { id: string }): Observable<any>;
@@ -31,6 +32,7 @@ export class EmployeeService implements OnModuleInit {
     private employeeRepo: Repository<EmployeEntity>,
     @Inject('telecaller_auth')
     private client: microservices.ClientGrpc,
+    private readonly redisCache: RedisUserCache,
   ) {}
   onModuleInit() {
     this.AuthService =
@@ -87,6 +89,16 @@ export class EmployeeService implements OnModuleInit {
 
   async findOne(uuid: string) {
     try {
+      const cache = await this.redisCache.getUser(uuid);
+
+      if (cache) {
+        return {
+          success: true,
+          message: 'employee details fetched',
+          data: cache,
+        };
+      }
+
       const user = await this.employeeRepo.findOne({
         where: { uuid, is_delete: false },
       });
@@ -97,6 +109,8 @@ export class EmployeeService implements OnModuleInit {
           message: 'user not founded',
         });
       }
+
+      await this.redisCache.setUser(user.uuid, user);
 
       return {
         success: true,
@@ -155,14 +169,18 @@ export class EmployeeService implements OnModuleInit {
         });
       }
 
+      await this.redisCache.deleteUser(user.uuid);
+
       Object.assign(user, data);
 
-      await this.employeeRepo.save(user);
+      const profile = await this.employeeRepo.save(user);
+
+      await this.redisCache.setUser(profile.uuid, profile);
 
       return {
         success: true,
         message: 'employee details updated',
-        data: user,
+        data: profile,
       };
     } catch (error) {
       console.error(error, 'employee update error');

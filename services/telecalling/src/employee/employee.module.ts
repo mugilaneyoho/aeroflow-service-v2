@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmployeEntity } from 'src/entities/employee.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 @Module({
   imports: [
@@ -22,6 +23,6 @@ import { join } from 'path';
     ]),
   ],
   controllers: [EmployeeController],
-  providers: [EmployeeService],
+  providers: [EmployeeService, RedisUserCache],
 })
 export class EmployeeModule {}

@@ -8,6 +8,7 @@ import { join } from 'path';
 import { OnlineClassesEntity } from 'src/entities/OnlineClass.entity';
 import { OfflineClassesEntity } from 'src/entities/OfflineClass.entity';
 import { ConfigModule } from '@nestjs/config';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 @Module({
   imports: [
@@ -33,6 +34,6 @@ import { ConfigModule } from '@nestjs/config';
     ]),
   ],
   controllers: [StaffController],
-  providers: [StaffService],
+  providers: [StaffService, RedisUserCache],
 })
 export class StaffModule {}

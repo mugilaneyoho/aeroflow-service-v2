@@ -8,6 +8,7 @@ import { join } from 'path';
 import { CourseEntity } from 'src/entities/course.entity';
 import { BatchEntity } from 'src/entities/batch.entity';
 import { PdfService } from 'src/template/pdfService';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 @Module({
   imports: [
@@ -63,6 +64,6 @@ import { PdfService } from 'src/template/pdfService';
     ]),
   ],
   controllers: [StudentController],
-  providers: [StudentService, PdfService],
+  providers: [StudentService, PdfService, RedisUserCache],
 })
 export class StudentModule {}

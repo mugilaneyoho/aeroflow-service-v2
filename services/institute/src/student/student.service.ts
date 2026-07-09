@@ -21,6 +21,7 @@ import fs from 'fs';
 import { PdfService } from 'src/template/pdfService';
 import * as ExcelJS from 'exceljs';
 import { Response } from 'express';
+import { RedisUserCache } from 'src/redis/redis.service';
 
 interface studentgrpc {
   CreateStudent(data: {
@@ -64,6 +65,7 @@ export class StudentService implements OnModuleInit {
     private paymentRecordClient: microservices.ClientGrpc,
     @Inject('whatsapp')
     private readonly whatsApp: microservices.ClientProxy,
+    private readonly redisCache: RedisUserCache,
   ) {}
 
   async onModuleInit() {
@@ -186,10 +188,26 @@ export class StudentService implements OnModuleInit {
 
   async findOne(uuid: string) {
     try {
+      const cache = await this.redisCache.getUser(uuid);
+
+      if (cache) {
+        return {
+          success: true,
+          message: 'student fetched',
+          data: cache,
+        };
+      }
+
       const student = await this.studentRepo.findOne({
         where: { uuid },
         relations: ['course', 'batch'],
       });
+
+      if (!student) {
+        throw new NotFoundException();
+      }
+
+      await this.redisCache.setUser(student.uuid, student);
 
       return {
         success: true,
@@ -208,6 +226,7 @@ export class StudentService implements OnModuleInit {
   async deleteOne(uuid: string) {
     try {
       await this.studentRepo.update({ uuid }, { is_delete: true });
+      await this.redisCache.deleteUser(uuid);
       return {
         success: true,
         message: 'student deleted successfully.',
@@ -683,12 +702,14 @@ export class StudentService implements OnModuleInit {
       if (data.permantAddress !== undefined)
         student.permantAddress = data.permantAddress;
 
-      await this.studentRepo.save(student);
+      const profile = await this.studentRepo.save(student);
+      await this.redisCache.deleteUser(student.uuid);
+      await this.redisCache.setUser(profile.uuid, profile);
 
       return {
         success: true,
         message: 'student updated successfully',
-        data: student,
+        data: profile,
       };
     } catch (error) {
       console.error(error, 'update student error');

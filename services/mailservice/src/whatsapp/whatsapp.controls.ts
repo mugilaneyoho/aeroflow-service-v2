@@ -39,7 +39,7 @@ export class WhatsAppController {
   sendtesting(@Payload() message: any) {
     const payload = this.parsePayload(message);
     console.log('Received whatsapp message payload:', payload);
-    const to = payload?.to || '9360096656';
+    const to = payload?.to || '919360096656';
     const textMessage = payload?.message || 'checking';
     return this.whatsappService.sendTextMessage(to, textMessage);
   }
