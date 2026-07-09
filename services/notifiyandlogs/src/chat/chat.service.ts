@@ -6,7 +6,7 @@ import { Message } from "src/entity/chat/message.entity";
 import { MessageRead } from "src/entity/chat/message_read.entity";
 import { NotificationPriority, NotificationRole, NotificationType } from "src/entity/notify";
 import { NotificationService } from "src/notification/notification.service";
-import { Repository, In } from "typeorm";
+import { Repository, In, IsNull } from "typeorm";
 import { CreatePrivateConversationDto } from "src/dto/Chat/create_private_conversation.dto";
 import { Conversation, ConversationType, ConversationStatus } from "src/entity/chat/conversation.entity";
 import { ConversationMember } from "src/entity/chat/conversation_member.entity";
@@ -206,5 +206,9 @@ export class ChatService {
             where: { id: conversation.id },
             relations: ['members']
         });
+    }
+
+    async getConversationMembers (conversationId: string) {
+        return this.memberRepo.find({where: {conversationId: conversationId, deletedAt: IsNull()}})
     }
 }
