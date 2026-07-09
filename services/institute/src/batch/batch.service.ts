@@ -79,6 +79,16 @@ export class BatchService implements OnModuleInit {
         role: 'STAFF',
       }));
 
+      const { data: admins } = await axios.get(
+        'http://authentication-service:3002/admins/get-admins'
+      )
+
+      const adminMembers = admins.map((admin: any) => ({
+        userId: admin.uuid,
+        name: admin.name,
+        role: 'ADMIN'
+      }))
+
       const students = await this.studentRepo.find({
         where: {
           uuid: In(data.studentIds),
@@ -91,7 +101,7 @@ export class BatchService implements OnModuleInit {
         role: 'STUDENT',
       }));
 
-      const members = [...staffMembers, ...studentMembers];
+      const members = [...staffMembers, ...studentMembers, ...adminMembers];
 
 
       console.log('Unique Members', members)

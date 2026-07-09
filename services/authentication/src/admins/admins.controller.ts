@@ -14,7 +14,7 @@ import { UpdateAdminDto } from './dto/update-admin.dto';
 
 @Controller('admins')
 export class AdminsController {
-  constructor(private readonly adminService: AdminsService) {}
+  constructor(private readonly adminService: AdminsService) { }
 
   @Post('login')
   login(@Body() data: { email: string; password: string }) {
@@ -39,5 +39,10 @@ export class AdminsController {
   @Delete(':uuid')
   softdelete(@Param('uuid') uuid: string) {
     return this.adminService.deleteOne(uuid);
+  }
+
+  @Get('get-admins')
+  getAdminsForchat() {
+    return this.adminService.getAdminsForChat();
   }
 }

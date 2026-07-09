@@ -33,13 +33,35 @@ export class ChatService {
         const message = this.messageRepo.create(dto);
         await this.messageRepo.save(message);
 
-        // Update the conversation with the last message info
         await this.conversationRepo.update(dto.conversationId, {
             lastMessageId: message.id,
-            lastMessageAt: message.createdAt
+            lastMessageAt: message.createdAt,
         });
 
-        return message;
+        const member = await this.memberRepo.findOne({
+            where: {
+                conversationId: dto.conversationId,
+                userId: dto.senderId,
+            },
+        });
+
+        return {
+            id: message.id,
+            conversationId: message.conversationId,
+            senderId: message.senderId,
+            userName: member?.userName,
+            role: member?.role,
+            message: message.message,
+            messageType: message.messageType,
+            status: message.status,
+            visibility: message.visibility,
+            replyMessageId: message.replyMessageId,
+            isEdited: message.isEdited,
+            editedAt: message.editedAt,
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt,
+            deletedAt: message.deletedAt,
+        };
     }
 
     async getConversationChats(conversationId: string) {

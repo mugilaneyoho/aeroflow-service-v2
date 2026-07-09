@@ -184,4 +184,8 @@ export class AdminsService {
       });
     }
   }
+
+  async getAdminsForChat () {
+    return this.adminRepo.find({where: {is_delete: false}})
+  }
 }
