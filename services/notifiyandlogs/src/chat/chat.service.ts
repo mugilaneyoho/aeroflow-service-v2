@@ -61,6 +61,7 @@ export class ChatService {
             createdAt: message.createdAt,
             updatedAt: message.updatedAt,
             deletedAt: message.deletedAt,
+            clientMessageId: dto?.clientMessageId
         };
     }
 

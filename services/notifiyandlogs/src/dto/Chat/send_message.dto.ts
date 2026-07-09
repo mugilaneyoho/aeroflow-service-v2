@@ -22,4 +22,7 @@ export class SendMessageDto {
 
     @IsString()
     replyMessageId!: string;
+
+    @IsString()
+    clientMessageId?: string;
 }
