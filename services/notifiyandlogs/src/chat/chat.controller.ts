@@ -35,4 +35,9 @@ export class ChatController {
     async groupChatCreate(@Payload() data: any) {
         return this.chatService.createGroupConversation(data)
     }
+
+    @Get('/members/:conversationId')
+    async getChatGroupMembers (@Param('conversationId') conversationId: string) {
+        return this.chatService.getConversationMembers(conversationId)
+    }
 }
