@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -47,6 +48,7 @@ export class LeadProcessor {
       //   [id, Number(limit)],
       // );
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'assign queue error');
     }
   }

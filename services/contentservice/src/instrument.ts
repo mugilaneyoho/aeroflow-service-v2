@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import * as Sentry from '@sentry/nestjs';
 
 // This file must be the FIRST import in main.ts
@@ -16,3 +19,7 @@ Sentry.init({
   // Captures 100% of sessions
   profilesSampleRate: 1.0,
 });
+
+
+Sentry.setTag('service', 'contentservice');
+

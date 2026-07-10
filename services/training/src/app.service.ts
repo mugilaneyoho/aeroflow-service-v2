@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   Inject,
   Injectable,
@@ -103,6 +104,7 @@ export class AppService implements OnModuleInit {
         ...grpc_res,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'admin dashboard error.');
       throw new InternalServerErrorException('internal server error.');
     }
@@ -126,6 +128,7 @@ export class AppService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }
@@ -219,6 +222,7 @@ export class AppService implements OnModuleInit {
       console.log("running", eligible)
       console.log(grpcres)
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }

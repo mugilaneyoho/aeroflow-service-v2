@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Inject,
@@ -128,6 +129,7 @@ export class BatchService implements OnModuleInit {
         data: batch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -174,6 +176,7 @@ export class BatchService implements OnModuleInit {
         data: grpcBatch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -213,6 +216,7 @@ export class BatchService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -248,6 +252,7 @@ export class BatchService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find all by course batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -277,6 +282,7 @@ export class BatchService implements OnModuleInit {
         data: batch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'update batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -294,6 +300,7 @@ export class BatchService implements OnModuleInit {
         message: 'batch deleted successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'soft delete batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -320,6 +327,7 @@ export class BatchService implements OnModuleInit {
         data: batches,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find all by course batch error!');
       throw new InternalServerErrorException({
         success: false,
@@ -341,6 +349,7 @@ export class BatchService implements OnModuleInit {
 
       return data;
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
     }
   }
@@ -364,6 +373,7 @@ export class BatchService implements OnModuleInit {
         data: JSON.stringify(batch),
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
     }
   }
@@ -397,6 +407,7 @@ export class BatchService implements OnModuleInit {
         sucess: true,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'update batch error!');
       throw new InternalServerErrorException({
         success: false,

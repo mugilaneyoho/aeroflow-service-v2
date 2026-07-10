@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Injectable,
@@ -48,6 +49,7 @@ export class BranchService {
         data: branch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'branch create error!');
       throw new InternalServerErrorException({
         success: false,
@@ -79,6 +81,7 @@ export class BranchService {
         data: branch,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'branch update error!');
       throw new InternalServerErrorException({
         success: false,
@@ -114,6 +117,7 @@ export class BranchService {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'branch find all error!');
       throw new InternalServerErrorException({
         success: false,

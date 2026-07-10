@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
     BadRequestException,
     HttpException,
@@ -81,7 +82,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Placement created successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -121,7 +123,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Placement updated successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -143,7 +146,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 data: placement,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -211,7 +215,8 @@ export class PlacementService implements OnModuleInit {
                     } : null,
                 },
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -239,7 +244,8 @@ export class PlacementService implements OnModuleInit {
                     totalPages: Math.ceil(total / limit),
                 },
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -282,6 +288,7 @@ export class PlacementService implements OnModuleInit {
 
             return acceptedStudents;
         } catch (error) {
+      Sentry.captureException(error);
             throw error;
         }
     }
@@ -304,7 +311,8 @@ export class PlacementService implements OnModuleInit {
                     totalPages: Math.ceil(total / limit),
                 },
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -328,7 +336,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Placement deleted successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -412,7 +421,8 @@ export class PlacementService implements OnModuleInit {
                 invitedCount: invites.length,
                 message: `${invites.length} eligible students invited successfully`,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 {
                     success: false,
@@ -504,7 +514,8 @@ export class PlacementService implements OnModuleInit {
                 count: data.length,
                 data: data,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 {
                     success: false,
@@ -534,7 +545,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Placement invite schedule status updated successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -563,7 +575,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Placement invite status updated successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -626,7 +639,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 message: 'Interview scheduled successfully',
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -700,7 +714,8 @@ export class PlacementService implements OnModuleInit {
                 message: 'Interview status updated successfully',
                 data: statusRecord,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -719,7 +734,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 data: placements,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -906,7 +922,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 data: reportData,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,
@@ -920,7 +937,8 @@ export class PlacementService implements OnModuleInit {
                 this.studentServiceGrpc.PlacementEligible({ data: [uuid] }),
             );
             return response;
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             console.log(error)
             throw new HttpException(
                 {
@@ -944,7 +962,8 @@ export class PlacementService implements OnModuleInit {
                 success: true,
                 data: placements,
             };
-        } catch (error: any) {
+        } catch (error) {
+      Sentry.captureException(error);
             throw new HttpException(
                 { success: false, message: error?.message },
                 HttpStatus.INTERNAL_SERVER_ERROR,

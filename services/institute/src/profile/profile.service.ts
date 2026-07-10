@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Injectable,
@@ -62,6 +63,7 @@ export class ProfileService {
 
       return { success: true, message: 'new institute created successfully' };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'institute create error');
       throw new InternalServerErrorException({
         success: false,
@@ -89,6 +91,7 @@ export class ProfileService {
         data: institute,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'institute find error');
       throw new InternalServerErrorException({
         success: false,
@@ -120,6 +123,7 @@ export class ProfileService {
         data: institute,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'institute update eror');
       throw new InternalServerErrorException({
         success: false,

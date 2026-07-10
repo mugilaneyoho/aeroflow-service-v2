@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Inject,
@@ -94,6 +95,7 @@ export class StaffService implements OnModuleInit {
         data: staff,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -126,6 +128,7 @@ export class StaffService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -162,6 +165,7 @@ export class StaffService implements OnModuleInit {
         data: staff,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -178,6 +182,7 @@ export class StaffService implements OnModuleInit {
         message: 'staff deleted successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'delete staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -209,6 +214,7 @@ export class StaffService implements OnModuleInit {
         staff,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'update staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -247,6 +253,7 @@ export class StaffService implements OnModuleInit {
         todayclasses,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'staff dashboard error');
     }
   }

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Inject,
@@ -79,6 +80,7 @@ export class EmployeeService implements OnModuleInit {
         data: final,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create employee error');
       throw new InternalServerErrorException({
         success: false,
@@ -118,6 +120,7 @@ export class EmployeeService implements OnModuleInit {
         data: user,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find employee error!');
       throw new InternalServerErrorException({
         success: false,
@@ -150,6 +153,7 @@ export class EmployeeService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'find all employee error!');
       throw new InternalServerErrorException({
         success: false,
@@ -183,6 +187,7 @@ export class EmployeeService implements OnModuleInit {
         data: profile,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'employee update error');
       throw new InternalServerErrorException({
         success: false,
@@ -200,6 +205,7 @@ export class EmployeeService implements OnModuleInit {
         message: 'employee deleted',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'employee update error');
       throw new InternalServerErrorException({
         success: false,

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import axios from 'axios';
@@ -116,6 +117,7 @@ export class ZoomService {
         };
       }
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       throw new InternalServerErrorException();
     }

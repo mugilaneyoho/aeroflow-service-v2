@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   BadRequestException,
   Inject,
@@ -75,6 +76,7 @@ export class StaffService implements OnModuleInit {
         data: staff,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'staff create error');
       throw new InternalServerErrorException({
         success: false,
@@ -106,6 +108,7 @@ export class StaffService implements OnModuleInit {
         data: staff,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'staff create error');
       throw new InternalServerErrorException({
         success: false,
@@ -166,6 +169,7 @@ export class StaffService implements OnModuleInit {
         data: token,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'staff login failed');
       throw new InternalServerErrorException({
         success: false,
@@ -200,6 +204,7 @@ export class StaffService implements OnModuleInit {
         message: 'password updated successfully',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }

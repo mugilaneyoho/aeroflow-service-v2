@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   BadRequestException,
   ConflictException,
@@ -100,6 +101,7 @@ export class TelecallingService {
         profid: user?.profile_id,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'staff login failed');
       throw new InternalServerErrorException({
         success: false,
@@ -166,6 +168,7 @@ export class TelecallingService {
 
       return { success: true, message: 'new user created' };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'error create tele auth grpc');
       throw new InternalServerErrorException({
         success: false,
@@ -200,6 +203,7 @@ export class TelecallingService {
         message: 'password updated successfully',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -130,6 +131,7 @@ export class StudentService implements OnModuleInit {
         data: final,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'create student error!');
       throw new InternalServerErrorException({
         success: false,
@@ -178,6 +180,7 @@ export class StudentService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'getall student error');
       throw new InternalServerErrorException({
         success: false,
@@ -215,6 +218,7 @@ export class StudentService implements OnModuleInit {
         data: student,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find student error');
       throw new InternalServerErrorException({
         success: false,
@@ -232,6 +236,7 @@ export class StudentService implements OnModuleInit {
         message: 'student deleted successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'delete staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -275,6 +280,7 @@ export class StudentService implements OnModuleInit {
         message: 'Student approved successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'approveStudent error');
       throw new InternalServerErrorException({
         success: false,
@@ -303,6 +309,7 @@ export class StudentService implements OnModuleInit {
         data: student,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'student dashboard');
       throw new InternalServerErrorException({
         success: false,
@@ -319,6 +326,7 @@ export class StudentService implements OnModuleInit {
       const data = JSON.parse(result.data);
       return { success: true, message: 'fees details response', data };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'getStudentFees error');
       throw new InternalServerErrorException({
         success: false,
@@ -370,6 +378,7 @@ export class StudentService implements OnModuleInit {
 
       return pdfBuffer;
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'getStudentFees error');
       return new InternalServerErrorException({
         success: false,
@@ -453,6 +462,7 @@ export class StudentService implements OnModuleInit {
       await workbook.xlsx.write(res);
       res.end();
     } catch (error) {
+      Sentry.captureException(error);
       console.error('Excel Generation Error:', error);
       res
         .status(500)
@@ -502,6 +512,7 @@ export class StudentService implements OnModuleInit {
         meta: response.meta,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'feesgetall error');
       throw new InternalServerErrorException({
         success: false,
@@ -584,6 +595,7 @@ export class StudentService implements OnModuleInit {
       await workbook.xlsx.write(res);
       res.end();
     } catch (error) {
+      Sentry.captureException(error);
       console.error('Student report generation error:', error);
       res
         .status(500)
@@ -602,6 +614,7 @@ export class StudentService implements OnModuleInit {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }
@@ -621,6 +634,7 @@ export class StudentService implements OnModuleInit {
         message: 'status updated',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return {
         success: false,
@@ -646,6 +660,7 @@ export class StudentService implements OnModuleInit {
         message: 'student deleted successfully.',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'delete staff error');
       throw new InternalServerErrorException({
         success: false,
@@ -668,6 +683,7 @@ export class StudentService implements OnModuleInit {
         message: 'location updated',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return {
         success: false,
@@ -712,6 +728,7 @@ export class StudentService implements OnModuleInit {
         data: profile,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'update student error');
       throw new InternalServerErrorException({
         success: false,

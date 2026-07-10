@@ -15,6 +15,8 @@ import { RolesModule } from './roles/roles.module';
 import { ConfigModule } from '@nestjs/config';
 import { SeedingService } from './seeding/seeding.service';
 import { SentryModule } from '@sentry/nestjs/setup';
+import { APP_FILTER } from '@nestjs/core';
+import { SentryGlobalFilter, SentryRpcFilter } from './sentry-exception.filter';
 
 @Module({
   imports: [
@@ -46,6 +48,17 @@ import { SentryModule } from '@sentry/nestjs/setup';
     RolesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, SeedingService],
+  providers: [
+    AppService,
+    SeedingService,
+    {
+      provide: APP_FILTER,
+      useClass: SentryGlobalFilter,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: SentryRpcFilter,
+    },
+  ],
 })
 export class AppModule {}

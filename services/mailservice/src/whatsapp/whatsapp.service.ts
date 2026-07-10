@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 // whatsapp.service.ts
 
 import { Injectable } from '@nestjs/common';
@@ -86,6 +87,7 @@ export class WhatsAppService {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return
       return response.data;
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error.response.data);
     }
   }

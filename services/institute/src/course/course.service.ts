@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   ConflictException,
   Injectable,
@@ -40,6 +41,7 @@ export class CourseService {
         data: course,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'course create error!');
       throw new InternalServerErrorException({
         success: false,
@@ -67,6 +69,7 @@ export class CourseService {
         data: course,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'course find error');
       throw new InternalServerErrorException({
         success: false,
@@ -99,6 +102,7 @@ export class CourseService {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'course find all error');
       throw new InternalServerErrorException({
         success: false,
@@ -128,6 +132,7 @@ export class CourseService {
         data: courses,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'update course detail error!');
       throw new InternalServerErrorException({
         success: false,
@@ -145,6 +150,7 @@ export class CourseService {
         message: 'course deleted successfully',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'course deleted error!');
       throw new InternalServerErrorException({
         success: false,

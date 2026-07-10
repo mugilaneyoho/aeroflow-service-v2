@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Process, Processor } from '@nestjs/bull';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -28,6 +29,7 @@ export class AttendanceProcessor {
       const status = this.statusRepo.create({ ...data });
       await this.statusRepo.save(status);
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'attendance redis error!');
     }
   }

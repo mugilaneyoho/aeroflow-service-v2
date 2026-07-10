@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import {
   BadRequestException,
   ConflictException,
@@ -92,6 +93,7 @@ export class StudentsService implements OnModuleInit {
 
       return { success: true, message: 'new user created' };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('student created', error);
       throw new InternalServerErrorException({
         success: false,
@@ -152,6 +154,7 @@ export class StudentsService implements OnModuleInit {
 
       return { success: true, message: 'login success', data: token };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('student created', error);
       throw new InternalServerErrorException({
         success: false,
@@ -176,6 +179,7 @@ export class StudentsService implements OnModuleInit {
 
       return { success: true, message: 'user data fetched', data: user };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('student find', error);
       throw new InternalServerErrorException({
         success: false,
@@ -210,6 +214,7 @@ export class StudentsService implements OnModuleInit {
         message: 'password updated successfully',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }

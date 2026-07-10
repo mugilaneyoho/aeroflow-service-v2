@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -152,6 +153,7 @@ export class AttendanceService implements OnModuleInit {
         message: 'attendance uploaded',
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error, 'attendance error!.');
       throw new InternalServerErrorException({
         success: false,
@@ -177,6 +179,7 @@ export class AttendanceService implements OnModuleInit {
         data,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find class error');
       throw new InternalServerErrorException({
         success: false,
@@ -261,6 +264,7 @@ export class AttendanceService implements OnModuleInit {
         data: [classes],
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find staff class error');
       throw new InternalServerErrorException({
         success: false,
@@ -351,6 +355,7 @@ export class AttendanceService implements OnModuleInit {
         data: records,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error(error, 'find student attendance');
       throw new InternalServerErrorException({
         success: false,
@@ -735,7 +740,8 @@ export class AttendanceService implements OnModuleInit {
       await workbook.xlsx.write(res);
       res.end();
 
-    } catch (error: any) {
+    } catch (error) {
+      Sentry.captureException(error);
       console.error('Error generating Excel report:', error);
       res.status(500).json({
         success: false,
@@ -849,6 +855,7 @@ export class AttendanceService implements OnModuleInit {
         data,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('Error in getRates:', error);
       throw new InternalServerErrorException('Failed to fetch attendance rates');
     }
@@ -929,6 +936,7 @@ export class AttendanceService implements OnModuleInit {
         data: logs,
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.error('Error in getStudentLog:', error);
       throw new InternalServerErrorException('Failed to fetch student log');
     }

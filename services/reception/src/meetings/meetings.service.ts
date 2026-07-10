@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/nestjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,6 +43,7 @@ export class MeetingsService {
         },
       };
     } catch (error) {
+      Sentry.captureException(error);
       console.log(error);
       return new InternalServerErrorException();
     }
