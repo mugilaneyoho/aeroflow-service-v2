@@ -35,7 +35,9 @@ export class StaffService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.MailService.connect();
+    await this.MailService.connect().catch((err) => {
+      console.log(err);
+    });
   }
 
   async create(data: CreateStaffDto) {
