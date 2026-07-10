@@ -40,6 +40,7 @@ services:
       DB_PASS: root
     depends_on:
       - api-gateway
+      - rabbitmq
     networks:
       - app-network
 
@@ -168,6 +169,8 @@ services:
       sender_password: "rgbx bvuw mxqj rqll"
       NODE_OPTIONS: "--max-old-space-size=384"
       KAFKA_BROKER: kafka:9092
+    depends_on:
+      - rabbitmq
     networks:
       - app-network
 
