@@ -19,7 +19,7 @@ async function bootstrap() {
     {
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://guest:guest@rabbitmq:5672'],
+        urls: ['amqp://guest:guest@localhost:5672'],
         queue: 'notifications',
         queueOptions: {
           durable: true,
@@ -36,7 +36,7 @@ async function bootstrap() {
     {
       transport: Transport.RMQ,
       options: {
-        urls: ['amqp://guest:guest@rabbitmq:5672'],
+        urls: ['amqp://guest:guest@localhost:5672'],
         queue: 'chats',
         queueOptions: {
           durable: true,

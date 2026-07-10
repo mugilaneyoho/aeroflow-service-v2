@@ -40,7 +40,7 @@ import { ConfigModule } from '@nestjs/config';
         name: 'notifyandlogs',
         transport: Transport.RMQ,
         options: {
-          urls: ['amqp://guest:guest@rabbitmq:5672'],
+          urls: ['amqp://guest:guest@localhost:5672'],
           queue: 'notifications',
           queueOptions: {
             durable: true,

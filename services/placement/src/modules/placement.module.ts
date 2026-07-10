@@ -20,7 +20,7 @@ import { PlacementService } from "src/services/placement.service";
                 name: 'NOTIFICATION_SERVICE',
                 transport: Transport.RMQ,
                 options: {
-                    urls: ['amqp://guest:guest@rabbitmq:5672'],
+                    urls: ['amqp://guest:guest@localhost:5672'],
                     queue: 'notifications',
                     queueOptions: {
                         durable: true
