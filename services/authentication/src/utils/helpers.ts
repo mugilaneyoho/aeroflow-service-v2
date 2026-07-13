@@ -7,11 +7,7 @@ export const PassDecrypted = (payload: string) => {
     secretKey || 'a8sd98f7a9s8df7as9df',
   );
 
-  console.log(dcrypt);
-
   const output = dcrypt.toString(CryptJS.enc.Utf8).toString();
-
-  console.log(output);
 
   return JSON.parse(output) as { email: string; password: string };
 };

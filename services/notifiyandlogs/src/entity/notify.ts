@@ -21,9 +21,11 @@ export enum NotificationPriority {
 }
 
 export enum NotificationRole {
-  ADMIN = 'ADMIN',
+  MASTER = 'MASTER',
   STUDENT = 'STUDENT',
   PAYMENT = 'PAYMENT',
+  HOD = 'HOD',
+  TELEADMIN = 'TELEADMIN',
   TELECALLING = 'TELECALLING',
 }
 
