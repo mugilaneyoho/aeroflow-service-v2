@@ -127,7 +127,7 @@ export class ChatService {
 
         return this.conversationRepo.find({
             where: { id: In(conversationIds) },
-            relations: ['members'],
+            relations: ['members','messages'],
             order: { lastMessageAt: 'DESC' }
         });
     }
