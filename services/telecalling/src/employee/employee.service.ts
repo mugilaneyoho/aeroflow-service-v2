@@ -226,9 +226,105 @@ export class EmployeeService implements OnModuleInit {
   async activeEmployee() {
     const data = await this.employeeRepo.find({
       where: { is_active: true, is_delete: false },
-      select: ['uuid', 'employee_name', 'emp_id', 'image', 'is_active'],
+      select: [
+        'uuid',
+        'employee_name',
+        'emp_id',
+        'image',
+        'is_active',
+        'clock_in',
+        'clock_out',
+        'duration',
+      ],
     });
 
     return data;
+  }
+
+  async clockIn(uuid: string) {
+    try {
+      const user = await this.employeeRepo.findOne({
+        where: { uuid, is_delete: false },
+      });
+
+      if (!user) {
+        throw new NotFoundException({
+          success: false,
+          message: 'user not founded',
+        });
+      }
+
+      await this.redisCache.deleteUser(user.uuid);
+
+      if (!user.is_active || !user.clock_in) {
+        user.clock_in = new Date();
+      }
+      user.is_active = true;
+      user.clock_out = null;
+      user.duration = null;
+
+      const saved = await this.employeeRepo.save(user);
+      await this.redisCache.setUser(saved.uuid, saved);
+
+      return {
+        success: true,
+        message: 'employee clocked in successfully',
+        data: saved,
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      console.error(error, 'clock in error!');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
+  }
+
+  async clockOut(uuid: string) {
+    try {
+      const user = await this.employeeRepo.findOne({
+        where: { uuid, is_delete: false },
+      });
+
+      if (!user) {
+        throw new NotFoundException({
+          success: false,
+          message: 'user not founded',
+        });
+      }
+
+      await this.redisCache.deleteUser(user.uuid);
+
+      user.is_active = false;
+      user.clock_out = new Date();
+
+      if (user.clock_in) {
+        const diffMs =
+          user.clock_out.getTime() - new Date(user.clock_in).getTime();
+        const diffMins = Math.floor(diffMs / 60000);
+        const hours = Math.floor(diffMins / 60);
+        const mins = diffMins % 60;
+        user.duration = hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+      } else {
+        user.duration = '0m';
+      }
+
+      const saved = await this.employeeRepo.save(user);
+      await this.redisCache.setUser(saved.uuid, saved);
+
+      return {
+        success: true,
+        message: 'employee clocked out successfully',
+        data: saved,
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      console.error(error, 'clock out error!');
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'internal server error',
+      });
+    }
   }
 }

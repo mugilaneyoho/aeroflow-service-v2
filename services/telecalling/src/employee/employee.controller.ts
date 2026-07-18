@@ -74,4 +74,22 @@ export class EmployeeController {
   softDelete(@Param('uuid') uuid: string) {
     return this.employeeService.softDelete(uuid);
   }
+
+  @Post('clock-in')
+  @ApiOperation({ summary: 'employee clock-in' })
+  clockIn(@Req() req: { headers: { user: string } }) {
+    const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+      profile_id: string;
+    };
+    return this.employeeService.clockIn(user?.profile_id);
+  }
+
+  @Post('clock-out')
+  @ApiOperation({ summary: 'employee clock-out' })
+  clockOut(@Req() req: { headers: { user: string } }) {
+    const user: { profile_id: string } = JSON.parse(req.headers.user) as {
+      profile_id: string;
+    };
+    return this.employeeService.clockOut(user?.profile_id);
+  }
 }

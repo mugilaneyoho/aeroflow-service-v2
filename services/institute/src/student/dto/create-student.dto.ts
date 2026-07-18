@@ -6,6 +6,7 @@ import {
   IsPhoneNumber,
   IsString,
   IsUUID,
+  IsOptional,
 } from 'class-validator';
 import { FindOperator } from 'typeorm';
 
@@ -90,4 +91,9 @@ export class CreateStudentDto {
 
   @IsString()
   leadId?: string;
+
+  @ApiProperty({ example: 'https://cloudinary.com/path/to/image.jpg' })
+  @IsString()
+  @IsOptional()
+  profile_image?: string;
 }
