@@ -22,6 +22,11 @@ export class NotificationController {
     console.log('Notification created :', message);
   }
 
+  @Post()
+  async create(@Body() dto: CreateNotifyDto) {
+    return this.notificationService.create(dto);
+  }
+
   @Get()
   async findAll(@Req() req: { headers: { user: string } }) {
     const user: { role: string } = JSON.parse(req.headers.user) as {

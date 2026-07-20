@@ -165,7 +165,7 @@ export class StudentService implements OnModuleInit {
         skip: (page - 1) * limit,
         take: limit,
         order: { createdAt: 'DESC' },
-        relations: ['batch'],
+        relations: [ 'course', 'batch'],
       });
 
       return {
@@ -266,7 +266,7 @@ export class StudentService implements OnModuleInit {
         };
       }
 
-      await this.studentRepo.update({ uuid }, { is_approved: true });
+      await this.studentRepo.update({ uuid }, { is_approved: true, admission_date: new Date() });
 
       this.whatsApp.emit('whatsapp-student-welcome', {
         student_name: student.student_name,
