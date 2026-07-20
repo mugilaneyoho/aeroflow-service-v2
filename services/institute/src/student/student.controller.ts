@@ -23,8 +23,8 @@ export class StudentController {
   constructor(private readonly studentService: StudentService) {}
 
   @Get('/feesgetall')
-  feesgetall() {
-    return this.studentService.feesgetall();
+  feesgetall(@Query('page') page: number, @Query('limit') limit: number) {
+    return this.studentService.feesgetall(page, limit);
   }
 
   @Post('create')
