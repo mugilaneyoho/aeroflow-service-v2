@@ -50,6 +50,7 @@ export class AppService implements OnModuleInit {
   }
 
   async findall(params?: { page?: number; limit?: number }) {
+    console.log("Params.. : ", params)
     const page = params?.page ? Number(params.page) : 1;
     const limit = params?.limit ? Number(params.limit) : 10;
     const skip = (page - 1) * limit;
@@ -137,6 +138,7 @@ export class AppService implements OnModuleInit {
         total,
         page,
         limit,
+        totalPages: Math.ceil(total / limit)
       },
     };
   }

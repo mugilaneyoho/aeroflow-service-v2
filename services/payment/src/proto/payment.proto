@@ -4,7 +4,7 @@ package payment;
 
 service PaymentService {
     rpc CreatePayment (CreatePaymentRequest) returns (CommonResponse);
-    rpc GetAllPayment (Empty) returns (GetAllPaymentResponse);
+    rpc GetAllPayment (GetAllPaymentRequest) returns (GetAllPaymentResponse);
 }
 
 message CreatePaymentRequest {
@@ -20,7 +20,10 @@ message CreatePaymentRequest {
     string totalFees = 10;
 }
 
-message Empty {}
+message GetAllPaymentRequest {
+    int32 page = 1;
+    int32 limit = 10;
+}
 
 message PaymentData {
     string uuid = 1;

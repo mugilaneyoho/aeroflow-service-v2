@@ -42,7 +42,7 @@ interface paymentgrpc {
     totalFees: number;
   }): Observable<any>;
   getStudentFees(data: { studentId: string }): Observable<any>;
-  GetAllPayment(data: any): Observable<any>;
+  GetAllPayment(data: {page: number, limit: number}): Observable<any>;
 }
 
 @Injectable()
@@ -808,7 +808,7 @@ export class StudentService implements OnModuleInit {
     }
   }
 
-  async feesgetall() {
+  async feesgetall(page = 1, limit = 10) {
     try {
       const response: {
         success: boolean;
@@ -816,7 +816,7 @@ export class StudentService implements OnModuleInit {
         data: any[];
         meta: any;
         stats?: any;
-      } = await lastValueFrom(this.PaymentService.GetAllPayment({}));
+      } = await lastValueFrom(this.PaymentService.GetAllPayment({page, limit}));
 
       console.log(response);
 
