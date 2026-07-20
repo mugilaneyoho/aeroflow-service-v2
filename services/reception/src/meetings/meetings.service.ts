@@ -19,7 +19,7 @@ export class MeetingsService {
 
   async findAll(status: string) {
     if (status === 'all') {
-      return await this.meetingsRepository.find();
+      return await this.meetingsRepository.find({order: {createdAt: 'DESC'}});
     } else {
       return await this.meetingsRepository.find({
         where: { status: status === 'completed' ? 'completed' : 'pending' },
