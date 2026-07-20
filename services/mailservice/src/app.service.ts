@@ -25,6 +25,23 @@ export class AppService {
     });
   }
 
+  async sendForgotPassword(
+    email: string,
+    name: string,
+    resetUrl: string,
+  ) {
+    await this.mailService.sendMail({
+      to: email,
+      subject: 'Reset Your Password - Aeroflow',
+      template: 'forgotpassword',
+      context: {
+        email,
+        name,
+        resetUrl,
+      },
+    });
+  }
+
   getHello(): string {
     return 'Hello World!';
   }

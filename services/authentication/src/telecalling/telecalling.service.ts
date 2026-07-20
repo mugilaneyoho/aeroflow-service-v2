@@ -2,19 +2,21 @@ import * as Sentry from '@sentry/nestjs';
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GrpcMethod } from '@nestjs/microservices';
+import { ClientProxy, GrpcMethod } from '@nestjs/microservices';
 import { InjectRepository } from '@nestjs/typeorm';
 import { roles, rolesEntity } from 'src/entities/role.entity';
 import { TelecallingEntity } from 'src/entities/telecalling.entity';
 import { PassDecrypted } from 'src/utils/helpers';
 import { PasswordUtils } from 'src/utils/password.utils';
 import { Repository } from 'typeorm';
+import { PasswordResetEntity } from '../entities/password_reset_token.entity';
 
 @Injectable()
 export class TelecallingService {
@@ -25,6 +27,12 @@ export class TelecallingService {
 
     @InjectRepository(rolesEntity)
     private roleRepo: Repository<rolesEntity>,
+
+    @InjectRepository(PasswordResetEntity)
+    private passwordResetRepo: Repository<PasswordResetEntity>,
+
+    @Inject('mailservice')
+    private readonly MailService: ClientProxy,
   ) {}
 
   async findOne(uuid: string) {
@@ -177,12 +185,27 @@ export class TelecallingService {
     }
   }
 
-  async updatePassword(uuid: string, password: string) {
+  async updatePassword(uuid: string, password: string, tokenUuid?: string) {
     try {
+      if (tokenUuid) {
+        const resetToken = await this.passwordResetRepo.findOne({ where: { uuid: tokenUuid } });
+        if (!resetToken) {
+          throw new BadRequestException({ success: false, message: 'Invalid token' });
+        }
+        if (resetToken.usedAt) {
+          throw new BadRequestException({ success: false, message: 'Token has already been used' });
+        }
+        if (resetToken.expiresAt < new Date()) {
+          throw new BadRequestException({ success: false, message: 'Token has expired' });
+        }
+        resetToken.usedAt = new Date();
+        await this.passwordResetRepo.save(resetToken);
+      }
+
       const user = await this.TelecallerRepo.findOne({ where: { uuid } });
 
       if (!user) {
-        return new BadRequestException();
+        throw new BadRequestException({ success: false, message: 'User not found' });
       }
 
       user.password = await PasswordUtils.hash(password);
@@ -205,7 +228,53 @@ export class TelecallingService {
     } catch (error) {
       Sentry.captureException(error);
       console.log(error);
-      return new InternalServerErrorException();
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
+    }
+  }
+
+  async forgetPassword(email: string) {
+    try {
+      const user = await this.TelecallerRepo.findOne({ where: { email } });
+      if (!user) {
+        throw new NotFoundException({ success: false, message: 'User not found with this email' });
+      }
+
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      const resetTokenRecord = this.passwordResetRepo.create({
+        userId: user.uuid,
+        token: '',
+        expiresAt,
+      });
+      await this.passwordResetRepo.save(resetTokenRecord);
+
+      const token = this.JwtService.sign(
+        { uuid: user.uuid, tokenUuid: resetTokenRecord.uuid, email: user.email, type: 'telecaller' },
+        { expiresIn: '15m' },
+      );
+
+      resetTokenRecord.token = token;
+      await this.passwordResetRepo.save(resetTokenRecord);
+
+      const resetUrl = `${process.env.RESET_URL || 'http://localhost:3000/auth'}/reset-page?token=${token}`;
+      this.MailService.emit('mailservice.forgotpassword', {
+        email: user.email,
+        name: user.email.split('@')[0],
+        resetUrl,
+      });
+
+      return { success: true, message: 'Password reset link sent to email.' };
+    } catch (error) {
+      Sentry.captureException(error);
+      console.error('telecalling forget password error', error);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
 }

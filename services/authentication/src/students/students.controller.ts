@@ -18,9 +18,29 @@ export class StudentsController {
 
   @Put('reset-pass')
   resetpassword(@Body() data: { password: string; token: string }) {
-    const decoded: { uuid: string } = this.jwtService.verify(data.token);
+    const decoded: { uuid: string; tokenUuid?: string } = this.jwtService.verify(data.token);
 
-    return this.studentSerivce.updatePassword(decoded.uuid, data.password);
+    return this.studentSerivce.updatePassword(decoded.uuid, data.password, decoded.tokenUuid);
+  }
+
+  @Post('forget-password')
+  forgetpassword(@Body() data: { email: string }) {
+    return this.studentSerivce.forgetPassword(data.email);
+  }
+
+  @Post('forget')
+  forget(@Body() data: { email: string }) {
+    return this.studentSerivce.forgetPassword(data.email);
+  }
+
+  @Put('forget-password')
+  forgetpasswordPut(@Body() data: { email: string }) {
+    return this.studentSerivce.forgetPassword(data.email);
+  }
+
+  @Put('forget')
+  forgetPut(@Body() data: { email: string }) {
+    return this.studentSerivce.forgetPassword(data.email);
   }
 
   @Get(':id')
@@ -32,7 +52,4 @@ export class StudentsController {
   create(data: { email: string; password: string; profileId: string }) {
     return this.studentSerivce.create(data);
   }
-
-  // @Post('verify')
-  // @Post('forget')
 }

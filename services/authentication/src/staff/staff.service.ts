@@ -21,6 +21,7 @@ import {
 import { UpdateStaffDto } from './dto/update-staff.dto';
 import { ClientProxy } from '@nestjs/microservices';
 import { PassDecrypted } from 'src/utils/helpers';
+import { PasswordResetEntity } from '../entities/password_reset_token.entity';
 
 @Injectable()
 export class StaffService implements OnModuleInit {
@@ -29,6 +30,8 @@ export class StaffService implements OnModuleInit {
     private staffRepo: Repository<StaffEntity>,
     @InjectRepository(rolesEntity)
     private roleRepo: Repository<rolesEntity>,
+    @InjectRepository(PasswordResetEntity)
+    private passwordResetRepo: Repository<PasswordResetEntity>,
     private JwtService: JwtService,
     @Inject('mailservice')
     private readonly MailService: ClientProxy,
@@ -180,12 +183,41 @@ export class StaffService implements OnModuleInit {
     }
   }
 
-  async updatePassword(uuid: string, password: string) {
+  async updatePassword(uuid: string, password: string, tokenUuid?: string) {
     try {
+      if (tokenUuid) {
+        const resetToken = await this.passwordResetRepo.findOne({
+          where: { uuid: tokenUuid },
+        });
+        if (!resetToken) {
+          throw new BadRequestException({
+            success: false,
+            message: 'Invalid token',
+          });
+        }
+        if (resetToken.usedAt) {
+          throw new BadRequestException({
+            success: false,
+            message: 'Token has already been used',
+          });
+        }
+        if (resetToken.expiresAt < new Date()) {
+          throw new BadRequestException({
+            success: false,
+            message: 'Token has expired',
+          });
+        }
+        resetToken.usedAt = new Date();
+        await this.passwordResetRepo.save(resetToken);
+      }
+
       const user = await this.staffRepo.findOne({ where: { uuid } });
 
       if (!user) {
-        return new BadRequestException();
+        throw new BadRequestException({
+          success: false,
+          message: 'User not found',
+        });
       }
 
       user.password = await PasswordUtils.hash(password);
@@ -208,7 +240,13 @@ export class StaffService implements OnModuleInit {
     } catch (error) {
       Sentry.captureException(error);
       console.log(error);
-      return new InternalServerErrorException();
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'Internal server error',
+      });
     }
   }
 
@@ -217,18 +255,56 @@ export class StaffService implements OnModuleInit {
       const exist = await this.staffRepo.findOne({ where: { email } });
 
       if (!exist) {
-        throw new NotFoundException();
+        throw new NotFoundException({
+          success: false,
+          message: 'User not found with this email',
+        });
       }
 
-      const url = 'http://localhost:3000/auth/';
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      const resetTokenRecord = this.passwordResetRepo.create({
+        userId: exist.uuid,
+        token: '',
+        expiresAt,
+      });
+      await this.passwordResetRepo.save(resetTokenRecord);
+
+      const token = this.JwtService.sign(
+        {
+          uuid: exist.uuid,
+          tokenUuid: resetTokenRecord.uuid,
+          email: exist.email,
+          type: 'staff',
+        },
+        { expiresIn: '15m' },
+      );
+
+      resetTokenRecord.token = token;
+      await this.passwordResetRepo.save(resetTokenRecord);
+
+      const resetUrl = `${process.env.RESET_URL || 'http://localhost:3000/auth'}/reset-page?token=${token}`;
+      this.MailService.emit('mailservice.forgotpassword', {
+        email: exist.email,
+        name: exist.email.split('@')[0],
+        resetUrl,
+      });
 
       return {
+        success: true,
         message: 'forget password link send email.',
       };
     } catch (error) {
       Sentry.captureException(error);
       console.log(error);
-      throw new InternalServerErrorException();
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'Internal server error',
+      });
     }
   }
 }

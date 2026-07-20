@@ -20,7 +20,7 @@ export class PasswordResetEntity {
   @Index()
   userId!: string;
 
-  @Column()
+  @Column({ type: 'text' })
   token!: string;
 
   @Column()

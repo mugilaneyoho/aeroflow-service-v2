@@ -75,6 +75,17 @@ export class AppController {
     );
   }
 
+  @MessagePattern('mailservice.forgotpassword')
+  sendForgotPassword(@Payload() message: any) {
+    const payload = this.parsePayload(message);
+    console.log('Received mailservice.forgotpassword message payload:', payload);
+    return this.appService.sendForgotPassword(
+      payload?.email,
+      payload?.name || '',
+      payload?.resetUrl || '',
+    );
+  }
+
   @Get()
   getHello(): string {
     return this.appService.getHello();

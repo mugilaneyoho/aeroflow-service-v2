@@ -18,9 +18,19 @@ export class StaffController {
 
   @Put('reset-pass')
   resetpassword(@Body() data: { password: string; token: string }) {
-    const decoded: { uuid: string } = this.jwtService.verify(data.token);
+    const decoded: { uuid: string; tokenUuid?: string } =
+      this.jwtService.verify(data.token);
 
-    return this.staffService.updatePassword(decoded.uuid, data.password);
+    return this.staffService.updatePassword(
+      decoded.uuid,
+      data.password,
+      decoded.tokenUuid,
+    );
+  }
+
+  @Post('forget')
+  forget(@Body() data: { email: string }) {
+    return this.staffService.forgetpassword(data.email);
   }
 
   @GrpcMethod('StaffService', 'CreateStaff')

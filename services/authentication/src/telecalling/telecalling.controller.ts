@@ -17,9 +17,29 @@ export class TelecallingController {
 
   @Put('reset-pass')
   resetpassword(@Body() data: { password: string; token: string }) {
-    const decoded: { uuid: string } = this.jwtService.verify(data.token);
+    const decoded: { uuid: string; tokenUuid?: string } = this.jwtService.verify(data.token);
 
-    return this.telecallerService.updatePassword(decoded.uuid, data.password);
+    return this.telecallerService.updatePassword(decoded.uuid, data.password, decoded.tokenUuid);
+  }
+
+  @Post('forget-password')
+  forgetpassword(@Body() data: { email: string }) {
+    return this.telecallerService.forgetPassword(data.email);
+  }
+
+  @Post('forget')
+  forget(@Body() data: { email: string }) {
+    return this.telecallerService.forgetPassword(data.email);
+  }
+
+  @Put('forget-password')
+  forgetpasswordPut(@Body() data: { email: string }) {
+    return this.telecallerService.forgetPassword(data.email);
+  }
+
+  @Put('forget')
+  forgetPut(@Body() data: { email: string }) {
+    return this.telecallerService.forgetPassword(data.email);
   }
 
   @Get(':uuid')

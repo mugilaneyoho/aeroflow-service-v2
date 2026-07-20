@@ -11,16 +11,22 @@ import { TelecallingEntity } from './entities/telecalling.entity';
 import { StaffEntity } from './entities/staff.entity';
 import { rolesEntity } from './entities/role.entity';
 import { AdminEntity } from './entities/admins.entity';
+import { PasswordResetEntity } from './entities/password_reset_token.entity';
 import { RolesModule } from './roles/roles.module';
 import { ConfigModule } from '@nestjs/config';
 import { SeedingService } from './seeding/seeding.service';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { APP_FILTER } from '@nestjs/core';
 import { SentryGlobalFilter, SentryRpcFilter } from './sentry-exception.filter';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     SentryModule.forRoot(),
+    JwtModule.register({
+      secret: 'auth-key',
+      signOptions: { expiresIn: '30d' },
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
@@ -37,6 +43,7 @@ import { SentryGlobalFilter, SentryRpcFilter } from './sentry-exception.filter';
         StaffEntity,
         rolesEntity,
         AdminEntity,
+        PasswordResetEntity,
       ],
       synchronize: true,
     }),

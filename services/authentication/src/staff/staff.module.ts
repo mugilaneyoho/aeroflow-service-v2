@@ -4,12 +4,13 @@ import { StaffController } from './staff.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StaffEntity } from 'src/entities/staff.entity';
 import { rolesEntity } from 'src/entities/role.entity';
+import { PasswordResetEntity } from '../entities/password_reset_token.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([StaffEntity, rolesEntity]),
+    TypeOrmModule.forFeature([StaffEntity, rolesEntity, PasswordResetEntity]),
     JwtModule.register({
       secret: 'auth-key',
       signOptions: { expiresIn: '30d' },
