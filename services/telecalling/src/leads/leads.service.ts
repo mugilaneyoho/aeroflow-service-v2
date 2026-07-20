@@ -325,18 +325,35 @@ export class LeadsService implements OnModuleInit {
     }
   }
 
-  async findAll(query: { page: string; limit: string }) {
+  async findAll(query: { page: string; limit: string; search?: string; status?: string }) {
     try {
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 10;
+      const search = query.search || '';
+      const status = query.status || '';
 
-      const [leads, total] = await this.leadsRepo.findAndCount({
-        where: { status: Not(LeadStatus.NEW) },
-        skip: (page - 1) * limit,
-        relations: ['employee'],
-        take: limit,
-        order: { createdAt: 'DESC' },
-      });
+      const queryBuilder = this.leadsRepo.createQueryBuilder('leads')
+        .leftJoinAndSelect('leads.employee', 'employee');
+
+      if (status && status !== 'All Status') {
+        queryBuilder.andWhere('leads.status = :status', { status });
+      } else {
+        queryBuilder.andWhere('leads.status != :newStatus', { newStatus: LeadStatus.NEW });
+      }
+
+      if (search) {
+        queryBuilder.andWhere(
+          '(leads.name ILIKE :search OR leads.phone ILIKE :search OR leads.course_name ILIKE :search OR employee.employee_name ILIKE :search OR employee.emp_id ILIKE :search)',
+          { search: `%${search}%` }
+        );
+      }
+
+      queryBuilder
+        .orderBy('leads.createdAt', 'DESC')
+        .skip((page - 1) * limit)
+        .take(limit);
+
+      const [leads, total] = await queryBuilder.getManyAndCount();
 
       return {
         success: true,
@@ -361,32 +378,49 @@ export class LeadsService implements OnModuleInit {
 
   async findByEmployee(
     uuid: string,
-    query: { page: string; limit: string; status: LeadStatus },
+    query: { page?: string; limit?: string; status: LeadStatus },
   ) {
     try {
+      const page = Number(query.page) || 1;
+      const limit = Number(query.limit) || 10;
       let leads: LeadsEntity[];
+      let total: number;
 
       if (query.status == LeadStatus.ASSIGNED) {
-        leads = await this.leadsRepo.find({
+        [leads, total] = await this.leadsRepo.findAndCount({
           where: {
             assignedTo: uuid,
             status: query.status,
           },
           select: ['uuid', 'phone', 'notes', 'status', 'name'],
+          skip: (page - 1) * limit,
+          take: limit,
           order: { createdAt: 'DESC' },
         });
       } else {
-        leads = await this.leadsRepo.find({
+        [leads, total] = await this.leadsRepo.findAndCount({
           where: {
             assignedTo: uuid,
             status: query.status,
           },
           relations: ['employee'],
+          skip: (page - 1) * limit,
+          take: limit,
           order: { createdAt: 'DESC' },
         });
       }
 
-      return leads;
+      return {
+        success: true,
+        message: 'leads fetched by employee',
+        data: leads,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (error) {
       Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
@@ -397,16 +431,32 @@ export class LeadsService implements OnModuleInit {
     }
   }
 
-  async findCompleted(uuid: string) {
+  async findCompleted(uuid: string, query?: { page?: string; limit?: string }) {
     try {
-      const leads = await this.leadsRepo.find({
+      const page = Number(query?.page) || 1;
+      const limit = Number(query?.limit) || 10;
+
+      const [leads, total] = await this.leadsRepo.findAndCount({
         where: {
           assignedTo: uuid,
           status: And(Not(LeadStatus.ADMITTED), Not(LeadStatus.ASSIGNED)),
         },
+        skip: (page - 1) * limit,
+        take: limit,
+        order: { createdAt: 'DESC' },
       });
 
-      return leads;
+      return {
+        success: true,
+        message: 'completed leads fetched',
+        data: leads,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (error) {
       Sentry.captureException(error);
       console.error(error, 'leads fetch all error');
