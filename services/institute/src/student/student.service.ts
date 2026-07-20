@@ -163,7 +163,7 @@ export class StudentService implements OnModuleInit {
 
       if (query.isbatch !== undefined) {
         whereClause.is_approved = true;
-        whereClause.is_batch_assign = !(query.isbatch === 'true');
+        whereClause.is_batch_assign = query.isbatch === 'true';
       }
 
       const [students, total] = await this.studentRepo.findAndCount({
@@ -352,20 +352,18 @@ export class StudentService implements OnModuleInit {
         throw new NotFoundException('Student profile not found');
       }
 
-      console.log(studentDetails.profile_image, "student image")
-
       let profileImgBuffer: Buffer | null = null;
-      if (studentDetails.profile_image) {
-        if (studentDetails.profile_image.startsWith('data:')) {
-          const base64Data = studentDetails.profile_image
+      if (studentDetails?.profile_image) {
+        if (studentDetails?.profile_image.startsWith('data:')) {
+          const base64Data = studentDetails?.profile_image
             .split(';base64,')
             .pop();
           if (base64Data) {
             profileImgBuffer = Buffer.from(base64Data, 'base64');
           }
-        } else if (studentDetails.profile_image.startsWith('http')) {
+        } else if (studentDetails?.profile_image?.startsWith('http')) {
           try {
-            const response = await axios.get(studentDetails.profile_image, {
+            const response = await axios.get(studentDetails?.profile_image, {
               responseType: 'arraybuffer',
             });
             profileImgBuffer = Buffer.from(response.data);

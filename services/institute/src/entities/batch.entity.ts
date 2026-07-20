@@ -37,7 +37,7 @@ export class BatchEntity {
   @JoinColumn({ name: 'courseId' })
   course!: CourseEntity;
 
-  @Column({ type: 'varchar', length: 191 })
+  @Column({ type: 'varchar', length: 191, unique: true })
   batchName!: string;
 
   @Column({ type: 'enum', enum: BatchMode, default: BatchMode.OFFLINE })

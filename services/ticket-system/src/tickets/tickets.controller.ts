@@ -25,12 +25,16 @@ export class TicketsController {
     @Body() createTicketDto: CreateTicketDto,
     @Req() req: { headers: { user: string } },
   ) {
-    const user: { role: roles; profile_id: string; uuid: string } = JSON.parse(
-      req.headers.user,
-    ) as {
+    const user: {
       role: roles;
       profile_id: string;
       uuid: string;
+      email: string;
+    } = JSON.parse(req.headers.user) as {
+      role: roles;
+      profile_id: string;
+      uuid: string;
+      email: string;
     };
     return this.ticketsService.create(createTicketDto, user);
   }

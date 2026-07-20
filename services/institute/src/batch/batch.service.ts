@@ -16,7 +16,7 @@ import { StudentProfileEntity } from 'src/entities/student.entity';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
 import { ClientProxy } from '@nestjs/microservices';
-import axios from "axios";
+import axios from 'axios';
 
 @Injectable()
 export class BatchService implements OnModuleInit {
@@ -29,7 +29,7 @@ export class BatchService implements OnModuleInit {
     private queue: Queue,
     @Inject('CHAT_SERVICE')
     private chatClient: ClientProxy,
-  ) { }
+  ) {}
 
   onModuleInit() {
     this.queue.on('error', (err) => {
@@ -43,7 +43,6 @@ export class BatchService implements OnModuleInit {
       const exist = await this.batchRepo.findOne({
         where: { batchName: data.batchName },
       });
-
 
       if (exist) {
         return new ConflictException({
@@ -81,14 +80,14 @@ export class BatchService implements OnModuleInit {
       }));
 
       const { data: admins } = await axios.get(
-        'http://authentication-service:3002/admins/get-admins'
-      )
+        'http://authentication-service:3002/admins/get-admins',
+      );
 
       const adminMembers = admins.map((admin: any) => ({
         userId: admin.uuid,
         name: admin.name,
-        role: 'ADMIN'
-      }))
+        role: 'ADMIN',
+      }));
 
       const students = await this.studentRepo.find({
         where: {
@@ -96,7 +95,7 @@ export class BatchService implements OnModuleInit {
         },
       });
 
-      const studentMembers = students.map(student => ({
+      const studentMembers = students.map((student) => ({
         userId: student.uuid,
         name: student.student_name,
         role: 'STUDENT',
@@ -104,15 +103,12 @@ export class BatchService implements OnModuleInit {
 
       const members = [...staffMembers, ...studentMembers, ...adminMembers];
 
-
-      console.log('Unique Members', members)
+      console.log('Unique Members', members);
 
       this.chatClient.emit('group.created', {
         name: batch.batchName,
-        members: members
-      })
-
-      console.log("Studemnt Ids Batch creation", data?.studentIds);
+        members: members,
+      });
 
       // eslint-disable-next-line no-unsafe-optional-chaining
       for (const user of data?.studentIds) {

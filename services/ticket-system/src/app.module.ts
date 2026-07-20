@@ -27,9 +27,6 @@ import { SentryModule } from '@sentry/nestjs/setup';
     TicketsModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: RolesGuard },
-  ],
+  providers: [AppService, { provide: APP_GUARD, useClass: RolesGuard }],
 })
 export class AppModule {}

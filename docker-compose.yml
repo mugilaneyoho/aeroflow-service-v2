@@ -19,6 +19,9 @@ services:
       content: http://content-service:3016
       payment: http://payment-service:3021
       placement: http://placement-service:3020
+    depends_on:
+      - rabbitmq
+      - redis
     networks:
       - app-network
 
@@ -63,6 +66,7 @@ services:
       DB_PASS: root
     depends_on:
       - api-gateway
+      - rabbitmq
     networks:
       - app-network
 

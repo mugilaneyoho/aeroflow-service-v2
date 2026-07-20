@@ -19,9 +19,9 @@ export class TicketsService {
 
   async create(
     createTicketDto: CreateTicketDto,
-    user: { role: roles; profile_id: string; uuid: string },
+    user: { role: roles; profile_id: string; uuid: string; email: string },
   ) {
-    const { role, profile_id: userId, uuid } = user;
+    const { role, profile_id: userId, uuid, email } = user;
 
     if (role === roles.STAFF || role === roles.STUDENT) {
       const allowed = [roles.HOD, roles.MASTER];
@@ -50,6 +50,7 @@ export class TicketsService {
         ...createTicketDto,
         senderId: uuid,
         senderRole: role,
+        email,
       });
 
       return this.ticketsRepository.save(newTicket);
@@ -62,6 +63,7 @@ export class TicketsService {
         ...createTicketDto,
         senderId: userId,
         senderRole: role,
+        email,
       });
 
       return this.ticketsRepository.save(newTicket);

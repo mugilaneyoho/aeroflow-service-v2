@@ -3,6 +3,7 @@ import {
   Column,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { roles } from './auth/roles.enum';
 
@@ -13,6 +14,9 @@ export class Ticket {
 
   @Column()
   senderId!: string;
+
+  @Column({ default: '' })
+  email!: string;
 
   @Column()
   senderRole!: roles;
@@ -31,6 +35,9 @@ export class Ticket {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @UpdateDateColumn()
+  updatedAt!: Date;
 
   @Column({
     type: 'enum',

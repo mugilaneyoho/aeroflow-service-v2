@@ -24,7 +24,6 @@ export class BatchProcessor {
           is_batch_assign: true,
         },
       );
-      console.log("assign")
     } catch (error) {
       Sentry.captureException(error);
       console.log(error, 'assign queue error');
