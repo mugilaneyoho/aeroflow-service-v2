@@ -114,7 +114,7 @@ export class StudentController {
   }
 
   @Get(':uuid/application')
-  async getapplication(@Param(':uuid') uuid: string, @Res() res: any) {
+  async getapplication(@Param('uuid') uuid: string, @Res() res: any) {
     const pdfBuffer = await this.studentService.getApplication(uuid);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access

@@ -1,15 +1,3 @@
-// import { Controller } from '@nestjs/common';
-// import { MessagePattern, Payload } from '@nestjs/microservices';
-
-// @Controller('activelog')
-// export class ActivelogController {
-//   @MessagePattern('activelog.created')
-//   handelActivelogCreate(@Payload() message: any) {
-//     console.log('recived:', message);
-//     return 'message processed';
-//   }
-// }
-
 import {
   Controller,
   Post,
@@ -20,22 +8,43 @@ import {
   Delete,
 } from '@nestjs/common';
 import { ActivelogService } from './activelog.service';
-import {ActivityLogEntity} from '../entity/activitylog'
-import { Ctx, EventPattern, RmqContext, MessagePattern, Payload } from '@nestjs/microservices';
+import { ActivityLogEntity, ActivityType, ActivityStatus } from '../entity/activitylog';
+import {
+  Ctx,
+  EventPattern,
+  RmqContext,
+  MessagePattern,
+  Payload,
+} from '@nestjs/microservices';
 
 @Controller('activelog')
 export class ActivelogController {
   constructor(private readonly activeLogService: ActivelogService) {}
-  
+
   @EventPattern('activelog.created')
-  async handleActivityCreated(@Payload() payload: any, @Ctx() context: RmqContext) {
+  async handleActivityCreated(
+    @Payload() payload: any,
+    @Ctx() context: RmqContext,
+  ) {
     const data = payload;
-  
+
     console.log('ACTIVITY EVENT RECEIVED OVER RabbitMQ');
     console.log('Pattern:', context.getPattern());
     console.log('Data:', data);
-    console.log('Status:', data?.status);
-    console.log('ReferenceId:', data?.referenceId);
+
+    try {
+      await this.activeLogService.create({
+        title: data.subject || data.title || 'Lead Activity',
+        description: data.description || 'No description',
+        type: (data.type as ActivityType) || ActivityType.UPDATE,
+        status: (data.status as ActivityStatus) || ActivityStatus.SUCCESS,
+        performedBy: data.userId || data.performedBy || 'System',
+        relatedEntity: data.referenceId || data.relatedEntity || null,
+      });
+      console.log('Activity log saved successfully to DB.');
+    } catch (error) {
+      console.error('Failed to save activity log:', error);
+    }
   }
   @Post()
   async create(@Body() body: Partial<ActivityLogEntity>) {

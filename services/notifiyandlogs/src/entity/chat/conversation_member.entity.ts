@@ -12,29 +12,25 @@ import {
 
 import { Conversation, ConversationRole } from './conversation.entity';
 
-
 @Entity('chat_conversation_members')
-
 @Index(['conversationId', 'userId'], {
   unique: true,
 })
-
 @Index(['userId'])
-
 export class ConversationMember {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({type: 'uuid'})
+  @Column({ type: 'uuid' })
   conversationId!: string;
 
-  @Column({type: 'uuid'})
+  @Column({ type: 'uuid', nullable: true })
   userId!: string;
 
   @Column({
     type: 'enum',
     enum: ConversationRole,
-    enumName: 'conversationRole'
+    enumName: 'conversationRole',
   })
   role!: ConversationRole;
 
@@ -54,19 +50,14 @@ export class ConversationMember {
   })
   isMuted!: boolean;
 
-
   @Column({
     nullable: true,
   })
   lastReadMessageId?: string;
 
-  @ManyToOne(
-    () => Conversation,
-    conversation => conversation.members,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
+  @ManyToOne(() => Conversation, (conversation) => conversation.members, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({
     name: 'conversationId',
   })
@@ -81,6 +72,6 @@ export class ConversationMember {
   @DeleteDateColumn()
   deletedAt?: Date;
 
-  @Column({nullable: true})
+  @Column({ nullable: true })
   userName?: string;
 }

@@ -50,8 +50,8 @@ export class AppController {
   }
 
   @GrpcMethod('PaymentService', 'GetAllPayment')
-  findall() {
-    return this.appService.findall();
+  findall(data: { page?: number; limit?: number }) {
+    return this.appService.findall(data);
   }
 
   @GrpcMethod('PaymentService', 'CreatePayment')

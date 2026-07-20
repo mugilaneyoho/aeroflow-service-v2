@@ -51,6 +51,15 @@ export class EmployeEntity {
   @Column({ type: 'boolean', default: false })
   is_delete!: boolean;
 
+  @Column({ type: 'timestamp', nullable: true })
+  clock_in!: Date | null;
+
+  @Column({ type: 'timestamp', nullable: true })
+  clock_out!: Date | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  duration!: string | null;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 

@@ -61,7 +61,16 @@ export class AppService {
     try {
       const employees = await this.employeeRepo.find({
         where: { is_delete: false },
-        select: ['emp_id', 'id', 'uuid', 'is_active', 'employee_name'],
+        select: [
+          'emp_id',
+          'id',
+          'uuid',
+          'is_active',
+          'employee_name',
+          'clock_in',
+          'clock_out',
+          'duration',
+        ],
       });
 
       const leadStats = await this.leadsRepo

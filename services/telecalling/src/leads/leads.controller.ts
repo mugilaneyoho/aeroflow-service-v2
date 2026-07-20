@@ -99,6 +99,6 @@ export class LeadsController {
     @Param('uuid') uuid: string,
     @Query() query: { page: string; limit: string; status: LeadStatus },
   ) {
-    return this.leadsService.findCompleted(uuid);
+    return this.leadsService.findCompleted(uuid, query);
   }
 }

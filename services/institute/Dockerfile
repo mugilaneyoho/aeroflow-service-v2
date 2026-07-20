@@ -26,6 +26,7 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/src/template ./src/template
 COPY --from=builder /app/.env ./
 CMD ["node", "dist/main"]
 

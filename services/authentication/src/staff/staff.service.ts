@@ -211,4 +211,24 @@ export class StaffService implements OnModuleInit {
       return new InternalServerErrorException();
     }
   }
+
+  async forgetpassword(email: string) {
+    try {
+      const exist = await this.staffRepo.findOne({ where: { email } });
+
+      if (!exist) {
+        throw new NotFoundException();
+      }
+
+      const url = 'http://localhost:3000/auth/';
+
+      return {
+        message: 'forget password link send email.',
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
+  }
 }

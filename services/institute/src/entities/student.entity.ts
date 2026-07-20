@@ -95,6 +95,9 @@ export class StudentProfileEntity {
   @Column({ default: 'offline' })
   course_mode!: string;
 
+  @Column({ type: 'text', nullable: true })
+  profile_image!: string | null;
+
   @CreateDateColumn({ type: 'timestamp' })
   createdAt!: Date;
 

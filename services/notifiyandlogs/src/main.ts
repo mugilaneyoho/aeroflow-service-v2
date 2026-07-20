@@ -15,35 +15,31 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.connectMicroservice<MicroserviceOptions>(
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://guest:guest@rabbitmq:5672'],
-        queue: 'notifications',
-        queueOptions: {
-          durable: true,
-        },
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: ['amqp://guest:guest@rabbitmq:5672'],
+      queue: 'notifications',
+      queueOptions: {
+        durable: true,
       },
     },
-  );
+  });
 
   // Register Sentry global filter to catch and report ALL unhandled errors
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(new SentryGlobalFilter(httpAdapter));
 
-  app.connectMicroservice<MicroserviceOptions>(
-    {
-      transport: Transport.RMQ,
-      options: {
-        urls: ['amqp://guest:guest@rabbitmq:5672'],
-        queue: 'chats',
-        queueOptions: {
-          durable: true,
-        },
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: ['amqp://guest:guest@rabbitmq:5672'],
+      queue: 'chats',
+      queueOptions: {
+        durable: true,
       },
     },
-  )
+  });
 
   await app.startAllMicroservices();
 

@@ -190,7 +190,7 @@ export class IncoiveService {
           28.95,
           296.9,
           {
-            width: 300,
+            width: 275,
           },
           '#000000',
           12,
@@ -201,7 +201,7 @@ export class IncoiveService {
           302.3,
           296.45,
           {
-            width: 300,
+            width: 275,
           },
           '#000000',
           12,

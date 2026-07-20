@@ -21,8 +21,12 @@ import { BatchEntity } from 'src/entities/batch.entity';
 import fs from 'fs';
 import { PdfService } from 'src/template/pdfService';
 import * as ExcelJS from 'exceljs';
+import PDFDocument from 'pdfkit';
+import axios from 'axios';
+import * as path from 'path';
 import { Response } from 'express';
 import { RedisUserCache } from 'src/redis/redis.service';
+import dayjs from 'dayjs';
 
 interface studentgrpc {
   CreateStudent(data: {
@@ -46,6 +50,8 @@ export class StudentService implements OnModuleInit {
   private AuthService: studentgrpc;
   private FeeService: paymentgrpc;
   private PaymentService: paymentgrpc;
+  PW = 595.28;
+  PH = 841.89;
 
   constructor(
     @InjectRepository(StudentProfileEntity)
@@ -335,52 +341,384 @@ export class StudentService implements OnModuleInit {
     }
   }
 
-  async getApplication(uuid: string) {
+  async getApplication(uuid: string): Promise<Buffer> {
     try {
       const studentDetails = await this.studentRepo.findOne({
         where: { uuid },
         relations: ['course', 'batch'],
       });
 
-      if (!studentDetails || !studentDetails.batch) {
-        return new NotFoundException();
+      if (!studentDetails) {
+        throw new NotFoundException('Student profile not found');
       }
 
-      let html = fs.readFileSync('src/template/application.html', 'utf-8');
+      console.log(studentDetails.profile_image, "student image")
 
-      html = html.replace('{{studentName}}', studentDetails.student_name);
-      html = html.replace('{{applicationNo}}', studentDetails.student_id);
-      html = html.replace(
-        '{{applyDate}}',
-        studentDetails.admission_date.toString(),
-      );
-      html = html.replace('{{courseName}}', studentDetails.course.course_name);
-      html = html.replace('{{batchName}}', studentDetails.batch.batchName);
-      html = html.replace('{{batchCode}}', studentDetails.batch.batchCode);
-      html = html.replace(
-        '{{batchTiming}}',
-        studentDetails?.batch.classStartTime +
-          studentDetails.batch.classEndTime,
-      );
-      html = html.replace('{{gender}}', studentDetails.gender);
-      html = html.replace('{{phoneNumber}}', studentDetails.phone_number);
-      html = html.replace('{{email}}', studentDetails.email);
-      html = html.replace('{{qualification}}', studentDetails.qualification);
+      let profileImgBuffer: Buffer | null = null;
+      if (studentDetails.profile_image) {
+        if (studentDetails.profile_image.startsWith('data:')) {
+          const base64Data = studentDetails.profile_image
+            .split(';base64,')
+            .pop();
+          if (base64Data) {
+            profileImgBuffer = Buffer.from(base64Data, 'base64');
+          }
+        } else if (studentDetails.profile_image.startsWith('http')) {
+          try {
+            const response = await axios.get(studentDetails.profile_image, {
+              responseType: 'arraybuffer',
+            });
+            profileImgBuffer = Buffer.from(response.data);
+          } catch (e) {
+            console.error('Failed to fetch student profile image:', e);
+          }
+        }
+      }
 
-      const address = studentDetails.currentAddress;
+      const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+        const doc = new PDFDocument({ size: 'A4', margin: 40 });
+        const chunks: Buffer[] = [];
 
-      html = html.replace('{{address}}', address);
+        doc.on('data', (chunk) => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', (err) => reject(err));
 
-      html = html.replace('{{courseFee}}', String(studentDetails.course.price));
-      html = html.replace('{{AdmittedBy}}', studentDetails.admittedBy);
+        const bgPath = path.join(
+          process.cwd(),
+          'src/template/plainletterhead.jpeg',
+        );
 
-      const pdfBuffer = await this.pdfService.generatePdf(html);
+        if (fs.existsSync(bgPath)) {
+          doc.image(bgPath, 0, 0, { width: this.PW, height: this.PH });
+        } else {
+          console.warn(
+            'Background image plainletterhead.jpeg not found in templates folder!',
+          );
+        }
+
+        doc
+          .fontSize(14)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('STUDENT TRAINING APPLICATION FORM', 40, 130, {
+            align: 'center',
+          });
+
+        const startY = 165;
+
+        // Left Column details (Application details)
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .text('Application No:', 40, startY);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.student_id || 'N/A', 150, startY);
+
+        doc.font('Helvetica-Bold').text('Date:', 40, startY + 20);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.admission_date
+              ? new Date(studentDetails.admission_date).toLocaleDateString()
+              : 'N/A',
+            150,
+            startY + 20,
+          );
+
+        doc.font('Helvetica-Bold').text('Course Name:', 40, startY + 40);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.course?.course_name || 'N/A', 150, startY + 40);
+
+        doc.font('Helvetica-Bold').text('Batch Name:', 40, startY + 60);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.batch?.batchName || 'Not Assigned',
+            150,
+            startY + 60,
+          );
+
+        doc.font('Helvetica-Bold').text('Batch Code:', 40, startY + 80);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.batch?.batchCode || 'N/A', 150, startY + 80);
+
+        doc.font('Helvetica-Bold').text('Batch Timing:', 40, startY + 100);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.batch
+              ? `${dayjs(studentDetails.batch.startDate).format('DD/MM/YYYY') || ''} - ${studentDetails.batch.duration + ' ' + studentDetails.batch.durationType || ''}`
+              : 'N/A',
+            150,
+            startY + 100,
+          );
+
+        // Right Column - Profile Image Box
+        const imgX = 450;
+        const imgY = startY;
+        const imgW = 100;
+        const imgH = 110;
+
+        if (profileImgBuffer) {
+          try {
+            doc.image(profileImgBuffer, imgX, imgY, {
+              width: imgW,
+              height: imgH,
+            });
+            doc
+              .rect(imgX, imgY, imgW, imgH)
+              .strokeColor('#000000')
+              .lineWidth(1)
+              .stroke();
+          } catch (e) {
+            doc
+              .rect(imgX, imgY, imgW, imgH)
+              .strokeColor('#000000')
+              .lineWidth(1)
+              .stroke();
+            doc.fontSize(8).text('PHOTO', imgX + 30, imgY + 50);
+          }
+        } else {
+          doc
+            .rect(imgX, imgY, imgW, imgH)
+            .strokeColor('#000000')
+            .lineWidth(1)
+            .stroke();
+          doc
+            .fontSize(8)
+            .font('Helvetica')
+            .text('PASTE PHOTO HERE', imgX + 8, imgY + 50);
+        }
+
+        // Section: Personal Details
+        const sectionY = 295;
+        doc
+          .strokeColor('#000000')
+          .lineWidth(1)
+          .moveTo(20, sectionY - 10)
+          .lineTo(575, sectionY - 10)
+          .stroke();
+
+        doc
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .fillColor('#1F338C')
+          .text('PERSONAL DETAILS', 40, sectionY);
+
+        const personalStartY = sectionY + 20;
+        const col1X = 40;
+        const col2X = 300;
+
+        // Col 1
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Student Name:', col1X, personalStartY);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.student_name || 'N/A',
+            col1X + 90,
+            personalStartY,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Date of Birth:', col1X, personalStartY + 20);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.dob
+              ?  new Date(studentDetails.dob).toLocaleDateString()
+              : 'N/A',
+            col1X + 90,
+            personalStartY + 20,
+          );
+
+        doc.font('Helvetica-Bold').text('Gender:', col1X, personalStartY + 40);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.gender || 'N/A',
+            col1X + 90,
+            personalStartY + 40,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Mobile No:', col1X, personalStartY + 60);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.phone_number || 'N/A',
+            col1X + 90,
+            personalStartY + 60,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Email ID:', col1X, personalStartY + 80);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.email || 'N/A', col1X + 90, personalStartY + 80);
+
+        // Col 2
+        doc.font('Helvetica-Bold').text('Father Name:', col2X, personalStartY);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.father_name || 'N/A',
+            col2X + 90,
+            personalStartY,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Mother Name:', col2X, personalStartY + 20);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.mother_name || 'N/A',
+            col2X + 90,
+            personalStartY + 20,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Parent Mobile:', col2X, personalStartY + 40);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.parent_number || 'N/A',
+            col2X + 90,
+            personalStartY + 40,
+          );
+
+        doc
+          .font('Helvetica-Bold')
+          .text('Address:', col1X, personalStartY + 110);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.currentAddress || 'N/A',
+            col1X + 90,
+            personalStartY + 110,
+            { width: 400 },
+          );
+
+        // Section: Educational / Professional Details
+        const eduY = personalStartY + 160;
+        doc
+          .strokeColor('#000000')
+          .lineWidth(1)
+          .moveTo(20, eduY - 10)
+          .lineTo(575, eduY - 10)
+          .stroke();
+
+        doc
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .fillColor('#1F338C')
+          .text('EDUCATIONAL / PROFESSIONAL DETAILS', 40, eduY);
+
+        const eduStartY = eduY + 20;
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Qualification:', col1X, eduStartY);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.qualification || 'N/A', col1X + 90, eduStartY);
+
+        // Section: Payment Details
+        const payY = eduStartY + 40;
+        doc
+          .strokeColor('#000000')
+          .lineWidth(1)
+          .moveTo(20, payY - 10)
+          .lineTo(575, payY - 10)
+          .stroke();
+
+        doc
+          .fontSize(11)
+          .font('Helvetica-Bold')
+          .fillColor('#1F338C')
+          .text('PAYMENT DETAILS', 40, payY);
+
+        const payStartY = payY + 20;
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .fillColor('#000000')
+          .text('Course Fee:', col1X, payStartY);
+        doc
+          .font('Helvetica')
+          .text(
+            studentDetails.course?.price
+              ? String(studentDetails.course.price)
+              : '0.00',
+            col1X + 90,
+            payStartY,
+          );
+
+        doc.font('Helvetica-Bold').text('Course Mode:', col2X, payStartY);
+        doc
+          .font('Helvetica')
+          .text(studentDetails.course_mode || 'offline', col2X + 90, payStartY);
+
+        // Declaration
+        // const decY = payStartY + 40;
+        // doc
+        //   .strokeColor('#000000')
+        //   .lineWidth(1)
+        //   .moveTo(20, decY - 10)
+        //   .lineTo(575, decY - 10)
+        //   .stroke();
+
+        // doc
+        //   .fontSize(11)
+        //   .font('Helvetica-Bold')
+        //   .fillColor('#1F338C')
+        //   .text('DECLARATION', 40, decY);
+        // doc
+        //   .font('Helvetica')
+        //   .fontSize(9)
+        //   .fillColor('#000000')
+        //   .text(
+        //     'I hereby confirm that the above information provided by me is true and correct. I agree to follow the rules and regulations of the training institute.',
+        //     40,
+        //     decY + 20,
+        //     { width: 490 },
+        //   );
+
+        // // Signatures
+        // const sigY = decY + 70;
+        // doc
+        //   .fontSize(10)
+        //   .font('Helvetica')
+        //   .text('_______________________', 40, sigY);
+        // doc.text('Student Signature', 40, sigY + 15);
+
+        // doc.text('_______________________', 380, sigY);
+        // doc.text(
+        //   `Admitted by: ${studentDetails.admittedBy || 'Admin'}`,
+        //   380,
+        //   sigY + 15,
+        // );
+
+        doc.end();
+      });
 
       return pdfBuffer;
     } catch (error) {
       Sentry.captureException(error);
-      console.error(error, 'getStudentFees error');
-      return new InternalServerErrorException({
+      console.error(error, 'getApplication error');
+      throw new InternalServerErrorException({
         success: false,
         message: 'internal server error',
       });
