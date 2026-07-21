@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString, IsUUID, IsOptional } from 'class-validator';
 import {
   NotificationType,
   NotificationPriority,
@@ -15,7 +15,8 @@ export class CreateNotifyDto {
   message!: string;
 
   @IsUUID()
-  userId!: string;
+  @IsOptional()
+  userId?: string;
 
   @IsEnum(NotificationType)
   type!: NotificationType;

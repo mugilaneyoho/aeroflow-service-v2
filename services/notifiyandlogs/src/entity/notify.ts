@@ -27,6 +27,7 @@ export enum NotificationRole {
   HOD = 'HOD',
   TELEADMIN = 'TELEADMIN',
   TELECALLING = 'TELECALLING',
+  RECEPTION = 'RECEPTION',
 }
 
 @Entity('notification')

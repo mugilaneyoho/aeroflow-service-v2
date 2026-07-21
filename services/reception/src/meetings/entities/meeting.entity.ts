@@ -34,6 +34,9 @@ export class Meeting {
   @Column({ default: 'Pending' })
   status!: string;
 
+  @Column({ nullable: true })
+  remarks?: string;
+
   @CreateDateColumn()
   createdAt!: string;
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Query } from '@nestjs/common';
 import { MeetingsService } from './meetings.service';
 import { CreateMeetingDto } from './dto/create-meeting.dto';
 import { Meeting } from './entities/meeting.entity';
@@ -18,8 +18,12 @@ export class MeetingsController {
   }
 
   @Get(':type')
-  findAll(@Param('type') type: string) {
-    return this.meetingsService.findAll(type);
+  findAll(
+    @Param('type') type: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.meetingsService.findAll(type, page ? +page : undefined, limit ? +limit : undefined);
   }
 
   @Patch(':id')

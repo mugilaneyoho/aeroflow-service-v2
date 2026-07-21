@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -264,7 +265,75 @@ export class AppController {
         'No.29/1, 2nd floor, Ambal Nagar, Main Road, Keelkattalai, Chennai 600117',
     };
 
-    const pdfBuffer = await this.invoceService.generateInvoice(pdfdatas);
+    const reciptdatas = {
+      invoiceId: details?.paymentDetails?.receiptNumber,
+      invoiceDate: details?.paymentDetails?.paymentDate
+        ?.toISOString()
+        ?.split('T')[0],
+
+      studentName: details?.studentDetails?.student_name,
+      registrationNo: details?.studentDetails?.student_id,
+      mobileNo: details?.studentDetails?.phone_number,
+      emailId: details?.studentDetails?.email,
+      qualifications: details?.studentDetails?.qualification,
+      dateOfBirth: details?.studentDetails?.dob?.split('T')[0],
+      gender: details?.studentDetails?.gender,
+      fatherName: details?.studentDetails?.father_name,
+      motherName: details?.studentDetails?.mother_name,
+      parentMobile: details?.studentDetails?.parent_number,
+      currentAddress: details?.studentDetails?.currentAddress,
+      permanentAddress: details?.studentDetails?.permantAddress,
+      courseSelected: details?.studentDetails?.course?.course_name,
+      modeOfTraining: details?.studentDetails?.course_mode,
+      modeOfPayment: details?.paymentDetails?.paymentMode,
+
+      totalCourseFees: details?.paymentDetails?.studentFees?.totalFees,
+      registrationFees:
+        details?.paymentDetails?.studentFees?.admissionFeesAmount,
+      trainingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.studentFees?.admissionFeesAmount,
+      totalFeesPaid:
+        details?.paymentDetails?.studentFees?.admissionFeesAmount +
+        details?.paymentDetails?.studentFees?.paidAmount,
+      pendingFees:
+        details?.paymentDetails?.studentFees?.totalFees -
+        details?.paymentDetails?.studentFees?.paidAmount,
+      remarks: details?.paymentDetails?.notes,
+
+      items: [
+        // {
+        //   slNo: 1,
+        //   description: 'Registration Fee',
+        //   amount: details?.paymentDetails?.amount,
+        // },
+        {
+          slNo: 1,
+          description:
+            'Certified Professional in Airport Ground Services – Training Fee',
+          amount: details?.paymentDetails?.amount,
+        },
+      ],
+
+      note: 'The Registration ID will be issued upon full payment of the Registration Fee. The Registration fee is Non-refundable.',
+      totalAmount: details?.paymentDetails?.amount,
+
+      terms: [
+        'Payment of this invoice constitutes acceptance of the terms and conditions outlined in the Placement Guarantee Agreement.',
+        'The invoice amount, once paid, is final and non-refundable subjected to the placement guarantee agreement.',
+      ],
+
+      phone: '+91 7200 842333',
+      email: 'info@patroninternational.org',
+      address:
+        'No.29/1, 2nd floor, Ambal Nagar, Main Road, Keelkattalai, Chennai 600117',
+    };
+
+    const pdfBuffer = await this.invoceService.generateInvoice(
+      details?.paymentDetails?.paymentPerpose === 'COURSEFEE'
+        ? reciptdatas
+        : pdfdatas,
+    );
 
     res.set({
       'Content-Type': 'application/pdf',

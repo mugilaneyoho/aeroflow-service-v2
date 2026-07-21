@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import * as Sentry from '@sentry/nestjs';
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
@@ -50,7 +51,6 @@ export class AppService implements OnModuleInit {
   }
 
   async findall(params?: { page?: number; limit?: number }) {
-    console.log("Params.. : ", params)
     const page = params?.page ? Number(params.page) : 1;
     const limit = params?.limit ? Number(params.limit) : 10;
     const skip = (page - 1) * limit;
@@ -138,7 +138,7 @@ export class AppService implements OnModuleInit {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit)
+        totalPages: Math.ceil(total / limit),
       },
     };
   }
@@ -229,7 +229,7 @@ export class AppService implements OnModuleInit {
         const studentDetails = JSON.parse(grpc_res.data);
         totalFees = Number(studentDetails.data?.course?.price || 0);
       } catch (error) {
-      Sentry.captureException(error);
+        Sentry.captureException(error);
         console.error('Failed to fetch student details via gRPC:', error);
       }
 
@@ -412,13 +412,14 @@ export class AppService implements OnModuleInit {
     });
 
     const records = payments.map((pay) => ({
-      transaction_id: pay.receiptNumber,
-      date: pay.createdAt
-        ? pay.createdAt.toISOString()
-        : new Date().toISOString(),
+      transaction_id: pay.transactionId,
+      invoiceId: pay.receiptNumber,
+      date: pay.paymentDate,
       amount: Number(pay.amount),
       paymentpurpose: pay.paymentPerpose,
       uuid: pay.uuid,
+      method: pay.paymentMode,
+      note: pay.notes,
     }));
 
     return {
@@ -454,11 +455,9 @@ export class AppService implements OnModuleInit {
         this.studentService.GetStudent({ uuid: paymentDetails.studentId }),
       )) as { data: string };
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       const studentDetails = JSON.parse(grpc_res.data as unknown as string);
 
       return {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         studentDetails: studentDetails?.data,
         paymentDetails,
       };
