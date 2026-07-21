@@ -11,7 +11,7 @@ export class ChatController {
         private chatService: ChatService
     ) {}
 
-    @Post('group')
+    @Post(['group', 'create-group'])
     async createGroupConversation (@Body() dto: CreateGroupConversationDto) {
         return this.chatService.createGroupConversation(dto)
     }

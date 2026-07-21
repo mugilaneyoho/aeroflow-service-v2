@@ -14,6 +14,9 @@ export class Note {
   @Column()
   topicName!: string;
 
+  @Column()
+  classId!: string;
+
   @Column({ type: 'enum', enum: ['online', 'offline'] })
   classType!: 'online' | 'offline';
 

@@ -72,7 +72,7 @@ export class ResourcesService {
         message: 'Note updated successfully',
         data: res,
       };
-    } catch (error) {
+    } catch (error: any) {
       Sentry.captureException(error);
       this.logger.error('Error updating note', error);
 

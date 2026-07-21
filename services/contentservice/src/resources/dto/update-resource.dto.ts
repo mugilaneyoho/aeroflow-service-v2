@@ -6,4 +6,5 @@ export class UpdateNoteDto {
   materialType?: 'NotePDF' | 'PPT' | 'DOC' | 'MP4';
   classDate?: string;
   status?: 'ongoing' | 'completed';
+  classId!: string
 }
