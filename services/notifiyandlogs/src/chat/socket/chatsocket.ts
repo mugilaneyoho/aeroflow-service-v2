@@ -55,6 +55,28 @@ export class ChatGateway {
         }
     ) {
         client.to(body.conversationId)
-        .emit('typing', body);
+            .emit('typing', body);
+    }
+
+    @SubscribeMessage('message:read')
+    async readMessage(
+        @ConnectedSocket() socket: Socket,
+        @MessageBody() body: {
+            conversationId: string;
+            userId: string;
+        }
+    ) {
+        const result = await this.messageService.markConversationAsRead(
+            body.conversationId,
+            body.userId
+        )
+
+        this.server
+            .to(body.conversationId)
+            .emit('message:read:update', {
+                conversationId: body.conversationId,
+                userId: body.userId,
+                message: result.messageIds
+            })
     }
 }
