@@ -383,20 +383,17 @@ export class ClassesService implements OnModuleInit {
       page: string;
       limit: string;
     },
-    req: { headers: { user: string } },
     classtype: string,
+    batch: string,
   ) {
     try {
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 10;
-      const user: { batch_id: string } = JSON.parse(req.headers.user);
 
       const nowDate = new Date();
 
       const grpc_res: { data: { batchMode: string; uuid: string } } =
-        await lastValueFrom(
-          this.batchService.GetById({ batchid: user.batch_id }),
-        );
+        await lastValueFrom(this.batchService.GetById({ batchid: batch }));
 
       const classRepo = this.selectMode(grpc_res.data.batchMode);
 

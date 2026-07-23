@@ -334,16 +334,6 @@ export class AttendanceService implements OnModuleInit {
           continue;
         }
 
-        //     const attendanceData:any = {
-        //   "2024-10-01": { status: 'present' },
-        //   "2024-10-02": { status: 'present' },
-        //   "2024-10-08": { status: 'absent' },
-        //   "2024-10-14": { status: 'late', time: '8:15 AM' }, for future
-        // };
-        // const row = {
-        //   ,
-        // };
-
         if (rec) {
           records[attendance.date.toISOString().split('T')[0]] = {
             status: rec.status,

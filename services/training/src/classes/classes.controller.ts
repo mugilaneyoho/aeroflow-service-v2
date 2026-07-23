@@ -31,13 +31,13 @@ export class ClassesController {
   }
 
   @Roles([Role.STUDENT])
-  @Get('student/:classtype')
+  @Get('student/:classtype/:batch')
   findbystudent(
-    @Req() req: { headers: { user: string } },
     @Param('classtype') classtype: string,
+    @Param('batch') batch: string,
     @Query() query: { page: string; limit: string },
   ) {
-    return this.classService.AllClassForStudent(query, req, classtype);
+    return this.classService.AllClassForStudent(query, classtype, batch);
   }
 
   @Get('staff/:staffid')

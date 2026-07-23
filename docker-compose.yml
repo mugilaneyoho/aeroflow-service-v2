@@ -1,5 +1,5 @@
 services:
-  # ---------------- API GATEWAY ---------------- #
+  # ---------------- SERVICES ---------------- #
   api-gateway:
     build: ./node-api-gateway
     ports:
@@ -25,7 +25,6 @@ services:
     networks:
       - app-network
 
-  # ---------------- AUTHENTICATION SERVICE ---------------- #
   authentication-service:
     build: ./services/authentication
     ports:
@@ -37,17 +36,21 @@ services:
       PORT_GRPC: 3001
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: auth
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
+      CRYPTO_SECRET: a8sd98f7a9s8df7as9df
+
     depends_on:
       - api-gateway
+      - patron
       - rabbitmq
     networks:
       - app-network
 
-  # ---------------- INSTITUTE SERVICE ---------------- #
   institute-service:
     build: ./services/institute
     ports:
@@ -60,17 +63,19 @@ services:
       AUTH_GRPC: authentication-service:3001
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: institute
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - api-gateway
+      - patron
       - rabbitmq
     networks:
       - app-network
 
-  # ---------------- TELECALLING SERVICE ---------------- #
   telecalling-service:
     build: ./services/telecalling
     ports:
@@ -82,20 +87,22 @@ services:
       PAY_GRPC: payment-service:3011
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: telecalling
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
       REDIS_HOST: redis
       KAFKA_BROKER: kafka:9092
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - redis
       - rabbitmq
+      - patron
       - api-gateway
     networks:
       - app-network
 
-  # ---------------- TRAINING SERVICE ---------------- #
   training-service:
     build: ./services/training
     ports:
@@ -107,20 +114,21 @@ services:
       INSTITUTE_GRPC: institute-service:3003
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: training
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
       REDIS_HOST: redis
       KAFKA_BROKER: kafka:9092
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - redis
+      - patron
       - api-gateway
-      - institute-service
     networks:
       - app-network
 
-  # ---------------- PAYMENT SERVICE ---------------- #
   payment-service:
     build: ./services/payment
     ports:
@@ -133,16 +141,20 @@ services:
       GRPC_PORT: 3011
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: payment
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
+      RAZORPAY_KEY_ID: rzp_test_Sp9ThfRquY5zgv
+      RAZORPAY_KEY_SECRET: HM43tPZxDxvGFajpOYp1wRRd
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
-  # ---------------- RECEPTION SERVICE ---------------- #
   reception-service:
     build: ./services/reception
     ports:
@@ -152,34 +164,38 @@ services:
       PORT: 3013
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: reception
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
-  # ---------------- MAIL SERVICE ---------------- #
   mail-service:
     build: ./services/mailservice
     ports:
       - "3012:3012"
     restart: unless-stopped
-    env_file:
-      - ./services/mailservice/.env
     environment:
       sender_mail: "mugilane.yoho@gmail.com"
       sender_password: "rgbx bvuw mxqj rqll"
       NODE_OPTIONS: "--max-old-space-size=384"
       KAFKA_BROKER: kafka:9092
+      meta_accesstoken: EAAODJeGDkqsBR3EZCncjBIXDDwPkazzqmtuqxZAiLEZBUgfnvEZA1FSsiid32dqb76GZB5sYc4m5tmLH7YZAZCccgWyT5LGaqfEYZCCZBSNPZA5IkfJxNbFGy3lwrnVl2gWOc3JeOZAe8WxF82TZARCXdRq5XjqZCasZBBH9RUQYwOb4vrRul5arZAWoJaOcSCvY3OI9ZBnfrmpd02PTT36aAVupplCJdgeUHGniGZBcbItzZCzVCxZC3yugZA5PCQTR4aZBTlxjFV8CrgoO06gz4lpqTejHR00wXkXtR
+      meta_phoneid: 1167909083074093
+      meta_businessid: 1358753526357391
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - rabbitmq
+      - patron
     networks:
       - app-network
 
-  # ---------------- NOTIFY AND LOGS SERVICE ---------------- #
   notifyandlogs:
     build: ./services/notifiyandlogs
     ports:
@@ -189,42 +205,48 @@ services:
       PORT: 3010
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: notifyandlog
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - api-gateway
+      - patron
       - rabbitmq
     networks:
       - app-network
 
-  # ---------------- OPENVIDU API SERVICE ---------------- #
   openvidu-service:
     build: ./services/openvidu
     ports:
       - "3017:3017"
     restart: unless-stopped
-    env_file:
-      - ./services/openvidu/.env
     environment:
       PORT: 3017
       OPENVIDU_URL: http://videoconfrence:4443
       OPENVIDU_SECRET: MY_SECRET
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: openvidu
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
       KAFKA_BROKER: kafka:9092
+      ZOOM_ACC_ID: DygC6b16R3qt9Vk6aLqj4Q
+      ZOOM_CLIENT_ID: RZR5KDAAQ6O6YGvFPB2usA
+      ZOOM_CLIENT_SECRET: cOwn0IfzvPEgjgaa1g3sVTFbJgl1k8cC
+      ZOOM_SECRET_TOKEN: E_n_b7veTM-64xGZIS-QFQ
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
-  # ---------------- CONTENT SERVICE ---------------- #
   content-service:
     build: ./services/contentservice
     ports:
@@ -234,16 +256,21 @@ services:
       PORT: 3016
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: content
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      CLOUDINARY_CLOUD_NAME: dhnkp7ryz
+      CLOUDINARY_API_KEY: 995598271277259
+      CLOUDINARY_API_SECRET: rPuhD7P4kUKMCflsOlrY_Utq6oo
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+      NODE_ENV: development
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
-  # ---------------- TICKET SERVICE ---------------- #
   ticket-service:
     build: ./services/ticket-system
     ports:
@@ -253,12 +280,14 @@ services:
       PORT: 3018
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: ticket
-      DB_USER: root
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
@@ -272,30 +301,34 @@ services:
       PORT_GRPC: 3001
       NODE_OPTIONS: "--max-old-space-size=384"
       DB_HOST: patron
-      DB_PORT: 3306
-      DB_NAME: auth
-      DB_USER: root
+      DB_PORT: 5432
+      DB_NAME: placement
+      DB_USER: postgres
       DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
       - api-gateway
+      - patron
     networks:
       - app-network
 
 
   # ---------------- DATABASES ---------------- #
-  # patron:
-  #   image: mysql:8.0
-  #   restart: always
-  #   container_name: patron
-  #   ports:
-  #     - "3306:3306"
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #   volumes:
-  #     - patron_data:/var/lib/mysql
-  #     - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-  #   networks:
-  #     - app-network
+  patron:
+    image: postgres:16
+    container_name: patron
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: postgres
+    volumes:
+      - patron_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - app-network
 
   # ---------------- INFRA ---------------- #
 

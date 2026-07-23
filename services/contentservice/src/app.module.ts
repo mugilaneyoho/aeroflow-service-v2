@@ -16,15 +16,16 @@ import { FileuploadModule } from './fileupload/fileupload.module';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASS,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      //only for developement
+      // url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
       ssl: {
         rejectUnauthorized: false,
       },
-      // host: process.env.DB_HOST,
-      // port: 3306,
-      // username: process.env.DB_USER,
-      // password: process.env.DB_PASS,
-      // database: process.env.DB_NAME,
       entities: [Note],
       synchronize: true,
     }),

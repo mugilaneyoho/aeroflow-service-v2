@@ -15,7 +15,6 @@ import { ConversationMember } from './entity/chat/conversation_member.entity';
 import { Attachment } from './entity/chat/attachment.entity';
 import { SentryModule } from '@sentry/nestjs/setup';
 
-
 @Module({
   imports: [
     SentryModule.forRoot(),
@@ -25,22 +24,31 @@ import { SentryModule } from '@sentry/nestjs/setup';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
+      host: process.env.DB_HOST,
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASS,
+      port: Number(process.env.DB_PORT),
+      username: process.env.DB_USER,
+      //only for development
+      // url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
       ssl: {
         rejectUnauthorized: false,
       },
-      host: process.env.DB_HOST,
-      port: 3306,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      entities: [ActivityLogEntity, NotificationEntity, Message, MessageRead, Conversation, ConversationMember, Attachment],
+      entities: [
+        ActivityLogEntity,
+        NotificationEntity,
+        Message,
+        MessageRead,
+        Conversation,
+        ConversationMember,
+        Attachment,
+      ],
       synchronize: true,
     }),
 
     ActivelogModule,
     NotificationModule,
-    ChatModule
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],
