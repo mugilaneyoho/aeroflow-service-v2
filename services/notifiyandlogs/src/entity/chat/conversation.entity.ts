@@ -8,24 +8,9 @@ import {
   DeleteDateColumn,
   Index,
 } from 'typeorm';
+import { ConversationType, ConversationStatus } from './enums';
 import { ConversationMember } from './conversation_member.entity';
 import { Message } from './message.entity';
-
-export enum ConversationType {
-  ONE_TO_ONE = 'ONE_TO_ONE',
-  GROUP = 'GROUP',
-}
-
-export enum ConversationRole {
-  ADMIN = 'ADMIN',
-  STAFF = 'STAFF',
-  STUDENT = 'STUDENT',
-}
-
-export enum ConversationStatus {
-  ACTIVE = 'ACTIVE',
-  ARCHIVED = 'ARCHIVED',
-}
 
 @Entity('chat_conversations')
 @Index(['batchId'])

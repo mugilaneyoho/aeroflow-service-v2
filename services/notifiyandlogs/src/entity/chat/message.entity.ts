@@ -15,28 +15,7 @@ import { Conversation } from './conversation.entity';
 import { Attachment } from './attachment.entity';
 import { MessageRead } from './message_read.entity';
 
-export enum MessageType {
-  TEXT = 'TEXT',
-  IMAGE = 'IMAGE',
-  VIDEO = 'VIDEO',
-  AUDIO = 'AUDIO',
-  FILE = 'FILE',
-  DOCUMENT = 'DOCUMENT',
-  LOCATION = 'LOCATION',
-  CONTACT = 'CONTACT',
-  SYSTEM = 'SYSTEM',
-}
-
-export enum MessageStatus {
-  SENT = 'SENT',
-  DELIVERED = 'DELIVERED',
-  READ = 'READ',
-}
-
-export enum MessageVisibility {
-  ALL = 'ALL',
-  STAFF_ADMIN = 'STAFF_ADMIN',
-}
+import { MessageType, MessageStatus, MessageVisibility } from './enums';
 
 @Entity('chat_messages')
 @Index(['conversationId', 'createdAt'])

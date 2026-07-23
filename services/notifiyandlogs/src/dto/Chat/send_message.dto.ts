@@ -1,5 +1,5 @@
 import { IsEnum, IsString } from "class-validator";
-import { MessageStatus, MessageType, MessageVisibility } from "src/entity/chat/message.entity";
+import { MessageStatus, MessageType, MessageVisibility } from "src/entity/chat/enums";
 
 export class SendMessageDto {
     @IsString()

@@ -10,7 +10,8 @@ import {
   Index,
 } from 'typeorm';
 
-import { Conversation, ConversationRole } from './conversation.entity';
+import { Conversation } from './conversation.entity';
+import { ConversationRole } from './enums';
 
 @Entity('chat_conversation_members')
 @Index(['conversationId', 'userId'], {

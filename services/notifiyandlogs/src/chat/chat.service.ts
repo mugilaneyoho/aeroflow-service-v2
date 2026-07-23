@@ -8,7 +8,8 @@ import { NotificationPriority, NotificationRole, NotificationType } from "src/en
 import { NotificationService } from "src/notification/notification.service";
 import { Repository, In, IsNull } from "typeorm";
 import { CreatePrivateConversationDto } from "src/dto/Chat/create_private_conversation.dto";
-import { Conversation, ConversationType, ConversationStatus } from "src/entity/chat/conversation.entity";
+import { Conversation } from "src/entity/chat/conversation.entity";
+import { ConversationType, ConversationStatus } from "src/entity/chat/enums";
 import { ConversationMember } from "src/entity/chat/conversation_member.entity";
 import { CreateGroupConversationDto } from "src/dto/Chat/create_group_conversation.dto";
 
