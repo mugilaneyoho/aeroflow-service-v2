@@ -131,7 +131,7 @@ export class AppService implements OnModuleInit {
     return {
       success: true,
       message: 'payment data fetched',
-      data: mappedData,
+      data: mappedData || [],
       paystatus,
       stats,
       meta: {

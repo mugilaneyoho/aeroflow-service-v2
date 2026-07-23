@@ -42,7 +42,7 @@ interface paymentgrpc {
     totalFees: number;
   }): Observable<any>;
   getStudentFees(data: { studentId: string }): Observable<any>;
-  GetAllPayment(data: {page: number, limit: number}): Observable<any>;
+  GetAllPayment(data: { page: number; limit: number }): Observable<any>;
 }
 
 @Injectable()
@@ -171,7 +171,7 @@ export class StudentService implements OnModuleInit {
         skip: (page - 1) * limit,
         take: limit,
         order: { createdAt: 'DESC' },
-        relations: [ 'course', 'batch'],
+        relations: ['course', 'batch'],
       });
 
       return {
@@ -272,7 +272,10 @@ export class StudentService implements OnModuleInit {
         };
       }
 
-      await this.studentRepo.update({ uuid }, { is_approved: true, admission_date: new Date() });
+      await this.studentRepo.update(
+        { uuid },
+        { is_approved: true, admission_date: new Date() },
+      );
 
       this.whatsApp.emit('whatsapp-student-welcome', {
         student_name: student.student_name,
@@ -531,7 +534,7 @@ export class StudentService implements OnModuleInit {
           .font('Helvetica')
           .text(
             studentDetails.dob
-              ?  new Date(studentDetails.dob).toLocaleDateString()
+              ? new Date(studentDetails.dob).toLocaleDateString()
               : 'N/A',
             col1X + 90,
             personalStartY + 20,
@@ -814,15 +817,15 @@ export class StudentService implements OnModuleInit {
         data: any[];
         meta: any;
         stats?: any;
-      } = await lastValueFrom(this.PaymentService.GetAllPayment({page, limit}));
-
-      console.log(response);
+      } = await lastValueFrom(
+        this.PaymentService.GetAllPayment({ page, limit }),
+      );
 
       if (!response.success) {
         return response;
       }
       const combinedData = await Promise.all(
-        response.data.map(async (pay) => {
+        (response?.data ?? [])?.map(async (pay) => {
           const student = await this.studentRepo.findOne({
             where: { uuid: pay.student_id },
             relations: ['course'],
