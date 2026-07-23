@@ -23,6 +23,7 @@ import {
   MoreThanOrEqual,
   Not,
   Repository,
+  Between,
 } from 'typeorm';
 import { CreateClassDto } from './dto/create-class.dto';
 import { lastValueFrom, Observable } from 'rxjs';
@@ -254,7 +255,6 @@ export class ClassesService implements OnModuleInit {
           where: {
             is_delete: false,
             ...(uuid ? { staff_id: uuid } : {}),
-            start_date: LessThanOrEqual(nowDate),
             end_time: MoreThanOrEqual(nowDate),
           },
           skip: (page - 1) * limit,
@@ -399,12 +399,16 @@ export class ClassesService implements OnModuleInit {
 
       let classData;
 
+      const todayStart = new Date(nowDate);
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(nowDate);
+      todayEnd.setHours(23, 59, 59, 999);
+
       if (classtype.toLowerCase() === 'today') {
         classData = await classRepo.find({
           where: {
             batch_id: grpc_res.data.uuid,
-            start_date: LessThanOrEqual(nowDate),
-            end_time: MoreThanOrEqual(nowDate),
+            start_date: Between(todayStart, todayEnd),
           },
           relations: ['staff'],
         });
@@ -412,7 +416,7 @@ export class ClassesService implements OnModuleInit {
         classData = await classRepo.find({
           where: {
             batch_id: grpc_res.data.uuid,
-            start_date: MoreThan(nowDate),
+            start_date: MoreThan(todayEnd),
           },
           relations: ['staff'],
         });
@@ -420,7 +424,7 @@ export class ClassesService implements OnModuleInit {
         classData = await classRepo.find({
           where: {
             batch_id: grpc_res.data.uuid,
-            start_date: LessThan(nowDate),
+            end_time: LessThan(nowDate),
           },
           relations: ['staff'],
         });
