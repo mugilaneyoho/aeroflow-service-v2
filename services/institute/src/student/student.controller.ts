@@ -139,7 +139,7 @@ export class StudentController {
 
   @GrpcMethod('StudentService', 'PlacementEligible')
   async placement(req: { data: string[] }) {
-    const res = await this.studentService.updatePlacementEligible(req.data);
+    const res = await this.studentService.updatePlacementEligible(req?.data);
     return res;
   }
 

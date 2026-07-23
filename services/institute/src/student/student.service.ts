@@ -959,8 +959,14 @@ export class StudentService implements OnModuleInit {
     }
   }
 
-  async updatePlacementEligible(data: any[]) {
+  async updatePlacementEligible(data?: any[]) {
     try {
+      if (!data || !Array.isArray(data)) {
+        return {
+          success: true,
+          message: 'no data to update',
+        };
+      }
       for (const student of data) {
         await this.studentRepo.update(
           { uuid: student },
