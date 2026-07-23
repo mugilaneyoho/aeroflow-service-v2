@@ -41,7 +41,7 @@ export class NotificationEntity {
   @Column()
   message!: string;
 
-  @Column({type: 'uuid', nullable: true})
+  @Column({ type: 'uuid', nullable: true })
   userId!: string;
 
   @Column({

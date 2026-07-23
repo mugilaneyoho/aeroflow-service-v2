@@ -16,7 +16,7 @@ export enum ConversationType {
   GROUP = 'GROUP',
 }
 
-export enum  ConversationRole {
+export enum ConversationRole {
   ADMIN = 'ADMIN',
   STAFF = 'STAFF',
   STUDENT = 'STUDENT',
@@ -53,6 +53,7 @@ export class Conversation {
   @Column({
     type: 'enum',
     enum: ConversationType,
+    default: ConversationType.GROUP,
   })
   type!: ConversationType;
 
@@ -77,16 +78,10 @@ export class Conversation {
   })
   lastMessageAt?: Date;
 
-  @OneToMany(
-    () => ConversationMember,
-    member => member.conversation,
-  )
+  @OneToMany(() => ConversationMember, (member) => member.conversation)
   members!: ConversationMember[];
 
-  @OneToMany(
-    () => Message,
-    message => message.conversation,
-  )
+  @OneToMany(() => Message, (message) => message.conversation)
   messages!: Message[];
 
   @CreateDateColumn()

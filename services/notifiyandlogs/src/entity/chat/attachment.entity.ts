@@ -13,7 +13,6 @@ import {
 import { Message } from './message.entity';
 
 @Entity('chat_attachments')
-
 @Index(['messageId'])
 export class Attachment {
   @PrimaryGeneratedColumn('uuid')
