@@ -20,7 +20,7 @@ do
     echo "Creating database: $db"
 
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<EOF
-SELECT 'CREATE DATABASE $db OWNER patron'
+SELECT 'CREATE DATABASE $db OWNER postgres'
 WHERE NOT EXISTS (
     SELECT FROM pg_database WHERE datname = '$db'
 )\gexec
