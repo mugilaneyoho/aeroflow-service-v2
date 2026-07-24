@@ -20,8 +20,10 @@ services:
       payment: http://payment-service:3021
       placement: http://placement-service:3020
     depends_on:
-      - rabbitmq
-      - redis
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -45,9 +47,12 @@ services:
       CRYPTO_SECRET: a8sd98f7a9s8df7as9df
 
     depends_on:
-      - api-gateway
-      - patron
-      - rabbitmq
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -70,9 +75,12 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - api-gateway
-      - patron
-      - rabbitmq
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -96,10 +104,14 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - redis
-      - rabbitmq
-      - patron
-      - api-gateway
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      patron:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
     networks:
       - app-network
 
@@ -123,9 +135,14 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - redis
-      - patron
-      - api-gateway
+      redis:
+        condition: service_healthy
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
     networks:
       - app-network
 
@@ -150,8 +167,10 @@ services:
       RAZORPAY_KEY_ID: rzp_test_Sp9ThfRquY5zgv
       RAZORPAY_KEY_SECRET: HM43tPZxDxvGFajpOYp1wRRd
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -170,8 +189,10 @@ services:
       DB_PASS: root
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -191,8 +212,10 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - rabbitmq
-      - patron
+      rabbitmq:
+        condition: service_healthy
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -213,9 +236,12 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - api-gateway
-      - patron
-      - rabbitmq
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -242,8 +268,10 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -266,8 +294,10 @@ services:
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
       NODE_ENV: development
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -286,8 +316,10 @@ services:
       DB_PASS: root
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -307,8 +339,12 @@ services:
       DB_PASS: root
       SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
     depends_on:
-      - api-gateway
-      - patron
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -329,6 +365,25 @@ services:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    entrypoint: >
+      bash -c "
+      trap 'kill -TERM \$\$pid' TERM INT;
+      /usr/local/bin/docker-entrypoint.sh postgres &
+      pid=\$!;
+      echo 'Waiting for PostgreSQL to start...';
+      until pg_isready -h localhost -U postgres; do
+        sleep 1;
+      done;
+      echo 'Running database initialization checks...';
+      bash /docker-entrypoint-initdb.d/init-db.sh;
+      wait \$pid;
+      "
 
   # ---------------- INFRA ---------------- #
 
@@ -340,6 +395,11 @@ services:
      - "6379:6379"
    networks:
      - app-network
+   healthcheck:
+     test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+     interval: 5s
+     timeout: 5s
+     retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -350,6 +410,12 @@ services:
       - "15672:15672"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
 
 # ---------------- NETWORK ---------------- #
 networks:
