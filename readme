@@ -27,19 +27,15 @@ planed services:
         -CRUD
     filesystem:
         -CRUD
+    notifyandlogs:
+    placement:
+    ticket-system:
+    mailservice:
+    openvidu:
 
 add techs:
     grpc
     redis
     bull
-
-
-unplaned services:
-    addminssion:
-    attendance:
-    notification:
-    placement:
-    finance:
-
-
-today work telecaller to create profile with login createdtion: (start)
+    rabbitmq
+    postgres
