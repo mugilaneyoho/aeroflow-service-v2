@@ -38,6 +38,9 @@ import { ScheduleModule } from '@nestjs/schedule';
       password: process.env.DB_PASS,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
+      autoLoadEntities: true,
+      retryAttempts: 10,
+      retryDelay: 5000,
       entities: [
         StaffProfileEntity,
         OfflineClassesEntity,

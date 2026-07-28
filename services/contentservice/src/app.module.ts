@@ -21,6 +21,9 @@ import { FileuploadModule } from './fileupload/fileupload.module';
       password: process.env.DB_PASS,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
+      autoLoadEntities: true,
+      retryAttempts: 10,
+      retryDelay: 5000,
       //only for developement
       // url: 'postgresql://postgres.zdecjomhcgznxutcrqzc:Wl0goP2dzzG905MX@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres',
       ssl: false,

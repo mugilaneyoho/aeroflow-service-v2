@@ -41,6 +41,9 @@ import { JwtModule } from '@nestjs/jwt';
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
       ssl: false,
+      autoLoadEntities: true,
+      retryAttempts: 10,
+      retryDelay: 5000,
       entities: [
         StudentEntity,
         TelecallingEntity,

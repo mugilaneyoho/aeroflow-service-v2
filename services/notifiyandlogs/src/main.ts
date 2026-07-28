@@ -23,6 +23,10 @@ async function bootstrap() {
       queueOptions: {
         durable: true,
       },
+      sosocketOptions: {
+            reconnectTimeInSeconds: 5,
+            heartbeatIntervalInSeconds: 10,
+      },
     },
   });
 
@@ -37,6 +41,10 @@ async function bootstrap() {
       queue: 'chats',
       queueOptions: {
         durable: true,
+      },
+      sosocketOptions: {
+            reconnectTimeInSeconds: 5,
+            heartbeatIntervalInSeconds: 10,
       },
     },
   });

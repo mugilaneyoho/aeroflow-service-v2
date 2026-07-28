@@ -25,6 +25,10 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           queueOptions: {
             durable: true,
           },
+          sosocketOptions: {
+            reconnectTimeInSeconds: 5,
+            heartbeatIntervalInSeconds: 10,
+          },
         },
       },
     ]),
@@ -32,4 +36,4 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   providers: [StudentsService],
   controllers: [StudentsController],
 })
-export class StudentsModule {}
+export class StudentsModule { }

@@ -24,7 +24,11 @@ import { PlacementService } from "src/services/placement.service";
                     queue: 'notifications',
                     queueOptions: {
                         durable: true
-                    }
+                    },
+                    sosocketOptions: {
+                        reconnectTimeInSeconds: 5,
+                        heartbeatIntervalInSeconds: 10,
+                    },
                 }
             },
             {

@@ -23,6 +23,10 @@ import { ClientsModule, Transport } from "@nestjs/microservices";
                     queueOptions: {
                         durable: true,
                     },
+                    sosocketOptions: {
+                        reconnectTimeInSeconds: 5,
+                        heartbeatIntervalInSeconds: 10,
+                    },
                 },
             },
         ]),

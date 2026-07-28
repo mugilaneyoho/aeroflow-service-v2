@@ -45,6 +45,10 @@ import { ConfigModule } from '@nestjs/config';
           queueOptions: {
             durable: true,
           },
+          sosocketOptions: {
+            reconnectTimeInSeconds: 5,
+            heartbeatIntervalInSeconds: 10,
+          },
         },
       },
     ]),

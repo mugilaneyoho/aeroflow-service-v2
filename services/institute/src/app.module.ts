@@ -36,6 +36,9 @@ import { SentryModule } from '@sentry/nestjs/setup';
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
       ssl: false,
+      autoLoadEntities: true,
+      retryAttempts: 10,
+      retryDelay: 5000,
       entities: [
         InstituteEntity,
         BranchEntity,

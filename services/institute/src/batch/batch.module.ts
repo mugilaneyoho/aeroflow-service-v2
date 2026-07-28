@@ -29,7 +29,11 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
           queue: 'chats',
           queueOptions: {
             durable: true
-          }
+          },
+          sosocketOptions: {
+            reconnectTimeInSeconds: 5,
+            heartbeatIntervalInSeconds: 10,
+          },
         }
       },
     ])
