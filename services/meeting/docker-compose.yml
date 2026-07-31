@@ -1,0 +1,30 @@
+# version: '1.0.12'
+
+services:
+  meeting:
+    build: ./
+    ports:
+      - "3024:3024"
+    depends_on:
+      - patron
+    networks:
+      - app-network
+      
+  postgres:
+    image: postgres:15-alpine
+    container_name: smart_meeting_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: meeting_management
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
+
+networks:
+  app-network:

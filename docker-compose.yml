@@ -19,6 +19,7 @@ services:
       content: http://content-service:3016
       payment: http://payment-service:3021
       placement: http://placement-service:3020
+      meeting: http://meeting-service:3022
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -174,27 +175,27 @@ services:
     networks:
       - app-network
 
-  reception-service:
-    build: ./services/reception
-    ports:
-      - "3013:3013"
-    restart: unless-stopped
-    environment:
-      PORT: 3013
-      NODE_OPTIONS: "--max-old-space-size=384"
-      DB_HOST: patron
-      DB_PORT: 5432
-      DB_NAME: reception
-      DB_USER: postgres
-      DB_PASS: root
-      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
-    depends_on:
-      api-gateway:
-        condition: service_started
-      patron:
-        condition: service_healthy
-    networks:
-      - app-network
+  # reception-service:
+  #   build: ./services/reception
+  #   ports:
+  #     - "3013:3013"
+  #   restart: unless-stopped
+  #   environment:
+  #     PORT: 3013
+  #     NODE_OPTIONS: "--max-old-space-size=384"
+  #     DB_HOST: patron
+  #     DB_PORT: 5432
+  #     DB_NAME: reception
+  #     DB_USER: postgres
+  #     DB_PASS: root
+  #     SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+  #   depends_on:
+  #     api-gateway:
+  #       condition: service_started
+  #     patron:
+  #       condition: service_healthy
+  #   networks:
+  #     - app-network
 
   mail-service:
     build: ./services/mailservice
@@ -347,6 +348,33 @@ services:
         condition: service_healthy
     networks:
       - app-network
+
+  meeting-service:
+    build: ./services/meeting
+    ports:
+      - "3022:3022"
+    restart: unless-stopped
+    container_name: meeting-service
+    environment:
+      PORT: 3022
+      PORT_GRPC: 3001
+      NODE_OPTIONS: "--max-old-space-size=384"
+      DB_HOST: patron
+      DB_PORT: 5432
+      DB_NAME: reception
+      DB_USER: postgres
+      DB_PASS: root
+      SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
+    depends_on:
+      api-gateway:
+        condition: service_started
+      patron:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - app-network
+
 
 
   # ---------------- DATABASES ---------------- #

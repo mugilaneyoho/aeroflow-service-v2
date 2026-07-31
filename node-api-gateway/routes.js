@@ -51,7 +51,7 @@ routes.use("/telecalling", AuthVerify,createProxyMiddleware({
 }))
 
 routes.use("/reception", AuthVerify,createProxyMiddleware({
-    target:process.env.reception,
+    target:process.env.meeting,
     changeOrigin:true,
     agent,
     secure:true,
