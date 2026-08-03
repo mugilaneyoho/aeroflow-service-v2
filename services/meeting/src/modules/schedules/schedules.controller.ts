@@ -24,9 +24,8 @@ export class SchedulesController {
   @Post()
   @Roles([])
   @ApiOperation({ summary: 'Create daily work schedule (Master Admin only)' })
-  create(@Req() user: string, @Body() dto: CreateScheduleDto) {
-    const data = JSON.parse(user)
-    return this.schedulesService.create(data.uuid, dto);
+  create( @Body() dto: CreateScheduleDto) {
+    return this.schedulesService.create(dto);
   }
 
   @Get()

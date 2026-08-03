@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { WorkSchedule } from '../../database/entities/work-schedule.entity';
@@ -21,26 +21,31 @@ export class SchedulesService {
     private readonly meetingRepository: Repository<Meeting>,
   ) {}
 
-  async create(adminId: string, dto: CreateScheduleDto): Promise<WorkSchedule> {
-    const existing = await this.scheduleRepository.findOne({
-      where: { adminId, workDate: dto.workDate },
-    });
+  async create(dto: CreateScheduleDto): Promise<WorkSchedule> {
+    try {   
 
-    if (existing) {
-      throw new ConflictException(`Work schedule for date ${dto.workDate} already exists`);
+      const existing = await this.scheduleRepository.findOne({
+        where: { workDate: dto.workDate },
+      });
+  
+      if (existing) {
+        throw new ConflictException(`Work schedule for date ${dto.workDate} already exists`);
+      }
+  
+      const schedule = this.scheduleRepository.create({
+        ...dto,
+      });
+  
+      return this.scheduleRepository.save(schedule);
+    } catch (error) {
+      console.log(error)
+      throw new InternalServerErrorException(error)
     }
-
-    const schedule = this.scheduleRepository.create({
-      ...dto,
-      adminId,
-    });
-
-    return this.scheduleRepository.save(schedule);
   }
 
   async findAll(): Promise<WorkSchedule[]> {
     return this.scheduleRepository.find({
-      relations: ['admin', 'meetings'],
+      relations: [ 'meetings'],
       order: { workDate: 'DESC' },
     });
   }
@@ -48,7 +53,7 @@ export class SchedulesService {
   async findOne(id: string): Promise<WorkSchedule> {
     const schedule = await this.scheduleRepository.findOne({
       where: { id },
-      relations: ['admin', 'meetings'],
+      relations: [ 'meetings'],
     });
 
     if (!schedule) {

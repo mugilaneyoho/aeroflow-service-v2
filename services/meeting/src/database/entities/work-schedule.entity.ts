@@ -15,13 +15,6 @@ export class WorkSchedule {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
-  adminId: string;
-
-  // @ManyToOne(() => User, (user) => user.schedules, { onDelete: 'CASCADE' })
-  // @JoinColumn({ name: 'adminId' })
-  // admin: User;
-
   @Column({ type: 'date' })
   workDate: string; // YYYY-MM-DD
 
