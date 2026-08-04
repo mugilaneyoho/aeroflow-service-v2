@@ -70,7 +70,9 @@ export class StudentsService implements OnModuleInit {
         where: { role: roles.STUDENT },
       });
 
-      const hashpass: string = await PasswordUtils.hash('patron');
+      const password = 'patron'
+
+      const hashpass: string = await PasswordUtils.hash(password);
 
       const user = await this.StudentRepo.save({
         ...data,
@@ -88,7 +90,7 @@ export class StudentsService implements OnModuleInit {
 
       this.MailService.emit('mailservice.welcomestudent', {
         email: user.email,
-        password: hashpass,
+        password,
       });
 
       this.MailService.emit('whatsapp', {

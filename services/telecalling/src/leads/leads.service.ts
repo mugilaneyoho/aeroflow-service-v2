@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nestjs';
 import { InjectQueue } from '@nestjs/bull';
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -246,6 +247,16 @@ export class LeadsService implements OnModuleInit {
         throw new BadRequestException('Telecaller is required');
       }
 
+      const exist = await this.leadsRepo.findOne({
+        where: {
+          phone: data.phone,
+        },
+      });
+
+      if (exist) {
+        throw new ConflictException('leads already exists');
+      }
+
       const lead = this.leadsRepo.create({
         name: data.name,
         phone: data.phone,
@@ -274,6 +285,9 @@ export class LeadsService implements OnModuleInit {
       };
     } catch (error) {
       Sentry.captureException(error);
+      if (error.status == 409) {
+        throw new ConflictException("number already exist")
+      }
       console.error(error, 'manual lead allocation error');
       throw new InternalServerErrorException({
         success: false,
@@ -325,26 +339,34 @@ export class LeadsService implements OnModuleInit {
     }
   }
 
-  async findAll(query: { page: string; limit: string; search?: string; status?: string }) {
+  async findAll(query: {
+    page: string;
+    limit: string;
+    search?: string;
+    status?: string;
+  }) {
     try {
       const page = Number(query.page) || 1;
       const limit = Number(query.limit) || 10;
       const search = query.search || '';
       const status = query.status || '';
 
-      const queryBuilder = this.leadsRepo.createQueryBuilder('leads')
+      const queryBuilder = this.leadsRepo
+        .createQueryBuilder('leads')
         .leftJoinAndSelect('leads.employee', 'employee');
 
       if (status && status !== 'All Status') {
         queryBuilder.andWhere('leads.status = :status', { status });
       } else {
-        queryBuilder.andWhere('leads.status != :newStatus', { newStatus: LeadStatus.NEW });
+        queryBuilder.andWhere('leads.status != :newStatus', {
+          newStatus: LeadStatus.NEW,
+        });
       }
 
       if (search) {
         queryBuilder.andWhere(
           '(leads.name ILIKE :search OR leads.phone ILIKE :search OR leads.course_name ILIKE :search OR employee.employee_name ILIKE :search OR employee.emp_id ILIKE :search)',
-          { search: `%${search}%` }
+          { search: `%${search}%` },
         );
       }
 

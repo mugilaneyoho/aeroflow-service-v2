@@ -45,7 +45,7 @@ export class EmployeEntity {
   @Column()
   image!: string;
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ type: 'boolean', default: false })
   is_active!: boolean;
 
   @Column({ type: 'boolean', default: false })

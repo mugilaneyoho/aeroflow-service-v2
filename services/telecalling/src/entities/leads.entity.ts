@@ -33,7 +33,7 @@ export class LeadsEntity {
   name!: string;
 
   @Index()
-  @Column()
+  @Column({ unique: true })
   phone!: string;
 
   @Column({ nullable: true })
