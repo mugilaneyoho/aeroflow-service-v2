@@ -277,4 +277,53 @@ export class TelecallingService {
       throw new InternalServerErrorException({ success: false, message: 'Internal server error' });
     }
   }
+
+  async adminSetPassword(data: { profileId?: string; email?: string; password: string }) {
+    try {
+      if (!data.password || data.password.length < 6) {
+        throw new BadRequestException({
+          success: false,
+          message: 'Password must be at least 6 characters long',
+        });
+      }
+
+      let user: TelecallingEntity | null = null;
+      if (data.profileId) {
+        user = await this.TelecallerRepo.findOne({
+          where: [{ profile_id: data.profileId }, { uuid: data.profileId }],
+        });
+      }
+      if (!user && data.email) {
+        user = await this.TelecallerRepo.findOne({
+          where: { email: data.email },
+        });
+      }
+
+      if (!user) {
+        throw new NotFoundException({
+          success: false,
+          message: 'Telecaller account not found in authentication records',
+        });
+      }
+
+      user.password = await PasswordUtils.hash(data.password);
+      await this.TelecallerRepo.save(user);
+
+      return {
+        success: true,
+        message: 'Password updated successfully',
+      };
+    } catch (error) {
+      Sentry.captureException(error);
+      console.error('adminSetPassword error:', error);
+      if (error instanceof BadRequestException || error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException({
+        success: false,
+        message: 'Internal server error',
+      });
+    }
+  }
 }
+

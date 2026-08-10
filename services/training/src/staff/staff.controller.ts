@@ -42,8 +42,15 @@ export class StaffController {
 
   @Get('dashboard')
   @ApiOperation({ summary: 'get dashboard data' })
-  dashboard() {
-    return this.staffService.dashboard();
+  dashboard(@Req() req: Request) {
+    let userUuid: string | undefined = undefined;
+    if (req.headers.user) {
+      try {
+        const user = JSON.parse(req.headers.user as string) as { profile_id?: string };
+        userUuid = user?.profile_id;
+      } catch (e) {}
+    }
+    return this.staffService.dashboard(userUuid);
   }
 
   @Get('dropdown')

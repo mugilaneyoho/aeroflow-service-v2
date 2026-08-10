@@ -34,8 +34,8 @@ export class OfflineClassesEntity {
   @Column({ type: 'text', nullable: true })
   location!: string;
 
-  @Column({ type: 'simple-array', nullable: true })
-  notes!: string[];
+  @Column({ type: 'json', nullable: true })
+  notes!: any[];
 
   @Column({ type: 'timestamptz' })
   start_date!: Date;

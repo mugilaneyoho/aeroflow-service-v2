@@ -42,6 +42,11 @@ export class TelecallingController {
     return this.telecallerService.forgetPassword(data.email);
   }
 
+  @Put('admin-set-password')
+  adminSetPassword(@Body() data: { profileId?: string; email?: string; password: string }) {
+    return this.telecallerService.adminSetPassword(data);
+  }
+
   @Get(':uuid')
   findOne(@Param('uuid') uuid: string) {
     return this.telecallerService.findOne(uuid);
@@ -52,3 +57,4 @@ export class TelecallingController {
     return this.telecallerService.CreateUSer(data);
   }
 }
+

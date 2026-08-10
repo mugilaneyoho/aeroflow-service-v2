@@ -22,7 +22,9 @@ message CreatePaymentRequest {
 
 message GetAllPaymentRequest {
     int32 page = 1;
-    int32 limit = 10;
+    int32 limit = 2;
+    string search = 3;
+    string status = 4;
 }
 
 message PaymentData {
@@ -69,5 +71,8 @@ message FeeStats {
     double totalCollected = 2;
     double totalPending = 3;
     int32 overdueStudents = 4;
+    int32 verifiedCount = 5;
+    int32 pendingCount = 6;
 }
+
 

@@ -50,18 +50,42 @@ export class AppService implements OnModuleInit {
     return 'Hello World!';
   }
 
-  async findall(params?: { page?: number; limit?: number }) {
+  async findall(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: string;
+  }) {
     const page = params?.page ? Number(params.page) : 1;
     const limit = params?.limit ? Number(params.limit) : 10;
     const skip = (page - 1) * limit;
+    const search = params?.search?.trim() || '';
+    const status = params?.status?.trim() || '';
 
-    const [data, total] = await this.paymentRepo.findAndCount({
-      where: { paymentPerpose: PaymentPerpose.ADMISSIONFEE },
-      relations: ['studentFees'],
-      skip,
-      take: limit,
-      order: { createdAt: 'DESC' },
-    });
+    const queryBuilder = this.paymentRepo
+      .createQueryBuilder('payment')
+      .leftJoinAndSelect('payment.studentFees', 'studentFees')
+      .where('payment.paymentPerpose = :perpose', {
+        perpose: PaymentPerpose.ADMISSIONFEE,
+      });
+
+    if (status && status !== 'ALL') {
+      queryBuilder.andWhere('payment.status = :status', { status });
+    }
+
+    if (search) {
+      queryBuilder.andWhere(
+        '(payment.studentName ILIKE :search OR payment.phoneNumber ILIKE :search OR payment.transactionId ILIKE :search OR payment.receiptNumber ILIKE :search OR payment.studentId ILIKE :search)',
+        { search: `%${search}%` },
+      );
+    }
+
+    queryBuilder
+      .orderBy('payment.createdAt', 'DESC')
+      .skip(skip)
+      .take(limit);
+
+    const [data, total] = await queryBuilder.getManyAndCount();
 
     const paystatus = await this.paymentRepo
       .createQueryBuilder('payment')
@@ -77,15 +101,15 @@ export class AppService implements OnModuleInit {
       uuid: pay.uuid,
       amount: pay.amount,
       payment_date: pay.paymentDate ? pay.paymentDate.toISOString() : '',
-      receipt_number: pay.receiptNumber,
-      transaction_id: pay.transactionId,
-      collected_by: pay.collectedBy,
-      student_id: pay.studentId,
-      student_name: pay.studentName,
-      notes: pay.notes,
+      receipt_number: pay.receiptNumber || '-',
+      transaction_id: pay.transactionId || '-',
+      collected_by: pay.collectedBy || 'Admin',
+      student_id: pay.studentId || '-',
+      student_name: pay.studentName || '-',
+      notes: pay.notes || '',
       status: pay.status,
       payment_perpose: pay.paymentPerpose,
-      phoneNumber: pay.phoneNumber,
+      phoneNumber: pay.phoneNumber || '-',
       total_fees: pay.studentFees ? Number(pay.studentFees.totalFees || 0) : 0,
       paid_amount: pay.studentFees
         ? Number(pay.studentFees.paidAmount || 0)
@@ -102,30 +126,53 @@ export class AppService implements OnModuleInit {
     const todayCollectionResult = await this.paymentRepo
       .createQueryBuilder('payment')
       .select('SUM(payment.amount)', 'sum')
-      .where('payment.paymentDate >= :todayStart', { todayStart })
-      .andWhere('payment.status = :status', { status: PaymentStatus.SUCCEEDED })
+      .where('payment.paymentPerpose = :perpose', {
+        perpose: PaymentPerpose.ADMISSIONFEE,
+      })
+      .andWhere('payment.paymentDate >= :todayStart', { todayStart })
+      .andWhere('payment.status IN (:...statuses)', {
+        statuses: [PaymentStatus.SUCCEEDED, PaymentStatus.APPROVED],
+      })
       .getRawOne();
 
-    const feesStatsResult = await this.feesRepo
-      .createQueryBuilder('fees')
-      .select('SUM(fees.totalFees)', 'totalFees')
-      .addSelect('SUM(fees.paidAmount)', 'paidAmount')
+    const totalCollectedResult = await this.paymentRepo
+      .createQueryBuilder('payment')
+      .select('SUM(payment.amount)', 'sum')
+      .where('payment.paymentPerpose = :perpose', {
+        perpose: PaymentPerpose.ADMISSIONFEE,
+      })
+      .andWhere('payment.status IN (:...statuses)', {
+        statuses: [PaymentStatus.SUCCEEDED, PaymentStatus.APPROVED],
+      })
       .getRawOne();
 
-    const overdueCount = await this.feesRepo
-      .createQueryBuilder('fees')
-      .where('fees.totalFees > fees.paidAmount')
+    const verifiedCountResult = await this.paymentRepo
+      .createQueryBuilder('payment')
+      .where('payment.paymentPerpose = :perpose', {
+        perpose: PaymentPerpose.ADMISSIONFEE,
+      })
+      .andWhere('payment.status IN (:...statuses)', {
+        statuses: [PaymentStatus.SUCCEEDED, PaymentStatus.APPROVED],
+      })
       .getCount();
 
-    const totalCollected = Number(feesStatsResult?.paidAmount || 0);
-    const totalFees = Number(feesStatsResult?.totalFees || 0);
-    const totalPending = totalFees - totalCollected;
+    const pendingCountResult = await this.paymentRepo
+      .createQueryBuilder('payment')
+      .where('payment.paymentPerpose = :perpose', {
+        perpose: PaymentPerpose.ADMISSIONFEE,
+      })
+      .andWhere('payment.status = :status', {
+        status: PaymentStatus.PENDING,
+      })
+      .getCount();
 
     const stats = {
       todayCollection: Number(todayCollectionResult?.sum || 0),
-      totalCollected,
-      totalPending,
-      overdueStudents: overdueCount,
+      totalCollected: Number(totalCollectedResult?.sum || 0),
+      verifiedCount: Number(verifiedCountResult || 0),
+      pendingCount: Number(pendingCountResult || 0),
+      totalPending: 0,
+      overdueStudents: 0,
     };
 
     return {

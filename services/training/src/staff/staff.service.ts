@@ -57,11 +57,11 @@ export class StaffService implements OnModuleInit {
   async create(data: CreateStaffDto) {
     try {
       const exits = await this.staffRepo.findOne({
-        where: { email: data.email },
+        where: { email: data.email, phone_number: data.phone_number },
       });
 
       if (exits) {
-        return new ConflictException({
+        throw new ConflictException({
           success: false,
           message: 'user already exist this email.',
         });
@@ -94,9 +94,16 @@ export class StaffService implements OnModuleInit {
         message: 'profile created successfully',
         data: staff,
       };
-    } catch (error) {
+    } catch (error:any) {
       Sentry.captureException(error);
       console.error(error, 'create staff error');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      if (error.status == 409) {
+        throw new ConflictException({
+          success: false,
+          message: 'user already exist this email.',
+        })
+      }
       throw new InternalServerErrorException({
         success: false,
         message: 'internal server error',
@@ -223,34 +230,50 @@ export class StaffService implements OnModuleInit {
     }
   }
 
-  async dashboard() {
+  async dashboard(staffUuid?: string) {
     try {
       const nowDate = new Date();
-      // const dayStart = new Date(nowDate);
-      // dayStart.setDate(dayStart.getDate() - 1);
-      // dayStart.setHours(0, 0, 0, 0);
-      // const dayEnd = new Date(nowDate);
-      // dayEnd.setDate(dayEnd.getDate() - 1);
-      // dayEnd.setHours(23, 59, 59, 999);
 
       const online = await this.onlineRepo.find({
-        where: {
-          start_date: LessThanOrEqual(nowDate),
-          end_time: MoreThanOrEqual(nowDate),
-        },
+        where: { is_delete: false },
       });
       const offline = await this.offlineRepo.find({
-        where: {
-          start_date: LessThanOrEqual(nowDate),
-          end_time: MoreThanOrEqual(nowDate),
-        },
+        where: { is_delete: false },
       });
-      const todayclasses = [...online, ...offline];
-      // const attendance;
-      // const materials;
+      const allClasses = [...online, ...offline];
+
+      const staffClasses = staffUuid
+        ? allClasses.filter((c) => c.staff_id === staffUuid)
+        : allClasses;
+
+      const todayclasses = staffClasses.filter(
+        (c) => new Date(c.start_date) <= nowDate && new Date(c.end_time) >= nowDate
+      );
+
+      const totalAssignedClasses = staffClasses.length;
+      const attendanceMarkedCount = staffClasses.filter((c) => c.attendance === true).length;
+      const materialsUploadedCount = staffClasses.filter((c) => {
+        if (!c.notes || !Array.isArray(c.notes) || c.notes.length === 0) return false;
+        return c.notes[0] !== '' && c.notes[0] !== null;
+      }).length;
+
+      const attendanceCompletion =
+        totalAssignedClasses > 0
+          ? Math.round((attendanceMarkedCount / totalAssignedClasses) * 100)
+          : 0;
+
+      const materialUploadRate =
+        totalAssignedClasses > 0
+          ? Math.round((materialsUploadedCount / totalAssignedClasses) * 100)
+          : 0;
 
       return {
         todayclasses,
+        totalAssignedClasses,
+        attendanceMarkedCount,
+        materialsUploadedCount,
+        attendanceCompletion,
+        materialUploadRate,
       };
     } catch (error) {
       Sentry.captureException(error);

@@ -11,7 +11,7 @@ import { LeadsEntity } from './leads.entity';
 
 @Entity('employee')
 export class EmployeEntity {
-  @Column({ unique: true })
+  @Column()
   @Generated('increment')
   id!: number;
 

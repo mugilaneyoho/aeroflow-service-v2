@@ -445,7 +445,7 @@ export class ClassesService implements OnModuleInit {
     }
   }
 
-  async updateMaterials(uuid: string, mode: string, notes: string[]) {
+  async updateMaterials(uuid: string, mode: string, notes: any[]) {
     try {
       const classRepo = this.selectMode(mode);
       const classItem = await classRepo.findOne({ where: { uuid } });
@@ -455,7 +455,7 @@ export class ClassesService implements OnModuleInit {
           message: 'Class not found',
         });
       }
-      classItem.notes = [...(classItem.notes || []), ...notes];
+      classItem.notes = notes;
       const updated = await classRepo.save(classItem);
       return {
         success: true,

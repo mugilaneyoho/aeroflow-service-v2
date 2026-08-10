@@ -19,19 +19,19 @@ export class StaffProfileEntity {
   @PrimaryGeneratedColumn('uuid')
   uuid!: string;
 
-  @Column()
+  @Column({unique: true})
   staff_id!: string;
 
   @Column()
   staff_name!: string;
 
-  @Column()
+  @Column({unique: true})
   phone_number!: string;
 
   @Column()
   address!: string;
 
-  @Column()
+  @Column({unique: true})
   email!: string;
 
   @Column({ type: 'text', default: '' })

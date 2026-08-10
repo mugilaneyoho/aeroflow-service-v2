@@ -4,7 +4,7 @@ package payment;
 
 service PaymentService {
     rpc CreatePayment (CreatePaymentRequest) returns (CommonResponse);
-    rpc GetAllPayment (Empty) returns (GetAllPaymentResponse);
+    rpc GetAllPayment (GetAllPaymentRequest) returns (GetAllPaymentResponse);
 }
 
 message CreatePaymentRequest {
@@ -20,7 +20,12 @@ message CreatePaymentRequest {
     string totalFees = 10;
 }
 
-message Empty {}
+message GetAllPaymentRequest {
+    int32 page = 1;
+    int32 limit = 2;
+    string search = 3;
+    string status = 4;
+}
 
 message PaymentData {
     string uuid = 1;
@@ -33,8 +38,11 @@ message PaymentData {
     string student_name = 8;
     string notes = 9;
     string status = 10;
-    string paymentPerpose = 11;
+    string payment_perpose = 11;
     string phoneNumber = 12;
+    double total_fees = 13;
+    double paid_amount = 14;
+    double pending_amount = 15;
 }
 
 message CommonResponse {
@@ -55,4 +63,15 @@ message GetAllPaymentResponse {
     string message = 2;
     repeated PaymentData data = 3;
     metadata meta = 4;
+    FeeStats stats = 5;
 }
+
+message FeeStats {
+    double todayCollection = 1;
+    double totalCollected = 2;
+    double totalPending = 3;
+    int32 overdueStudents = 4;
+    int32 verifiedCount = 5;
+    int32 pendingCount = 6;
+}
+

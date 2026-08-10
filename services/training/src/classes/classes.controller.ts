@@ -61,7 +61,7 @@ export class ClassesController {
   @Put('upload-materials/:uuid/:mode')
   uploadMaterials(
     @Param() param: { uuid: string; mode: string },
-    @Body() data: { notes: string[] },
+    @Body() data: { notes: any[] },
   ) {
     return this.classService.updateMaterials(param.uuid, param.mode, data.notes);
   }

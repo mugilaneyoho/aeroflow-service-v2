@@ -18,7 +18,7 @@ import { ExportService } from './Export.service';
 import type { Response } from 'express';
 
 interface PaymentGrpc {
-  GetAllPayment(data: { page?: number; limit?: number }): Observable<any>;
+  GetAllPayment(data: { page?: number; limit?: number; search?: string; status?: string }): Observable<any>;
   CreatePayment(data: any): Observable<any>;
 }
 
@@ -39,14 +39,16 @@ export class PaymentController implements OnModuleInit {
   }
 
   @Get('all')
-  async findAll(@Query() query: { page?: string; limit?: string }) {
+  async findAll(@Query() query: { page?: string; limit?: string; search?: string; status?: string }) {
     console.log("checking payments query", query);
     const page = query.page ? Number(query.page) : 1;
     const limit = query.limit ? Number(query.limit) : 10;
+    const search = query.search || '';
+    const status = query.status || '';
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const grpc_res = await lastValueFrom(
-      this.PaymentService.GetAllPayment({ page, limit }),
+      this.PaymentService.GetAllPayment({ page, limit, search, status }),
     );
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -62,6 +64,8 @@ export class PaymentController implements OnModuleInit {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       data: grpc_res?.data,
       meta: grpc_res?.meta,
+      stats: grpc_res?.stats,
+      paystatus: grpc_res?.paystatus,
     };
   }
 

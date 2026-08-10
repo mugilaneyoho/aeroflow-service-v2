@@ -22,7 +22,7 @@ export enum LeadStatus {
 
 @Entity('leads')
 export class LeadsEntity {
-  @Column({ unique: true })
+  @Column()
   @Generated('increment')
   id!: number;
 
@@ -33,7 +33,7 @@ export class LeadsEntity {
   name!: string;
 
   @Index()
-  @Column({ unique: true })
+  @Column()
   phone!: string;
 
   @Column({ nullable: true })
