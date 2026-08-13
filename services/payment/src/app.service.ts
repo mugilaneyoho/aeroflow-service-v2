@@ -220,6 +220,7 @@ export class AppService implements OnModuleInit {
         studentId: data.studentId,
         admissionFeesPay: true,
         admissionFeesAmount: data.amount,
+        paidAmount: data.amount,
         lastPaidDate: nowDate,
         totalFees: Number(data.totalFees),
       });

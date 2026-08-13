@@ -26,8 +26,17 @@ export class ClassesController {
   }
 
   @Get('all')
-  findAll(@Query() query: { page: string; limit: string; classtype: string }) {
-    return this.classService.findAll(query);
+  findAll(
+    @Query() query: { page: string; limit: string; classtype: string },
+    @Req() req: { headers: { user: string } },
+  ) {
+    const user: { role: string; profile_id: string } = JSON.parse(
+      req.headers.user,
+    ) as { role: string; profile_id: string };
+    return this.classService.findAll(
+      query,
+      user.role === 'STAFF' ? user.profile_id : null,
+    );
   }
 
   @Roles([Role.STUDENT])
@@ -63,7 +72,11 @@ export class ClassesController {
     @Param() param: { uuid: string; mode: string },
     @Body() data: { notes: any[] },
   ) {
-    return this.classService.updateMaterials(param.uuid, param.mode, data.notes);
+    return this.classService.updateMaterials(
+      param.uuid,
+      param.mode,
+      data.notes,
+    );
   }
 
   @Get(':uuid/:mode')

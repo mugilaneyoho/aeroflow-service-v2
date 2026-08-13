@@ -239,7 +239,7 @@ export class ClassesService implements OnModuleInit {
 
   async findAll(
     query: { page: string; limit: string; classtype: string },
-    uuid?: string,
+    uuid?: string | null,
   ) {
     try {
       const page = Number(query.page) || 1;
@@ -409,6 +409,7 @@ export class ClassesService implements OnModuleInit {
           where: {
             batch_id: grpc_res.data.uuid,
             start_date: Between(todayStart, todayEnd),
+            end_time: LessThan(nowDate),
           },
           relations: ['staff'],
         });
@@ -424,7 +425,7 @@ export class ClassesService implements OnModuleInit {
         classData = await classRepo.find({
           where: {
             batch_id: grpc_res.data.uuid,
-            end_time: LessThan(nowDate),
+            end_time: LessThanOrEqual(nowDate),
           },
           relations: ['staff'],
         });

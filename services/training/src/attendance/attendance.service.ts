@@ -14,7 +14,7 @@ import {
   StatusRecordEntity,
   StatusRecordEnum,
 } from 'src/entities/statusrecord.entity';
-import { Any, Between, Repository } from 'typeorm';
+import { Any, Between, LessThanOrEqual, Repository } from 'typeorm';
 import { CreateAttendanceDto } from './dto/create-attendance.dto';
 import { InjectQueue } from '@nestjs/bull';
 import type { Queue } from 'bull';
@@ -275,82 +275,261 @@ export class AttendanceService implements OnModuleInit {
 
   async FindStudentAttendance(
     req: { headers: { user: string } },
-    date: string,
+    date?: string,
   ) {
     try {
-      const user = JSON.parse(req.headers.user);
-      const currentDate = new Date(date);
-
-      const startDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        1,
-      );
-      const endDate = new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth() + 1,
-        1,
-      );
-
-      console.log(startDate, endDate);
-
-      const grpc_batch: {
-        data: string;
-      } = await lastValueFrom(
-        this.batchService.GetByStudentId({
-          studentId: user?.profile_id,
-        }),
-      );
-
-      const batch = JSON.parse(grpc_batch.data);
-
-      const classRepo = this.selectMode(batch?.batchMode as string);
-      const classData = await classRepo.find({
-        where: {
-          batch_id: batch?.uuid,
-          start_date: Between(startDate, endDate),
-        },
-      });
-
-      const records: any = {};
-
-      for (const data of classData) {
-        const attendance = await this.attendanceRepo.findOne({
-          where: {
-            classId: data?.uuid,
+      if (!req?.headers?.user) {
+        return {
+          success: true,
+          data: {
+            overall: { present: 0, absent: 0, notUploaded: 0, totalConducted: 0, percentage: 0 },
+            records: {},
           },
-          relations: ['records'],
-        });
+        };
+      }
 
-        if (!attendance) {
-          continue;
+      let user: any = null;
+      try {
+        user = typeof req.headers.user === 'string' ? JSON.parse(req.headers.user) : req.headers.user;
+      } catch {
+        user = null;
+      }
+
+      const studentProfileId = user?.profile_id || user?.uuid || user?.id;
+      if (!studentProfileId) {
+        return {
+          success: true,
+          data: {
+            overall: { present: 0, absent: 0, notUploaded: 0, totalConducted: 0, percentage: 0 },
+            records: {},
+          },
+        };
+      }
+
+      // Safe date handling for selected month filter
+      let currentDate = new Date();
+      if (date) {
+        const parsed = new Date(date);
+        if (!isNaN(parsed.getTime())) {
+          currentDate = parsed;
         }
+      }
 
-        const rec = attendance?.records?.find(
-          (item) => item.studentId === user?.profile_id,
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const startDate = new Date(year, month, 1, 0, 0, 0, 0);
+      const endDate = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+      // Fetch batch for student via gRPC with error handling
+      let batch: any = null;
+      try {
+        const grpc_batch: any = await lastValueFrom(
+          this.batchService.GetByStudentId({
+            studentId: studentProfileId,
+          }),
         );
 
-        if (!rec) {
-          continue;
+        if (grpc_batch?.data) {
+          batch = typeof grpc_batch.data === 'string' ? JSON.parse(grpc_batch.data) : grpc_batch.data;
+        }
+      } catch (grpcErr) {
+        console.error('gRPC GetByStudentId error:', grpcErr);
+      }
+
+      const batchId = batch?.uuid || batch?.id;
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      // 1. ALL-TIME OVERALL ATTENDANCE STATS FOR STUDENT
+      let allConductedOnline: any[] = [];
+      let allConductedOffline: any[] = [];
+
+      try {
+        if (batchId) {
+          if (!batch?.batchMode || batch.batchMode.toUpperCase() === 'ONLINE' || batch.batchMode.toUpperCase() === 'BOTH') {
+            allConductedOnline = await this.onlineRepo.find({
+              where: { batch_id: batchId, start_date: LessThanOrEqual(todayEnd), is_delete: false },
+            });
+          }
+          if (!batch?.batchMode || batch.batchMode.toUpperCase() === 'OFFLINE' || batch.batchMode.toUpperCase() === 'BOTH') {
+            allConductedOffline = await this.offlineRepo.find({
+              where: { batch_id: batchId, start_date: LessThanOrEqual(todayEnd), is_delete: false },
+            });
+          }
+        } else {
+          allConductedOnline = await this.onlineRepo.find({
+            where: { start_date: LessThanOrEqual(todayEnd), is_delete: false },
+          });
+          allConductedOffline = await this.offlineRepo.find({
+            where: { start_date: LessThanOrEqual(todayEnd), is_delete: false },
+          });
+        }
+      } catch (dbErr) {
+        console.error('Error fetching all-time classes for student attendance:', dbErr);
+      }
+
+      const allConductedClasses = [...allConductedOnline, ...allConductedOffline];
+
+      let overallPresent = 0;
+      let overallAbsent = 0;
+      let overallNotUploaded = 0;
+
+      for (const cls of allConductedClasses) {
+        if (!cls?.uuid) continue;
+        try {
+          const attendance = await this.attendanceRepo.findOne({
+            where: { classId: cls.uuid },
+            relations: ['records'],
+          });
+
+          if (!attendance || !attendance.records || attendance.records.length === 0) {
+            overallNotUploaded++;
+          } else {
+            const rec = attendance.records.find((r) => r.studentId === studentProfileId);
+            if (!rec) {
+              overallNotUploaded++;
+            } else {
+              const statusUpper = (rec.status || '').toUpperCase();
+              if (statusUpper === 'PRESENT' || statusUpper === 'P' || statusUpper === 'ATTENDED') {
+                overallPresent++;
+              } else if (statusUpper === 'ABSENT' || statusUpper === 'A') {
+                overallAbsent++;
+              } else {
+                overallNotUploaded++;
+              }
+            }
+          }
+        } catch {
+          overallNotUploaded++;
+        }
+      }
+
+      const totalConducted = allConductedClasses.length;
+      const markedTotal = overallPresent + overallAbsent;
+      const percentage = markedTotal > 0 ? Math.round((overallPresent / markedTotal) * 100) : 0;
+
+      const overall = {
+        present: overallPresent,
+        absent: overallAbsent,
+        notUploaded: overallNotUploaded,
+        totalConducted,
+        percentage,
+      };
+
+      // 2. MONTH-WISE CALENDAR RECORDS FOR SELECTED MONTH
+      let monthOnline: any[] = [];
+      let monthOffline: any[] = [];
+
+      try {
+        if (batchId) {
+          if (!batch?.batchMode || batch.batchMode.toUpperCase() === 'ONLINE' || batch.batchMode.toUpperCase() === 'BOTH') {
+            monthOnline = await this.onlineRepo.find({
+              where: { batch_id: batchId, start_date: Between(startDate, endDate), is_delete: false },
+            });
+          }
+          if (!batch?.batchMode || batch.batchMode.toUpperCase() === 'OFFLINE' || batch.batchMode.toUpperCase() === 'BOTH') {
+            monthOffline = await this.offlineRepo.find({
+              where: { batch_id: batchId, start_date: Between(startDate, endDate), is_delete: false },
+            });
+          }
+        } else {
+          monthOnline = await this.onlineRepo.find({
+            where: { start_date: Between(startDate, endDate), is_delete: false },
+          });
+          monthOffline = await this.offlineRepo.find({
+            where: { start_date: Between(startDate, endDate), is_delete: false },
+          });
+        }
+      } catch (dbErr) {
+        console.error('Error fetching month classes for student attendance:', dbErr);
+      }
+
+      const monthClasses = [...monthOnline, ...monthOffline];
+      const records: Record<string, { status: string; subject?: string; time?: string; classId?: string }> = {};
+
+      for (const cls of monthClasses) {
+        if (!cls?.uuid) continue;
+
+        let dateStr = '';
+        if (cls.start_date) {
+          const d = new Date(cls.start_date);
+          if (!isNaN(d.getTime())) {
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            dateStr = `${y}-${m}-${day}`;
+          }
         }
 
-        if (rec) {
-          records[attendance.date.toISOString().split('T')[0]] = {
-            status: rec.status,
-          };
+        if (!dateStr) continue;
+
+        const classStartDate = new Date(cls.start_date);
+        const isPastOrToday = classStartDate <= todayEnd;
+
+        try {
+          const attendance = await this.attendanceRepo.findOne({
+            where: { classId: cls.uuid },
+            relations: ['records'],
+          });
+
+          const timeStr = cls.start_time ? String(cls.start_time) : undefined;
+          const subjectStr = cls.subject || 'Class Session';
+
+          if (!attendance || !attendance.records || attendance.records.length === 0) {
+            records[dateStr] = {
+              status: isPastOrToday ? 'NOT_UPDATED' : 'SCHEDULED',
+              subject: subjectStr,
+              time: timeStr,
+              classId: cls.uuid,
+            };
+          } else {
+            const rec = attendance.records.find((r) => r.studentId === studentProfileId);
+            if (rec) {
+              const statusUpper = (rec.status || '').toUpperCase();
+              let finalStatus = 'NOT_UPDATED';
+              if (statusUpper === 'PRESENT' || statusUpper === 'P' || statusUpper === 'ATTENDED') {
+                finalStatus = 'PRESENT';
+              } else if (statusUpper === 'ABSENT' || statusUpper === 'A') {
+                finalStatus = 'ABSENT';
+              }
+
+              records[dateStr] = {
+                status: finalStatus,
+                subject: subjectStr,
+                time: timeStr,
+                classId: cls.uuid,
+              };
+            } else {
+              records[dateStr] = {
+                status: isPastOrToday ? 'NOT_UPDATED' : 'SCHEDULED',
+                subject: subjectStr,
+                time: timeStr,
+                classId: cls.uuid,
+              };
+            }
+          }
+        } catch (attErr) {
+          console.error(`Error processing attendance for month class ${cls.uuid}:`, attErr);
         }
       }
 
       return {
-        data: records,
+        success: true,
+        data: {
+          overall,
+          records,
+        },
       };
     } catch (error) {
       Sentry.captureException(error);
-      console.error(error, 'find student attendance');
-      throw new InternalServerErrorException({
-        success: false,
-        message: 'internal server error',
-      });
+      console.error(error, 'find student attendance error');
+      return {
+        success: true,
+        data: {
+          overall: { present: 0, absent: 0, notUploaded: 0, totalConducted: 0, percentage: 0 },
+          records: {},
+        },
+      };
     }
   }
 

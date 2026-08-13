@@ -197,16 +197,6 @@ export class StudentService implements OnModuleInit {
 
   async findOne(uuid: string) {
     try {
-      const cache = await this.redisCache.getUser(uuid);
-
-      if (cache) {
-        return {
-          success: true,
-          message: 'student fetched',
-          data: cache,
-        };
-      }
-
       const student = await this.studentRepo.findOne({
         where: { uuid },
         relations: ['course', 'batch'],
@@ -216,12 +206,94 @@ export class StudentService implements OnModuleInit {
         throw new NotFoundException();
       }
 
-      await this.redisCache.setUser(student.uuid, student);
+      // 1. Fetch fee details from payment microservice
+      let feeDetails = {
+        total_fees: 0,
+        paid_amount: 0,
+        pending_amount: 0,
+        payment_progress: 0,
+      };
+
+      try {
+        const result: { data: string } = await lastValueFrom(
+          this.FeeService.getStudentFees({ studentId: uuid }),
+        );
+        if (result?.data) {
+          const feesData = JSON.parse(result.data);
+          const courseFee = student.course?.price ? Number(student.course.price) : 0;
+          const total_fees =
+            feesData.total_fees && Number(feesData.total_fees) > 0
+              ? Number(feesData.total_fees)
+              : courseFee;
+          const paid_amount = Number(feesData.paid_amount || 0);
+          const pending_amount = total_fees > paid_amount ? total_fees - paid_amount : 0;
+          const payment_progress =
+            total_fees > 0 ? Math.round((paid_amount / total_fees) * 100) : 0;
+
+          feeDetails = {
+            total_fees,
+            paid_amount,
+            pending_amount,
+            payment_progress,
+          };
+        }
+      } catch (feeErr) {
+        console.error('Error fetching fee details for student:', feeErr);
+        const courseFee = student.course?.price ? Number(student.course.price) : 0;
+        feeDetails = {
+          total_fees: courseFee,
+          paid_amount: 0,
+          pending_amount: courseFee,
+          payment_progress: 0,
+        };
+      }
+
+      // 2. Fetch attendance details from training microservice
+      let attendanceDetails = {
+        totalClasses: 0,
+        attendedClasses: 0,
+        attendance_progress: 0,
+      };
+
+      try {
+        const trainingUrl = process.env.TRAINING_SERVICE_URL || 'http://localhost:3008';
+        const attendanceRes = await axios.get(`${trainingUrl}/attendance/student/${uuid}/log`, {
+          timeout: 3000,
+        });
+        if (attendanceRes.data?.success && Array.isArray(attendanceRes.data?.data)) {
+          const logs = attendanceRes.data.data;
+          const totalClasses = logs.length;
+          const attendedClasses = logs.filter((l: any) => l.status === 'Present').length;
+          const attendance_progress =
+            totalClasses > 0 ? Math.round((attendedClasses / totalClasses) * 100) : 0;
+          attendanceDetails = {
+            totalClasses,
+            attendedClasses,
+            attendance_progress,
+          };
+        }
+      } catch (attErr) {
+        console.error('Error fetching attendance log for student:', attErr);
+      }
+
+      const responseData = {
+        ...student,
+        profile_image: student.profile_image || null,
+        feeDetails,
+        attendanceDetails,
+        total_fees: feeDetails.total_fees,
+        paid_amount: feeDetails.paid_amount,
+        pending_amount: feeDetails.pending_amount,
+        payment_progress: feeDetails.payment_progress,
+        attendance_progress: attendanceDetails.attendance_progress,
+      };
+
+      await this.redisCache.setUser(student.uuid, responseData);
 
       return {
         success: true,
         message: 'student fetched',
-        data: student,
+        data: responseData,
       };
     } catch (error) {
       Sentry.captureException(error);
