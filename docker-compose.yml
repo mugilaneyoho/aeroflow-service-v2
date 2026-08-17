@@ -1,4 +1,74 @@
 services:
+
+  # ---------------- DATABASES ---------------- #
+  patron:
+    image: postgres:16
+    container_name: patron
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: postgres
+    volumes:
+      - patron_data:/var/lib/postgresql/data
+      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    entrypoint: >
+      bash -c "
+      trap 'kill -TERM \$\$pid' TERM INT;
+      /usr/local/bin/docker-entrypoint.sh postgres &
+      pid=\$!;
+      echo 'Waiting for PostgreSQL to start...';
+      until pg_isready -h localhost -U postgres; do
+        sleep 1;
+      done;
+      echo 'Running database initialization checks...';
+      bash /docker-entrypoint-initdb.d/init-db.sh;
+      wait \$pid;
+      "
+
+  # ---------------- INFRA ---------------- #
+
+  redis:
+   image: redis:latest
+   container_name: redis
+   restart: unless-stopped
+   ports:
+     - "6379:6379"
+   networks:
+     - app-network
+   healthcheck:
+     test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+     interval: 5s
+     timeout: 5s
+     retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+
   # ---------------- SERVICES ---------------- #
   api-gateway:
     build: ./node-api-gateway
@@ -21,6 +91,8 @@ services:
       placement: http://placement-service:3020
       meeting: http://meeting-service:3022
     depends_on:
+      patron:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
       redis:
@@ -174,28 +246,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-
-  # reception-service:
-  #   build: ./services/reception
-  #   ports:
-  #     - "3013:3013"
-  #   restart: unless-stopped
-  #   environment:
-  #     PORT: 3013
-  #     NODE_OPTIONS: "--max-old-space-size=384"
-  #     DB_HOST: patron
-  #     DB_PORT: 5432
-  #     DB_NAME: reception
-  #     DB_USER: postgres
-  #     DB_PASS: root
-  #     SENTRY_DSN: https://c5fa1c684ee6f821ed8052c07bced0ad@o4511697968496640.ingest.de.sentry.io/4511698230181968
-  #   depends_on:
-  #     api-gateway:
-  #       condition: service_started
-  #     patron:
-  #       condition: service_healthy
-  #   networks:
-  #     - app-network
 
   mail-service:
     build: ./services/mailservice
@@ -374,88 +424,6 @@ services:
         condition: service_healthy
     networks:
       - app-network
-
-  # ---------------- DATABASES ---------------- #
-  patron:
-    image: postgres:16
-    container_name: patron
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: root
-      POSTGRES_DB: postgres
-    volumes:
-      - patron_data:/var/lib/postgresql/data
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    # entrypoint: >
-    #   bash -c "
-    #   trap 'kill -TERM \$\$pid' TERM INT;
-    #   /usr/local/bin/docker-entrypoint.sh postgres &
-    #   pid=\$!;
-    #   echo 'Waiting for PostgreSQL to start...';
-    #   until pg_isready -h localhost -U postgres; do
-    #     sleep 1;
-    #   done;
-    #   echo 'Running database initialization checks...';
-    #   bash /docker-entrypoint-initdb.d/init-db.sh;
-    #   wait \$pid;
-    #   "
-  
-  # pg-admin:
-  #   image: dpage/pgadmin4:latest
-  #   container_name: pgadmin
-  #   restart: unless-stopped
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: admin@patron.com
-  #     PGADMIN_DEFAULT_PASSWORD: admin
-  #   ports:
-  #     - "8080:80"
-  #   depends_on:
-  #     - patron
-  #   networks:
-  #     - app-network
-
-  # ---------------- INFRA ---------------- #
-
-  redis:
-   image: redis:latest
-   container_name: redis
-   restart: unless-stopped
-   ports:
-     - "6379:6379"
-   networks:
-     - app-network
-   healthcheck:
-     test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
-     interval: 5s
-     timeout: 5s
-     retries: 5
-
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    restart: unless-stopped
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    networks:
-      - app-network
-    healthcheck:
-      test: ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 15s
 
 # ---------------- NETWORK ---------------- #
 networks:

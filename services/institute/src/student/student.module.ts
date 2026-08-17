@@ -60,8 +60,8 @@ import { RedisUserCache } from 'src/redis/redis.service';
             durable: true,
           },
           sosocketOptions: {
-            reconnectTimeInSeconds: 5,
-            heartbeatIntervalInSeconds: 10,
+            reconnectTimeInSeconds: 3,
+            heartbeatIntervalInSeconds: 5,
           },
         },
       },

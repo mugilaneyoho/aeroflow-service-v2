@@ -35,7 +35,12 @@ export class LeadsService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.kafkaActiveLog.connect();
+    await this.kafkaActiveLog.connect().catch((reason) => {
+      if (reason.err) {
+        console.log('connecting error, to restart again');
+        process.exit(-1);
+      }
+    });
     console.log('Lead service Kafka connected');
     this.queue.client.on('error', (err) => {
       console.error('Redis connection error', err);

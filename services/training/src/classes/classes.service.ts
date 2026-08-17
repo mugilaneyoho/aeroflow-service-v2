@@ -73,7 +73,12 @@ export class ClassesService implements OnModuleInit {
   async onModuleInit() {
     this.batchService = this.clientBatch.getService('BatchService');
     try {
-      await this.kafkaclient.connect();
+      await this.kafkaclient.connect().catch((reason) => {
+      if (reason.err) {
+        console.log('connecting error, to restart again');
+        process.exit(-1);
+      }
+    });
       this.logger.log('kafka producer connected successfully');
     } catch (error) {
       Sentry.captureException(error);

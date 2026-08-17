@@ -38,8 +38,11 @@ export class StaffService implements OnModuleInit {
   ) {}
 
   async onModuleInit() {
-    await this.MailService.connect().catch((err) => {
-      console.log(err);
+    await this.MailService.connect().catch((reason: { err: object }) => {
+      if (reason.err) {
+        console.log('connecting error, to restart again');
+        process.exit(-1);
+      }
     });
   }
 

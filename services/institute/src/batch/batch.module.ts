@@ -31,8 +31,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
             durable: true
           },
           sosocketOptions: {
-            reconnectTimeInSeconds: 5,
-            heartbeatIntervalInSeconds: 10,
+            reconnectTimeInSeconds: 3,
+            heartbeatIntervalInSeconds: 5,
           },
         }
       },
