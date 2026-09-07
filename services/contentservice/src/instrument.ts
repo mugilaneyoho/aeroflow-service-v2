@@ -20,6 +20,4 @@ Sentry.init({
   profilesSampleRate: 1.0,
 });
 
-
 Sentry.setTag('service', 'contentservice');
-

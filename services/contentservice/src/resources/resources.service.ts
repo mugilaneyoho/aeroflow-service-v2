@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/nestjs';
+import axios from 'axios';
 import {
   Injectable,
   Logger,
@@ -7,38 +8,24 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import {
-  S3Client,
-  PutObjectCommand,
-  ListObjectsV2Command,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { Repository, DeepPartial } from 'typeorm';
+import cloudinary from '../config/cloudinary.config';
 import { Note } from './entities/resource.entity';
+
+export interface CloudinaryResult {
+  public_id?: string;
+  secure_url?: string;
+  url?: string;
+  format?: string;
+}
 
 @Injectable()
 export class ResourcesService {
   private readonly logger = new Logger(ResourcesService.name);
-  private readonly AWS_S3_BUCKET = process.env.AWS_S3_BUCKET_NAME;
-  private readonly AWS_REGION = process.env.AWS_REGION || 'us-east-1';
-  private readonly s3: S3Client;
 
-  constructor(@InjectRepository(Note) private noteRepo: Repository<Note>) {
-    if (!this.AWS_S3_BUCKET) {
-      this.logger.warn('AWS_S3_BUCKET_NAME is not set in environment');
-    }
+  constructor(@InjectRepository(Note) private noteRepo: Repository<Note>) {}
 
-    this.s3 = new S3Client({
-      region: this.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-      },
-    });
-  }
-
-  async getByIdNotes(id: number) {
+  async getByIdNotes(id: number): Promise<Note> {
     const note = await this.noteRepo.findOne({ where: { id } });
     if (!note) {
       throw new NotFoundException('Note not found');
@@ -46,9 +33,9 @@ export class ResourcesService {
     return note;
   }
 
-  async createNote(data: any) {
+  async createNote(data: Record<string, unknown>): Promise<Note> {
     if (data.classDate === '') data.classDate = null;
-    const note = this.noteRepo.create(data);
+    const note = this.noteRepo.create(data as DeepPartial<Note>);
     return await this.noteRepo.save(note);
   }
 
@@ -56,9 +43,12 @@ export class ResourcesService {
     return await this.noteRepo.find();
   }
 
-  async updateNote(id: number, dto: any) {
+  async updateNote(
+    id: number,
+    dto: Record<string, unknown>,
+  ): Promise<{ success: boolean; message: string; data: Note }> {
     try {
-      console.log(`Updating note with id=${id}`);
+      this.logger.log(`Updating note with id=${id}`);
       if (dto.classDate === '') dto.classDate = null;
       const note = await this.noteRepo.findOne({ where: { id } });
       if (!note) {
@@ -72,11 +62,11 @@ export class ResourcesService {
         message: 'Note updated successfully',
         data: res,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       Sentry.captureException(error);
+      const message = error instanceof Error ? error.message : String(error);
       this.logger.error('Error updating note', error);
-
-      throw new InternalServerErrorException(error?.message);
+      throw new InternalServerErrorException(message);
     }
   }
 
@@ -89,9 +79,9 @@ export class ResourcesService {
       throw new BadRequestException('No file provided');
     }
 
-    const MAX_SIZE = 1 * 1024 * 1024;
+    const MAX_SIZE = 20 * 1024 * 1024;
     if (file.size > MAX_SIZE) {
-      throw new BadRequestException('File size is too large (limit is 5MB)');
+      throw new BadRequestException('File size is too large (limit is 20MB)');
     }
 
     if (!file.buffer) {
@@ -100,88 +90,127 @@ export class ResourcesService {
       );
     }
 
-    if (!this.AWS_S3_BUCKET) {
-      throw new BadRequestException('AWS_S3_BUCKET_NAME is not configured');
-    }
-
-    const key = `${Date.now()}_${file.originalname}`;
+    const isImage = file.mimetype.startsWith('image/');
 
     try {
-      const command = new PutObjectCommand({
-        Bucket: this.AWS_S3_BUCKET,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        ContentDisposition: 'inline',
-      });
+      const uploadResult = await new Promise<CloudinaryResult>(
+        (resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              {
+                folder: 'nestjs_uploads',
+                resource_type: isImage ? 'image' : 'raw',
+              },
+              (error, result) => {
+                if (error) {
+                  const errMsg =
+                    typeof error === 'object' &&
+                    error !== null &&
+                    'message' in error
+                      ? String((error as { message: unknown }).message)
+                      : 'Cloudinary upload failed';
+                  return reject(new Error(errMsg));
+                }
+                resolve((result as CloudinaryResult) || {});
+              },
+            )
+            .end(file.buffer);
+        },
+      );
 
-      const result = await this.s3.send(command);
+      const key =
+        uploadResult.public_id || `${Date.now()}_${file.originalname}`;
+      const url = uploadResult.secure_url || uploadResult.url || '';
 
-      this.logger.log(`File uploaded successfully: ${key}`);
+      this.logger.log(`File uploaded successfully to Cloudinary: ${key}`);
 
-      const url = `https://${this.AWS_S3_BUCKET}.s3.${this.AWS_REGION}.amazonaws.com/${encodeURIComponent(key)}`;
+      const isPdf =
+        file.mimetype === 'application/pdf' ||
+        file.originalname?.toLowerCase().endsWith('.pdf');
+      if (isPdf) {
+        this.triggerAutoVectorIngestion(key, url, file).catch(
+          (err: unknown) => {
+            const message = err instanceof Error ? err.message : String(err);
+            this.logger.warn(`Auto vector ingestion failed: ${message}`);
+          },
+        );
+      }
 
-      return { key, url, etag: (result as any).ETag };
-    } catch (error) {
+      return { key, url, etag: key };
+    } catch (error: unknown) {
       Sentry.captureException(error);
-      this.logger.error('Error uploading file to S3', error);
-      throw new InternalServerErrorException('Failed to upload file to S3');
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error('Error uploading file to Cloudinary', error);
+      throw new InternalServerErrorException(
+        message || 'Failed to upload file to Cloudinary',
+      );
     }
   }
 
-  private buildListParams(prefix?: string) {
-    if (!this.AWS_S3_BUCKET) {
-      throw new BadRequestException('AWS_S3_BUCKET_NAME is not configured');
-    }
-    return {
-      Bucket: this.AWS_S3_BUCKET,
-      Prefix: prefix,
-      Delimiter: '/',
-    };
-  }
-
-  async listObjects(prefix?: string): Promise<any> {
-    this.logger.log('Listing objects in S3 bucket');
+  private async triggerAutoVectorIngestion(
+    resourceId: string,
+    pdfUrl: string,
+    file: Express.Multer.File,
+  ): Promise<void> {
+    const aiputerUrl =
+      process.env.AIPUTER_SERVICE_URL || 'http://localhost:3025';
+    this.logger.log(
+      `Triggering automated PDF vector conversion for resource: ${resourceId}`,
+    );
 
     try {
-      const params = this.buildListParams(prefix);
-      const command = new ListObjectsV2Command(params as any);
-      const result = await this.s3.send(command);
+      if (pdfUrl || file.buffer) {
+        await axios.post(`${aiputerUrl}/chat/ingest-pdf`, {
+          resourceId,
+          pdfUrl: pdfUrl || '',
+        });
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Auto PDF vector ingestion call warning: ${message}`);
+    }
+  }
+
+  async listObjects(prefix?: string): Promise<unknown> {
+    this.logger.log('Listing objects in Cloudinary');
+
+    try {
+      const options: Record<string, unknown> = {
+        max_results: 100,
+      };
+      if (prefix) {
+        options.prefix = prefix;
+      }
+      const result = await cloudinary.api.resources(options);
       this.logger.log('Objects listed successfully');
       return result;
-    } catch (error) {
+    } catch (error: unknown) {
       Sentry.captureException(error);
-      this.logger.error('Error listing objects in S3', error);
-      throw new InternalServerErrorException('Failed to list S3 objects');
+      this.logger.error('Error listing objects in Cloudinary', error);
+      throw new InternalServerErrorException(
+        'Failed to list Cloudinary objects',
+      );
     }
   }
 
-  async downloadFile(key: string, expiresSeconds = 60): Promise<string> {
+  async downloadFile(key: string, _expiresSeconds = 60): Promise<string> {
     if (!key)
       throw new BadRequestException('Key is required to generate download URL');
 
-    if (!this.AWS_S3_BUCKET) {
-      throw new BadRequestException('AWS_S3_BUCKET_NAME is not configured');
-    }
-
-    this.logger.log(`Generating signed URL for key: ${key}`);
+    this.logger.log(`Generating download URL for key: ${key}`);
 
     try {
-      const command = new GetObjectCommand({
-        Bucket: this.AWS_S3_BUCKET,
-        Key: key,
+      const url = cloudinary.url(key, {
+        secure: true,
+        flags: 'attachment',
       });
 
-      const url = await getSignedUrl(this.s3, command, {
-        expiresIn: expiresSeconds,
-      });
-
-      this.logger.log('Signed URL generated');
+      this.logger.log('Download URL generated');
       return url;
-    } catch (error) {
+    } catch (error: unknown) {
       Sentry.captureException(error);
-      this.logger.error('Error generating signed URL', error);
-      throw new InternalServerErrorException('Failed to generate signed URL');
+      this.logger.error('Error generating download URL', error);
+      throw new InternalServerErrorException('Failed to generate download URL');
     }
   }
 }

@@ -90,6 +90,7 @@ services:
       payment: http://payment-service:3021
       placement: http://placement-service:3020
       meeting: http://meeting-service:3022
+      aiputer: http://aiputer-service:3025
     depends_on:
       patron:
         condition: service_healthy
@@ -422,6 +423,20 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+  aiputer-service:
+    build: ./services/aiputer
+    ports:
+      - "3025:3025"
+    restart: unless-stopped
+    container_name: aiputer-service
+    environment:
+      PORT: 3025
+      NODE_OPTIONS: "--max-old-space-size=384"
+      OPENROUTER_API_KEY: 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
+      OPENROUTER_MODEL: openai/gpt-4o-mini
+    depends_on:
+      api-gateway:
+        condition: service_started
     networks:
       - app-network
 

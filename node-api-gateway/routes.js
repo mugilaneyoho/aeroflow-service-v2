@@ -109,5 +109,12 @@ routes.use("/placement", AuthVerify, createProxyMiddleware({
     secure:true,
 }))
 
+routes.use("/aiputer", AuthVerify, createProxyMiddleware({
+    target:process.env.aiputer || "http://localhost:3025",
+    changeOrigin:true,
+    agent,
+    secure:true,
+}))
+
 
 export default routes

@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { FileuploadController } from './fileupload.controller';
+import { FileuploadService } from './fileupload.service';
 
 describe('FileuploadController', () => {
   let controller: FileuploadController;
@@ -7,6 +8,14 @@ describe('FileuploadController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [FileuploadController],
+      providers: [
+        {
+          provide: FileuploadService,
+          useValue: {
+            uploadFile: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     controller = module.get<FileuploadController>(FileuploadController);

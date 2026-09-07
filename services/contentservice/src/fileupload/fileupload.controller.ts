@@ -38,14 +38,11 @@ export class FileuploadController {
       throw new BadRequestException('Only images and PDFs are allowed');
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const files = await this.cloudnaryService.uploadFile(file);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     const path = `staticfiles/${files.public_id}.${files.format}`;
 
     return {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
       file: files.secure_url,
       path,
     };
