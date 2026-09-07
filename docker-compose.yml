@@ -432,7 +432,7 @@ services:
     environment:
       PORT: 3025
       NODE_OPTIONS: "--max-old-space-size=384"
-      OPENROUTER_API_KEY: ""
+      OPENROUTER_API_KEY: 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
       OPENROUTER_MODEL: openai/gpt-4o-mini
     depends_on:
       api-gateway:
